@@ -1,0 +1,334 @@
+#include "AstNode.h"
+#include <format>
+
+using namespace Dynamix;
+using namespace std;
+
+BinaryExpression::BinaryExpression(unique_ptr<Expression> left, Token op, unique_ptr<Expression> right)
+	: m_Left(move(left)), m_Right(move(right)), m_Operator(move(op)) {
+}
+
+Value BinaryExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitBinary(this);
+}
+
+string BinaryExpression::ToString() const {
+	return format("({} {} {})", m_Left->ToString(), m_Operator.Lexeme, m_Right->ToString());
+}
+
+Expression* BinaryExpression::Left() const {
+	return m_Left.get();
+}
+
+Expression* BinaryExpression::Right() const {
+	return m_Right.get();
+}
+
+LiteralExpression::LiteralExpression(Token token) : m_Token(move(token)) {
+}
+
+Value LiteralExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitLiteral(this);
+}
+
+string LiteralExpression::ToString() const {
+	return m_Token.Lexeme;
+}
+
+Token const& LiteralExpression::Literal() const {
+	return m_Token;
+}
+
+NameExpression::NameExpression(string name) : m_Name(move(name)) {
+}
+
+Value NameExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitName(this);
+}
+
+string const& NameExpression::Name() const {
+	return m_Name;
+}
+
+string NameExpression::ToString() const {
+	return m_Name;
+}
+
+UnaryExpression::UnaryExpression(Token op, unique_ptr<Expression> arg) : m_Arg(move(arg)), m_Operator(move(op)) {
+}
+
+Value UnaryExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitUnary(this);
+}
+
+string UnaryExpression::ToString() const {
+	return format("({}{})", m_Operator.Lexeme, m_Arg->ToString());
+}
+
+Token const& UnaryExpression::Operator() const {
+	return m_Operator;
+}
+
+Expression* UnaryExpression::Arg() const {
+	return m_Arg.get();
+}
+
+VarValStatement::VarValStatement(string name, bool isConst, unique_ptr<Expression> init)
+	: m_Name(move(name)), m_Init(move(init)), m_IsConst(isConst) {
+}
+
+Value VarValStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitVar(this);
+}
+
+string VarValStatement::ToString() const {
+	return format("{} {} = {};", IsConst() ? "val" : "var", m_Name, Init() ? Init()->ToString() : "");
+}
+
+string const& VarValStatement::Name() const {
+	return m_Name;
+}
+
+Expression const* VarValStatement::Init() const {
+	return m_Init.get();
+}
+
+bool VarValStatement::IsConst() const {
+	return m_IsConst;
+}
+
+AssignExpression::AssignExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, Token assignType)
+	: m_Left(move(lhs)), m_Expr(move(rhs)), m_AssignType(assignType) {
+}
+
+Value AssignExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitAssign(this);
+}
+
+Expression const* AssignExpression::Left() const {
+	return m_Left.get();
+}
+
+Expression const* AssignExpression::Value() const {
+	return m_Expr.get();
+}
+
+Token const& AssignExpression::AssignType() const {
+	return m_AssignType;
+}
+
+string AssignExpression::ToString() const {
+	return format("{} {} {}", Left()->ToString(), AssignType().Lexeme, Value()->ToString());
+}
+
+InvokeFunctionExpression::InvokeFunctionExpression(string name, vector<unique_ptr<Expression>> args) :
+	m_Name(move(name)), m_Arguments(move(args)) {
+}
+
+Value InvokeFunctionExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitInvokeFunction(this);
+}
+
+WhileStatement::WhileStatement(unique_ptr<Expression> condition, unique_ptr<Statements> body) :
+	m_Condition(move(condition)), m_Body(move(body)) {
+}
+
+Value WhileStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitWhile(this);
+}
+
+Expression const* WhileStatement::Condition() const {
+	return m_Condition.get();
+}
+
+Statements const* WhileStatement::Body() const {
+	return m_Body.get();
+}
+
+IfThenElseExpression::IfThenElseExpression(unique_ptr<Expression> condition, unique_ptr<Expression> thenExpr, unique_ptr<Expression> elseExpr) :
+	m_Condition(move(condition)), m_Then(move(thenExpr)), m_Else(move(elseExpr)) {
+}
+
+Value IfThenElseExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitIfThenElse(this);
+}
+
+std::string Dynamix::IfThenElseExpression::ToString() const {
+	auto ifThen = format("if ({}) {{\n {}\n}}", Condition()->ToString(), Then()->ToString());
+	if (Else())
+		ifThen += format("\nelse {{\n {} \n}}", Else()->ToString());
+	return ifThen;
+}
+
+Expression const* IfThenElseExpression::Condition() const {
+	return m_Condition.get();
+}
+
+Expression const* IfThenElseExpression::Then() const {
+	return m_Then.get();
+}
+
+Expression const* IfThenElseExpression::Else() const {
+	return m_Else.get();
+}
+
+FunctionDeclaration::FunctionDeclaration(string name) :	m_Name(move(name)) {
+}
+
+Value FunctionDeclaration::Accept(Visitor* visitor) const {
+	return visitor->VisitFunctionDeclaration(this);
+}
+
+string const& FunctionDeclaration::Name() const {
+	return m_Name;
+}
+
+vector<Parameter> const& FunctionDeclaration::Parameters() const {
+	return m_Parameters;
+}
+
+void FunctionDeclaration::Parameters(vector<Parameter> params) {
+	m_Parameters = move(params);
+}
+
+Expression const* FunctionDeclaration::Body() const {
+	return m_Body.get();
+}
+
+void FunctionDeclaration::Body(std::unique_ptr<Expression> body) {
+	m_Body = move(body);
+}
+
+std::string Dynamix::FunctionDeclaration::ToString() const {
+	std::string params;
+	for (auto& param : Parameters())
+		params += format("{}, ", param.Name);
+	auto decl = format("fn {} ({})\n ", Name(), params.substr(0, params.length() - 2));
+	return decl + Body()->ToString();
+}
+
+ReturnStatement::ReturnStatement(unique_ptr<Expression> expr) : m_Expr(move(expr)) {
+}
+
+Value ReturnStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitReturn(this);
+}
+
+Expression const* ReturnStatement::ReturnValue() const {
+	return m_Expr.get();
+}
+
+std::string ReturnStatement::ToString() const {
+	return format("return {};", ReturnValue() ? ReturnValue()->ToString() : "");
+}
+
+BreakOrContinueStatement::BreakOrContinueStatement(bool cont) : m_IsContinue(cont) {
+}
+
+Value BreakOrContinueStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitBreakContinue(this);
+}
+
+bool BreakOrContinueStatement::IsContinue() const {
+	return m_IsContinue;
+}
+
+ForStatement::ForStatement(unique_ptr<Statement> init, unique_ptr<Expression> whileExpr, unique_ptr<Expression> incExpr, unique_ptr<Statements> body) :
+	m_Init(move(init)), m_While(move(whileExpr)), m_Inc(move(incExpr)), m_Body(move(body)) {
+}
+
+Value ForStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitFor(this);
+}
+
+Statement const* ForStatement::Init() const {
+	return m_Init.get();
+}
+
+Expression const* ForStatement::While() const {
+	return m_While.get();
+}
+
+Expression const* ForStatement::Inc() const {
+	return m_Inc.get();
+}
+
+AnonymousFunctionExpression::AnonymousFunctionExpression(vector<Parameter> args, unique_ptr<Expression> body) :
+	m_Args(move(args)), m_Body(move(body)) {
+}
+
+Value AnonymousFunctionExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitAnonymousFunction(this);
+}
+
+vector<Parameter> const& AnonymousFunctionExpression::Args() const {
+	return m_Args;
+}
+
+Expression const* AnonymousFunctionExpression::Body() const {
+	return m_Body.get();
+}
+
+EnumDeclaration::EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values) : m_Name(move(name)), m_Values(move(values)) {
+}
+
+Value EnumDeclaration::Accept(Visitor* visitor) const {
+	return visitor->VisitEnumDeclaration(this);
+}
+
+std::string const& EnumDeclaration::Name() const {
+	return m_Name;
+}
+
+string const& InvokeFunctionExpression::Name() const {
+	return m_Name;
+}
+
+vector<std::unique_ptr<Expression>> const& Dynamix::InvokeFunctionExpression::Arguments() const {
+	return m_Arguments;
+}
+
+string InvokeFunctionExpression::ToString() const {
+	string result;
+	for (auto& arg : Arguments())
+		result += arg->ToString() + ", ";
+	if (result.empty())
+		result = ", ";
+	return format("{} ({})", Name(), result.substr(0, result.length() - 2));
+}
+
+Value Statements::Accept(Visitor* visitor) const {
+	return visitor->VisitStatements(this);
+}
+
+void Statements::Add(unique_ptr<Statement> stmt) {
+	m_Stmts.push_back(move(stmt));
+}
+
+vector<unique_ptr<Statement>> const& Statements::Get() const {
+	return m_Stmts;
+}
+
+string Statements::ToString() const {
+	std::string result;
+	for (auto& s : m_Stmts) {
+		result += s->ToString();
+		result += "\n";
+	}
+	return result;
+}
+
+ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : m_Expr(move(expr)) {
+}
+
+Value ExpressionStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitExpressionStatement(this);
+}
+
+Expression const* ExpressionStatement::Expr() const {
+	return m_Expr.get();
+}
+
+string ExpressionStatement::ToString() const {
+	return Expr()->ToString();
+}
