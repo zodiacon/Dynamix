@@ -5,7 +5,7 @@
 using namespace std;
 using namespace Dynamix;
 
-Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
+Parser::Parser(Tokenizer& t, bool test) : m_Tokenizer(t), m_Test(test) {
 	Init();
 }
 
@@ -32,6 +32,8 @@ void Parser::Init() {
 		{ "interface", TokenType::Keyword_Interface },
 		{ "class", TokenType::Keyword_Class },
 		{ "object", TokenType::Keyword_Object },
+		{ "enum", TokenType::Keyword_Enum },
+		{ "struct", TokenType::Keyword_Struct },
 		});
 
 	m_Tokenizer.AddTokens({
@@ -75,6 +77,7 @@ void Parser::Init() {
 	AddParslet(TokenType::Integer, make_unique<LiteralParslet>());
 	AddParslet(TokenType::String, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Keyword_True, make_unique<LiteralParslet>());
+	AddParslet(TokenType::Keyword_False, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Real, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Identifier, make_unique<NameParslet>());
 	AddParslet(TokenType::Operator_OpenParen, make_unique<GroupParslet>());
@@ -114,12 +117,12 @@ std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
 unique_ptr<Statements> Parser::DoParse() {
 	auto block = make_unique<Statements>();
 	while (true) {
-		auto stmt = ParseStatement(true);
+		auto stmt = ParseStatement(!m_Test);
 		if (stmt == nullptr)
 			break;
 		block->Add(move(stmt));
 	}
-	return block;
+	return HasErrors() ? nullptr : move(block);
 }
 
 Token Parser::Next() {
@@ -231,10 +234,9 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	Next();		// eat fn keyword
 	auto ident = Next();
 	if (ident.Type != TokenType::Identifier)
-		throw ParseError(ParseErrorType::IdentifierExpected, ident);
+		AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
 
-	if (!Match(TokenType::Operator_OpenParen))
-		throw ParseError(ParseErrorType::OpenParenExpected, ident);
+	Match(TokenType::Operator_OpenParen, true, true);
 
 	//
 	// get list of arguments
@@ -257,7 +259,6 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident));
 
 	auto decl = make_unique<FunctionDeclaration>(move(ident.Lexeme));
-	PushScope(decl.get());
 
 	unique_ptr<Expression> body;
 	if (Match(TokenType::Operator_GoesTo))
@@ -265,14 +266,13 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	else
 		body = ParseBlock(parameters);
 
-	PopScope();
-
+	auto params = parameters.size();
 	decl->Parameters(move(parameters));
 	decl->Body(move(body));
 
 	if (sym == nullptr) {
 		Symbol sym;
-		sym.Name = format("{}/{}", decl->Name(), parameters.size());
+		sym.Name = format("{}/{}", decl->Name(), params);
 		sym.Type = SymbolType::Function;
 		sym.Flags = SymbolFlags::None;
 		AddSymbol(sym);
@@ -316,7 +316,7 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
 			break;
 		block->Add(move(stmt));
 	}
-	Next();		// eat close brace
+	Match(TokenType::Operator_CloseBrace, true, true);
 	PopScope();
 	return block;
 }
@@ -364,6 +364,10 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 			break;
 		default:
 			if (!topLevel) {
+				//auto it = m_PrefixParslets.find(peek.Type);
+				//if (it != m_PrefixParslets.end())
+				//	return std::make_unique<ExpressionStatement>(it->second->Parse(*this, peek));
+
 				auto expr = ParseExpression();
 				if (expr)
 					return std::make_unique<ExpressionStatement>(move(expr));
@@ -462,10 +466,6 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 unique_ptr<ReturnStatement> Parser::ParseReturnStatement() {
 	Next();		// eat return keyword
 	auto expr = ParseExpression();
-	if (expr) {
-		if (!Match(TokenType::Operator_Semicolon))
-			AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
-		return make_unique<ReturnStatement>(move(expr));
-	}
-	return nullptr;
+	Match(TokenType::Operator_Semicolon, true, true);
+	return make_unique<ReturnStatement>(move(expr));
 }

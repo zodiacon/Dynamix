@@ -13,13 +13,17 @@
 
 namespace Dynamix {
 	enum class AstNodeType {
-		None,
-		Name,
-		VarValStatement,
-		Literal,
+		None = 0,
+
 		Expression = 0x200,
+		Literal,
+		IfThenElse,
+		Name,
+
 		Statement = 0x400,
-		Declaration = 0x800,
+		Statements,
+		FunctionDeclaration,
+		VarValStatement,
 	};
 
 	class AstNode {
@@ -83,9 +87,15 @@ namespace Dynamix {
 
 	class Statements final : public Statement {
 	public:
+		AstNodeType Type() const {
+			return AstNodeType::Statements;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		void Add(std::unique_ptr<Statement> stmt);
 		std::vector<std::unique_ptr<Statement>> const& Get() const;
+		Statement const* GetAt(int i) const;
+		int Count() const;
 		std::string ToString() const override;
 
 	private:
@@ -225,6 +235,10 @@ namespace Dynamix {
 
 	class FunctionDeclaration : public Statement {
 	public:
+		AstNodeType Type() const {
+			return AstNodeType::FunctionDeclaration;
+		}
+
 		explicit FunctionDeclaration(std::string name);
 		Value Accept(Visitor* visitor) const override;
 
@@ -302,17 +316,20 @@ namespace Dynamix {
 
 	class IfThenElseExpression : public Expression {
 	public:
-		IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> thenExpr, std::unique_ptr<Expression> elseExpr = nullptr);
+		IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> thenExpr, std::unique_ptr<Statement> elseExpr = nullptr);
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
+		AstNodeType Type() const {
+			return AstNodeType::IfThenElse;
+		}
 
 		Expression const* Condition() const;
-		Expression const* Then() const;
-		Expression const* Else() const;
+		Statement const* Then() const;
+		Statement const* Else() const;
 
 	private:
 		std::unique_ptr<Expression> m_Condition;
-		std::unique_ptr<Expression> m_Then, m_Else;
+		std::unique_ptr<Statement> m_Then, m_Else;
 	};
 
 }

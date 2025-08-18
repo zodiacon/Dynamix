@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace Dynamix {
 	enum class TokenType {
@@ -42,9 +43,11 @@ namespace Dynamix {
 		Keyword_Or,
 		Keyword_Not,
 		Keyword_Enum,
+		Keyword_Struct,
+		Keyword_Native,
 
 		Operator_Plus = Operator,
-		Operator_Minus = Operator,
+		Operator_Minus,
 		Operator_Mul,
 		Operator_Div,
 		Operator_Mod,

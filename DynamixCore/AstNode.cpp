@@ -46,6 +46,10 @@ Value NameExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitName(this);
 }
 
+Token const& BinaryExpression::Operator() const {
+	return m_Operator;
+}
+
 string const& NameExpression::Name() const {
 	return m_Name;
 }
@@ -145,7 +149,7 @@ Statements const* WhileStatement::Body() const {
 	return m_Body.get();
 }
 
-IfThenElseExpression::IfThenElseExpression(unique_ptr<Expression> condition, unique_ptr<Expression> thenExpr, unique_ptr<Expression> elseExpr) :
+IfThenElseExpression::IfThenElseExpression(unique_ptr<Expression> condition, unique_ptr<Statement> thenExpr, unique_ptr<Statement> elseExpr) :
 	m_Condition(move(condition)), m_Then(move(thenExpr)), m_Else(move(elseExpr)) {
 }
 
@@ -153,7 +157,7 @@ Value IfThenElseExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitIfThenElse(this);
 }
 
-std::string Dynamix::IfThenElseExpression::ToString() const {
+string IfThenElseExpression::ToString() const {
 	auto ifThen = format("if ({}) {{\n {}\n}}", Condition()->ToString(), Then()->ToString());
 	if (Else())
 		ifThen += format("\nelse {{\n {} \n}}", Else()->ToString());
@@ -164,11 +168,11 @@ Expression const* IfThenElseExpression::Condition() const {
 	return m_Condition.get();
 }
 
-Expression const* IfThenElseExpression::Then() const {
+Statement const* IfThenElseExpression::Then() const {
 	return m_Then.get();
 }
 
-Expression const* IfThenElseExpression::Else() const {
+Statement const* IfThenElseExpression::Else() const {
 	return m_Else.get();
 }
 
@@ -272,6 +276,10 @@ Expression const* AnonymousFunctionExpression::Body() const {
 EnumDeclaration::EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values) : m_Name(move(name)), m_Values(move(values)) {
 }
 
+std::unordered_map<std::string, long long> const& EnumDeclaration::Values() const {
+	return m_Values;
+}
+
 Value EnumDeclaration::Accept(Visitor* visitor) const {
 	return visitor->VisitEnumDeclaration(this);
 }
@@ -303,6 +311,14 @@ Value Statements::Accept(Visitor* visitor) const {
 
 void Statements::Add(unique_ptr<Statement> stmt) {
 	m_Stmts.push_back(move(stmt));
+}
+
+Statement const* Statements::GetAt(int i) const {
+	return i < 0 || i >= m_Stmts.size() ? nullptr : m_Stmts[i].get();
+}
+
+int Statements::Count() const {
+	return static_cast<int>(m_Stmts.size());
 }
 
 vector<unique_ptr<Statement>> const& Statements::Get() const {

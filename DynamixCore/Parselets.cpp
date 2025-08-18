@@ -105,9 +105,11 @@ unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<E
 }
 
 unique_ptr<Expression> IfThenElseParslet::Parse(Parser& parser, Token const& token) {
+	parser.Match(TokenType::Operator_OpenParen, true, true);
 	auto cond = parser.ParseExpression();
+	parser.Match(TokenType::Operator_CloseParen, true, true);
 	auto then = parser.ParseBlock();
-	unique_ptr<Expression> elseExpr;
+	unique_ptr<Statement> elseExpr;
 	if (parser.Match(TokenType::Keyword_Else))
 		elseExpr = parser.ParseBlock();
 	return make_unique<IfThenElseExpression>(move(cond), move(then), move(elseExpr));

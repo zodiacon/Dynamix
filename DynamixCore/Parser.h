@@ -18,7 +18,7 @@ namespace Dynamix {
 
 	class Parser {
 	public:
-		explicit Parser(Tokenizer& t);
+		explicit Parser(Tokenizer& t, bool test = false);
 		virtual ~Parser() noexcept = default;
 		virtual void Init();
 
@@ -69,6 +69,7 @@ namespace Dynamix {
 		std::stack<SymbolTable*> m_Symbols;
 		std::stack<std::string> m_Namespaces;
 		int m_LoopCount{ 0 };
+		bool m_Test;
 	};
 }
 
