@@ -27,67 +27,80 @@ namespace Dynamix {
 
 	enum class ValueErrorType {
 		Unspecfied = 0,
+		OutOfMemory,
 		DivideByZero,
 		UnsupportedBinaryOperator,
 		UnsupportedUnaryOperator,
+		TypeMismatch,
 	};
 
 	class Value final {
 	public:
-		Value() : m_Type(ValueType::Null) {}
-		Value(Int v) : iValue(v), m_Type(ValueType::Integer) {}
-		Value(Real d) : dValue(d), m_Type(ValueType::Real) {}
-		Value(Bool b) : bValue(b), m_Type(ValueType::Boolean) {}
-		Value(RuntimeObject* o);
-		Value(ValueType t) : m_Type(t) {}
+		Value() noexcept : m_Type(ValueType::Null) {}
+		Value(Int v) noexcept : iValue(v), m_Type(ValueType::Integer) {}
+		Value(Real d) noexcept : dValue(d), m_Type(ValueType::Real) {}
+		Value(Bool b) noexcept : bValue(b), m_Type(ValueType::Boolean) {}
+		Value(RuntimeObject* o) noexcept;
+		Value(ValueType t) noexcept : m_Type(t) {}
+		Value(const char* s) noexcept;
+
+		Value(Value const& other) noexcept;
+		Value& operator=(Value const& other) noexcept;
+		Value(Value&& other) noexcept;
+		Value& operator=(Value&& other) noexcept;
 
 		static Value FromToken(Token const& token);
 		static Value Error(ValueErrorType type = ValueErrorType::Unspecfied);
 
 		~Value() noexcept;
 
-		ValueType Type() const {
+		ValueType Type() const noexcept {
 			return m_Type;
 		}
 
-		bool IsInteger() const {
+		bool IsInteger() const noexcept {
 			return m_Type == ValueType::Integer;
 		}
 
-		Int AsInteger() const;
-		Real AsReal() const;
-		Bool AsBoolean() const;
+		Int AsInteger() const noexcept;
+		Real AsReal() const noexcept;
+		Bool AsBoolean() const noexcept;
 
-		bool IsReal() const {
+		bool IsReal() const noexcept {
 			return m_Type == ValueType::Real;
 		}
-		bool IsBoolean() const {
+		bool IsBoolean() const noexcept {
 			return m_Type == ValueType::Boolean;
 		}
-		bool IsObject() const {
+		bool IsObject() const noexcept {
 			return m_Type == ValueType::Object;
 		}
-		bool IsAstNode() const {
+		bool IsAstNode() const noexcept {
 			return m_Type == ValueType::AstNode;
 		}
-		bool IsStruct() const {
+		bool IsStruct() const noexcept {
 			return m_Type == ValueType::Struct;
 		}
+		bool IsString() const noexcept {
+			return m_Type == ValueType::String;
+		}
 
-		Int ToInteger() const;
-		Bool ToBoolean() const;
-		Real ToReal() const;
+		Int ToInteger() const noexcept;
+		Bool ToBoolean() const noexcept;
+		Real ToReal() const noexcept;
 
-		Value BinaryOperator(TokenType op, Value const& rhs) const;
-		Value UnaryOperator(TokenType op) const;
+		Value BinaryOperator(TokenType op, Value const& rhs) const noexcept;
+		Value UnaryOperator(TokenType op) const noexcept;
 
-		std::string ToString() const;
+		std::string ToString() const noexcept;
 
-		Value Add(Value const& rhs) const;
-		Value Sub(Value const& rhs) const;
-		Value Mul(Value const& rhs) const;
-		Value Div(Value const& rhs) const;
-		Value Mod(Value const& rhs) const;
+		Value Add(Value const& rhs) const noexcept;
+		Value Sub(Value const& rhs) const noexcept;
+		Value Mul(Value const& rhs) const noexcept;
+		Value Div(Value const& rhs) const noexcept;
+		Value Mod(Value const& rhs) const noexcept;
+
+		void Free() noexcept;
 
 	private:
 		union {
@@ -106,7 +119,3 @@ namespace Dynamix {
 
 	static_assert(sizeof(Value) <= 16);
 }
-
-template<>
-constexpr bool enable_bitmask_operators(Dynamix::ValueType) { return true; }
-
