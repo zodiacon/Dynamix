@@ -8,9 +8,13 @@
 namespace Dynamix {
 	class ObjectType {
 	public:
-		explicit ObjectType(Runtime& rt);
+		ObjectType(Runtime& rt, std::string name);
 		ObjectType(ObjectType const&) = delete;
 		ObjectType& operator=(ObjectType const&) = delete;
+
+		std::string const& Name() const {
+			return m_Name;
+		}
 
 		RuntimeObject* CreateObject(Value* args = nullptr, int count = 0);
 		// instance method
@@ -25,5 +29,6 @@ namespace Dynamix {
 	private:
 		std::atomic<unsigned> m_ObjectCount{ 0 };
 		Runtime& m_Runtime;
+		std::string m_Name;
 	};
 }

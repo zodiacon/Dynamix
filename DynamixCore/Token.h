@@ -6,13 +6,14 @@
 namespace Dynamix {
 	enum class TokenType {
 		Invalid,	
-		Integer,	
-		Real,	
-		String,	
-		Identifier,
-		Comment,	
-		Error,	
+		Integer = 1,	
+		Real = 2,
+		String = 4,	
+		Identifier = 8,
+		Error = 0x10,	
 		End,
+		Comment,
+
 		Keyword		= 0x0100,
 		Operator	= 0x1000,
 
@@ -97,7 +98,10 @@ namespace Dynamix {
 		std::string Lexeme;
 		int Line;
 		int Col;
-
+		union {
+			long long iValue;
+			double rValue;
+		};
 		std::string_view TypeToString() const;
 	};
 }

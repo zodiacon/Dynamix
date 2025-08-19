@@ -24,6 +24,12 @@ namespace Dynamix {
 			return m_Type;
 		}
 
+		ObjectType const& Type() const{
+			return m_Type;
+		}
+
+		std::string ToString() const;
+
 		int AddRef();
 		int Release();
 

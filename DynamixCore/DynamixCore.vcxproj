@@ -135,7 +135,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AstNode.h" />
+    <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="Interfaces.h" />
+    <ClInclude Include="Interpreter.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="RuntimeObject.h" />
     <ClInclude Include="ObjectType.h" />
@@ -151,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AstNode.cpp" />
+    <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="RuntimeObject.cpp" />
     <ClCompile Include="ObjectType.cpp" />

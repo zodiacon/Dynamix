@@ -132,6 +132,10 @@ Token Tokenizer::ParseNumber() {
 	m_Col += (int)len + startLen;
 	m_Current += len;
 	auto token = Token{ .Type = type, .Lexeme = string(m_Current - len - startLen, m_Current), .Line = m_Line, .Col = m_Col - len };
+	if (type == TokenType::Integer)
+		token.iValue = ivalue;
+	else
+		token.rValue = dvalue;
 
 	if (*m_Current == '\n') {
 		m_Col = 1;

@@ -4,6 +4,7 @@
 #include <Parser.h>
 #include <print>
 #include <AstNode.h>
+#include <Interpreter.h>
 
 using namespace Dynamix;
 using namespace std;
@@ -16,7 +17,7 @@ void ShowErrors(Parser const& p) {
 
 int main() {
 	Tokenizer t;
-	Parser p(t);
+	Parser p(t, true);
 	char text[] = "123 hello 12 for if x 9.34 < > 77 !- \"this is a text\" while";
 	auto code = "fn sqr(x) { if(x < 5) { x += 1 } return 2 + x * x; }\n"
 		"fn main() { val a = sqr(10); return 0; }";
@@ -29,6 +30,11 @@ int main() {
 	}
 	else {
 		println("{}", root->ToString());
+		auto n = p.Parse("2 + 3 * 4");
+		Interpreter intr;
+		auto result = n->Accept(&intr);
+		print("Result: {}", result.ToString());
+
 	}
 	return 0;
 }

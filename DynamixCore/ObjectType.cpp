@@ -4,7 +4,7 @@
 
 using namespace Dynamix;
 
-ObjectType::ObjectType(Runtime& rt) : m_Runtime(rt) {
+ObjectType::ObjectType(Runtime& rt, std::string name) : m_Runtime(rt), m_Name(std::move(name)) {
 }
 
 RuntimeObject* ObjectType::CreateObject(Value* args, int count) {
@@ -14,6 +14,10 @@ RuntimeObject* ObjectType::CreateObject(Value* args, int count) {
 	if (count > 0)
 		obj->Construct(args, count);
 	return obj;
+}
+
+Value Dynamix::ObjectType::Invoke(RuntimeObject* instance, std::string_view name, Value* args, int count) {
+	return Value();
 }
 
 void ObjectType::DestroyObject(RuntimeObject* instance) {

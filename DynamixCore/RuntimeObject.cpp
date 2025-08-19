@@ -1,10 +1,17 @@
 #include "RuntimeObject.h"
 #include "ObjectType.h"
 #include "Value.h"
+#include <format>
 
 using namespace Dynamix;
 
 RuntimeObject::RuntimeObject(ObjectType& type) : m_Type(type) {
+}
+
+void RuntimeObject::Construct(Value* args, int count) {
+}
+
+void RuntimeObject::Destruct() {
 }
 
 Value RuntimeObject::Invoke(std::string_view name, Value* args, int count) {
@@ -22,3 +29,6 @@ int RuntimeObject::Release() {
 	return 0;
 }
 
+std::string RuntimeObject::ToString() const {
+	return std::format("Object ({})", Type().Name());
+}

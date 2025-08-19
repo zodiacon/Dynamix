@@ -57,6 +57,12 @@
     <ClInclude Include="Runtime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Interpreter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumClassBitwise.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser.cpp">
@@ -96,6 +102,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Runtime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Interpreter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

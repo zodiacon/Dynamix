@@ -5,7 +5,7 @@
 using namespace std;
 using namespace Dynamix;
 
-Parser::Parser(Tokenizer& t, bool test) : m_Tokenizer(t), m_Test(test) {
+Parser::Parser(Tokenizer& t, bool test) : m_Tokenizer(t), m_Repl(test) {
 	Init();
 }
 
@@ -117,7 +117,7 @@ std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
 unique_ptr<Statements> Parser::DoParse() {
 	auto block = make_unique<Statements>();
 	while (true) {
-		auto stmt = ParseStatement(!m_Test);
+		auto stmt = ParseStatement(!m_Repl);
 		if (stmt == nullptr)
 			break;
 		block->Add(move(stmt));
