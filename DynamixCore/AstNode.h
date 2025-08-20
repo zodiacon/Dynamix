@@ -40,6 +40,18 @@ namespace Dynamix {
 			return &m_Symbols;
 		}
 
+		SymbolTable const* Symbols() const {
+			return &m_Symbols;
+		}
+
+		void SetParent(AstNode* parent) {
+			m_Symbols.SetParent(parent->Symbols());
+		}
+
+		void SetParentSymbols(SymbolTable* symbols) {
+			m_Symbols.SetParent(symbols);
+		}
+
 	private:
 		SymbolTable m_Symbols;
 	};
@@ -60,8 +72,6 @@ namespace Dynamix {
 		AstNodeType Type() const override {
 			return AstNodeType::Expression;
 		}
-	protected:
-		Expression() = default;
 	};
 
 	class Statement : public Expression {
@@ -76,7 +86,7 @@ namespace Dynamix {
 
 	class ExpressionStatement final : public Statement {
 	public:
-		explicit ExpressionStatement(std::unique_ptr<Expression> expr);
+		ExpressionStatement(std::unique_ptr<Expression> expr);
 		Value Accept(Visitor* visitor) const override;
 		Expression const* Expr() const;
 		std::string ToString() const override;

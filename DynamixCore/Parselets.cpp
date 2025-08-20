@@ -87,7 +87,7 @@ InvokeFunctionParslet::InvokeFunctionParslet() : PostfixOperatorParslet(1200) {
 
 unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	if (left->Type() != AstNodeType::Name)
-		throw ParseError(ParseErrorType::Syntax, token);
+		parser.AddError(ParseError{ ParseErrorType::Syntax, token });
 
 	auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
 
@@ -97,7 +97,7 @@ unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<E
 		auto param = parser.ParseExpression();
 		args.push_back(move(param));
 		if (!parser.Match(TokenType::Operator_Comma) && !parser.Match(TokenType::Operator_CloseParen, false))
-			throw ParseError(ParseErrorType::CommaExpected, next);
+			parser.AddError(ParseError{ ParseErrorType::CommaExpected, next });
 		next = parser.Peek();
 	}
 	parser.Match(TokenType::Operator_CloseParen, true, true);

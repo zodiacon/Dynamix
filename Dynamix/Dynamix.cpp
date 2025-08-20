@@ -30,10 +30,16 @@ int main() {
 	}
 	else {
 		println("{}", root->ToString());
-		auto n = p.Parse("2 + 3 * 4");
-		Interpreter intr;
+		auto n = p.Parse("var x = 12; x + 3 * 4");
+		Interpreter intr(p);
 		auto result = n->Accept(&intr);
 		print("Result: {}", result.ToString());
+
+		n = p.Parse("fn sqr2(x) { if(x < 5) { return x * x; } else { return x * x * x; } } sqr2(4)");
+		if (n) {
+			auto result = n->Accept(&intr);
+			print("Result: {}", result.ToString());
+		}
 
 	}
 	return 0;

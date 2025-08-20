@@ -14,14 +14,15 @@ namespace Dynamix {
 	using Bool = bool;
 
 	enum class ValueType : uint16_t {
-		Null,
-		Integer = 1,
-		Real = 2,
-		Boolean = 4,
-		Object = 8,
-		AstNode = 0x10,
-		Struct = 0x20,
-		String = 0x40,
+		Invalid = 0,
+		Null = 1,
+		Integer = 2,
+		Real = 4,
+		Boolean = 8,
+		Object = 0x10,
+		AstNode = 0x20,
+		Struct = 0x40,
+		String = 0x80,
 		Error = 0xf000,
 	};
 
@@ -32,6 +33,8 @@ namespace Dynamix {
 		UnsupportedBinaryOperator,
 		UnsupportedUnaryOperator,
 		TypeMismatch,
+		DuplicateName,
+		UndefinedSymbol,
 	};
 
 	class Value final {
@@ -62,10 +65,6 @@ namespace Dynamix {
 			return m_Type == ValueType::Integer;
 		}
 
-		Int AsInteger() const noexcept;
-		Real AsReal() const noexcept;
-		Bool AsBoolean() const noexcept;
-
 		bool IsReal() const noexcept {
 			return m_Type == ValueType::Real;
 		}
@@ -84,6 +83,9 @@ namespace Dynamix {
 		bool IsString() const noexcept {
 			return m_Type == ValueType::String;
 		}
+		bool IsError() const noexcept {
+			return m_Type == ValueType::Error;
+		}
 
 		Int ToInteger() const noexcept;
 		Bool ToBoolean() const noexcept;
@@ -99,6 +101,23 @@ namespace Dynamix {
 		Value Mul(Value const& rhs) const noexcept;
 		Value Div(Value const& rhs) const noexcept;
 		Value Mod(Value const& rhs) const noexcept;
+
+		Value And(Value const& rhs) const noexcept;
+		Value Or(Value const& rhs) const noexcept;
+		Value BitwiseAnd(Value const& rhs) const noexcept;
+		Value BitwiseOr(Value const& rhs) const noexcept;
+		Value BitwiseXor(Value const& rhs) const noexcept;
+
+		Value Equal(Value const& rhs) const noexcept;
+		Value NotEqual(Value const& rhs) const noexcept;
+		Value GreaterThan(Value const& rhs) const noexcept;
+		Value LessThan(Value const& rhs) const noexcept;
+		Value GreaterThanOrEqual(Value const& rhs) const noexcept;
+		Value LessThanOrEqual(Value const& rhs) const noexcept;
+
+		Value Negate() const noexcept;
+		Value Not() const noexcept;
+		Value BitwiseNot() const noexcept;
 
 		void Free() noexcept;
 

@@ -144,6 +144,7 @@
     <ClInclude Include="ParseError.h" />
     <ClInclude Include="Parselets.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="Scope.h" />
     <ClInclude Include="SmallString.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="ParseError.cpp" />
     <ClCompile Include="Parselets.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Scope.cpp" />
     <ClCompile Include="SmallString.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="Token.cpp" />

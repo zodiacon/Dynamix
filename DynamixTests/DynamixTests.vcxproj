@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ComplexTests.cpp" />
+    <ClCompile Include="InterpreterTests.cpp" />
     <ClCompile Include="SimpleTests.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,8 @@ using namespace std;
 
 BinaryExpression::BinaryExpression(unique_ptr<Expression> left, Token op, unique_ptr<Expression> right)
 	: m_Left(move(left)), m_Right(move(right)), m_Operator(move(op)) {
+	m_Left->SetParent(this);
+	m_Right->SetParent(this);
 }
 
 Value BinaryExpression::Accept(Visitor* visitor) const {
@@ -59,6 +61,7 @@ string NameExpression::ToString() const {
 }
 
 UnaryExpression::UnaryExpression(Token op, unique_ptr<Expression> arg) : m_Arg(move(arg)), m_Operator(move(op)) {
+	m_Arg->SetParent(this);
 }
 
 Value UnaryExpression::Accept(Visitor* visitor) const {
@@ -79,6 +82,8 @@ Expression* UnaryExpression::Arg() const {
 
 VarValStatement::VarValStatement(string name, bool isConst, unique_ptr<Expression> init)
 	: m_Name(move(name)), m_Init(move(init)), m_IsConst(isConst) {
+	if (m_Init)
+		m_Init->SetParent(this);
 }
 
 Value VarValStatement::Accept(Visitor* visitor) const {
@@ -103,6 +108,8 @@ bool VarValStatement::IsConst() const {
 
 AssignExpression::AssignExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, Token assignType)
 	: m_Left(move(lhs)), m_Expr(move(rhs)), m_AssignType(assignType) {
+	m_Left->SetParent(this);
+	m_Expr->SetParent(this);
 }
 
 Value AssignExpression::Accept(Visitor* visitor) const {
@@ -127,6 +134,8 @@ string AssignExpression::ToString() const {
 
 InvokeFunctionExpression::InvokeFunctionExpression(string name, vector<unique_ptr<Expression>> args) :
 	m_Name(move(name)), m_Arguments(move(args)) {
+	for (auto& arg : m_Arguments)
+		arg->SetParent(this);
 }
 
 Value InvokeFunctionExpression::Accept(Visitor* visitor) const {
@@ -135,6 +144,8 @@ Value InvokeFunctionExpression::Accept(Visitor* visitor) const {
 
 WhileStatement::WhileStatement(unique_ptr<Expression> condition, unique_ptr<Statements> body) :
 	m_Condition(move(condition)), m_Body(move(body)) {
+	m_Condition->SetParent(this);
+	m_Body->SetParent(this);
 }
 
 Value WhileStatement::Accept(Visitor* visitor) const {
@@ -151,6 +162,10 @@ Statements const* WhileStatement::Body() const {
 
 IfThenElseExpression::IfThenElseExpression(unique_ptr<Expression> condition, unique_ptr<Statement> thenExpr, unique_ptr<Statement> elseExpr) :
 	m_Condition(move(condition)), m_Then(move(thenExpr)), m_Else(move(elseExpr)) {
+	m_Condition->SetParent(this);
+	m_Then->SetParent(this);
+	if (m_Else)
+		m_Else->SetParent(this);
 }
 
 Value IfThenElseExpression::Accept(Visitor* visitor) const {
@@ -203,7 +218,7 @@ void FunctionDeclaration::Body(std::unique_ptr<Expression> body) {
 	m_Body = move(body);
 }
 
-std::string Dynamix::FunctionDeclaration::ToString() const {
+std::string FunctionDeclaration::ToString() const {
 	std::string params;
 	for (auto& param : Parameters())
 		params += format("{}, ", param.Name);
@@ -212,6 +227,8 @@ std::string Dynamix::FunctionDeclaration::ToString() const {
 }
 
 ReturnStatement::ReturnStatement(unique_ptr<Expression> expr) : m_Expr(move(expr)) {
+	if (m_Expr)
+		m_Expr->SetParent(this);
 }
 
 Value ReturnStatement::Accept(Visitor* visitor) const {
@@ -310,6 +327,7 @@ Value Statements::Accept(Visitor* visitor) const {
 }
 
 void Statements::Add(unique_ptr<Statement> stmt) {
+	stmt->SetParent(this);
 	m_Stmts.push_back(move(stmt));
 }
 
@@ -335,6 +353,7 @@ string Statements::ToString() const {
 }
 
 ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : m_Expr(move(expr)) {
+	m_Expr->SetParent(this);
 }
 
 Value ExpressionStatement::Accept(Visitor* visitor) const {

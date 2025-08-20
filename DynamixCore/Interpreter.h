@@ -1,11 +1,20 @@
 #pragma once
 
+#include <stack>
+#include <memory>
+#include "Scope.h"
 #include "Visitor.h"
 #include "Value.h"
 
 namespace Dynamix {
+	class Scope;
+	class Parser;
+	class SymbolTable;
+
 	class Interpreter : public Visitor {
 	public:
+		explicit Interpreter(Parser& p);
+
 		// Inherited via Visitor
 		Value VisitLiteral(LiteralExpression const* expr) override;
 		Value VisitBinary(BinaryExpression const* expr) override;
@@ -25,5 +34,17 @@ namespace Dynamix {
 		Value VisitAnonymousFunction(AnonymousFunctionExpression const* func) override;
 		Value VisitEnumDeclaration(EnumDeclaration const* decl) override;
 		Value VisitExpressionStatement(ExpressionStatement const* expr) override;
+
+		void PushScope();
+		void PopScope();
+
+		Scope* CurrentScope();
+
+	private:
+		Parser& m_Parser;
+		std::stack<std::unique_ptr<Scope>> m_Scopes;
+		Value m_ReturnValue;
+		bool m_Return{ false };
 	};
+
 }

@@ -35,7 +35,7 @@ namespace Dynamix {
 
 		bool AddSymbol(Symbol sym);
 		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
-		SymbolTable const& GetSymbolTable() const;
+		SymbolTable const* GetSymbolTable() const;
 
 		int GetPrecedence() const;
 

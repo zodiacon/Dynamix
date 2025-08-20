@@ -116,6 +116,7 @@ std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
 
 unique_ptr<Statements> Parser::DoParse() {
 	auto block = make_unique<Statements>();
+	block->SetParentSymbols(m_Symbols.top());
 	while (true) {
 		auto stmt = ParseStatement(!m_Repl);
 		if (stmt == nullptr)
@@ -162,8 +163,9 @@ unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 			auto token = Next();
 			if (token.Type == TokenType::Invalid)
 				break;
-			if (auto it = m_InfixParslets.find(token.Type); it != m_InfixParslets.end())
+			if (auto it = m_InfixParslets.find(token.Type); it != m_InfixParslets.end()) {
 				left = it->second->Parse(*this, move(left), token);
+			}
 		}
 		return left;
 	}
@@ -245,7 +247,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	while (Peek().Type != TokenType::Operator_CloseParen) {
 		auto param = Next();
 		if (param.Type != TokenType::Identifier)
-			throw ParseError(ParseErrorType::IdentifierExpected, ident);
+			AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
 		parameters.push_back(Parameter{ param.Lexeme });
 		Match(TokenType::Operator_Comma);
 	}
@@ -265,7 +267,8 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 		body = ParseExpression();
 	else
 		body = ParseBlock(parameters);
-
+	
+	body->SetParent(decl.get());
 	auto params = parameters.size();
 	decl->Parameters(move(parameters));
 	decl->Body(move(body));
@@ -275,6 +278,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 		sym.Name = format("{}/{}", decl->Name(), params);
 		sym.Type = SymbolType::Function;
 		sym.Flags = SymbolFlags::None;
+		sym.Ast = decl.get();
 		AddSymbol(sym);
 	}
 	return decl;
@@ -314,6 +318,7 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
 		auto stmt = ParseStatement();
 		if (!stmt)
 			break;
+		stmt->SetParent(block.get());
 		block->Add(move(stmt));
 	}
 	Match(TokenType::Operator_CloseBrace, true, true);
@@ -369,8 +374,9 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 				//	return std::make_unique<ExpressionStatement>(it->second->Parse(*this, peek));
 
 				auto expr = ParseExpression();
-				if (expr)
+				if (expr) {
 					return std::make_unique<ExpressionStatement>(move(expr));
+				}
 			}
 	}
 	AddError(ParseError(ParseErrorType::InvalidStatement, peek));

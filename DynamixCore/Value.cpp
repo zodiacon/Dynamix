@@ -6,7 +6,7 @@
 
 using namespace Dynamix;
 
-Int Dynamix::Value::ToInteger() const noexcept {
+Int Value::ToInteger() const noexcept {
 	switch (m_Type) {
 		case ValueType::Integer: return iValue;
 		case ValueType::Real: return static_cast<Int>(dValue);
@@ -16,7 +16,7 @@ Int Dynamix::Value::ToInteger() const noexcept {
 	return 0;
 }
 
-Bool Dynamix::Value::ToBoolean() const noexcept {
+Bool Value::ToBoolean() const noexcept {
 	switch (m_Type) {
 		case ValueType::Integer: return iValue ? true : false;
 		case ValueType::Real: return dValue ? true : false;
@@ -36,15 +36,29 @@ Real Value::ToReal() const noexcept {
 	return 0.0;
 }
 
-Value Dynamix::Value::BinaryOperator(TokenType op, Value const& rhs) const noexcept {
+Value Value::BinaryOperator(TokenType op, Value const& rhs) const noexcept {
 	switch (op) {
 		case TokenType::Operator_Plus: return Add(rhs);
 		case TokenType::Operator_Minus: return Sub(rhs);
 		case TokenType::Operator_Mul: return Mul(rhs);
 		case TokenType::Operator_Div: return Div(rhs);
 		case TokenType::Operator_Mod: return Mod(rhs);
+
+		case TokenType::Operator_Equal: return Equal(rhs);
+		case TokenType::Operator_GreaterThan: return GreaterThan(rhs);
+		case TokenType::Operator_GreaterThanOrEqual: return GreaterThanOrEqual(rhs);
+		case TokenType::Operator_NotEqual: return NotEqual(rhs);
+		case TokenType::Operator_LessThan: return LessThan(rhs);
+		case TokenType::Operator_LessThanOrEqual: return LessThanOrEqual(rhs);
 	}
 	return Value::Error(ValueErrorType::UnsupportedBinaryOperator);
+}
+
+Value Dynamix::Value::UnaryOperator(TokenType op) const noexcept {
+	switch (op) {
+		case TokenType::Operator_Minus: return Negate();
+	}
+	return Value::Error(ValueErrorType::UnsupportedUnaryOperator);
 }
 
 std::string Value::ToString() const noexcept {
@@ -77,7 +91,7 @@ Value Value::Add(Value const& rhs) const noexcept {
 		case ValueType::Integer | ValueType::Boolean:
 			return ToInteger() + rhs.ToInteger();
 	}
-	return Value::Error();
+	return Value::Error(ValueErrorType::TypeMismatch);
 }
 
 Value Value::Sub(Value const& rhs) const noexcept {
@@ -168,6 +182,10 @@ Value::Value(Value const& other) noexcept : oValue(other.oValue), m_Type(other.m
 	else if (m_Type == ValueType::String) {
 		m_StrLen = other.m_StrLen;
 		strValue = (char*)malloc(m_StrLen);
+		if (strValue == nullptr) {
+			*this = Value::Error(ValueErrorType::OutOfMemory);
+			return;
+		}
 		memcpy(strValue, other.strValue, m_StrLen);
 	}
 }
@@ -214,4 +232,88 @@ Value Value::Error(ValueErrorType type) {
 
 Value::~Value() {
 	Free();
+}
+
+Value Value::Equal(Value const& rhs) const noexcept {
+	switch (Type() | rhs.Type()) {
+		case ValueType::Integer: return iValue == rhs.iValue;
+		case ValueType::Real: return dValue == rhs.dValue;
+		case ValueType::Boolean: return bValue == rhs.bValue;
+		case ValueType::Null: return true;
+		case ValueType::Integer | ValueType::Real: return ToReal() == rhs.ToReal();
+		case ValueType::Integer | ValueType::Boolean: return ToBoolean() == rhs.ToBoolean();
+		case ValueType::String: return ::strcmp(strValue, rhs.strValue) == 0;
+	}
+	return Value(false);
+}
+
+Value Value::NotEqual(Value const& rhs) const noexcept {
+	switch (Type() | rhs.Type()) {
+		case ValueType::Integer: return iValue != rhs.iValue;
+		case ValueType::Real: return dValue != rhs.dValue;
+		case ValueType::Boolean: return bValue != rhs.bValue;
+		case ValueType::Null: return false;
+		case ValueType::Integer | ValueType::Real: return ToReal() != rhs.ToReal();
+		case ValueType::Integer | ValueType::Boolean: return ToBoolean() != rhs.ToBoolean();
+		case ValueType::String: return ::strcmp(strValue, rhs.strValue) != 0;
+	}
+	return Value(true);
+}
+
+Value Value::LessThan(Value const& rhs) const noexcept {
+	switch (Type() | rhs.Type()) {
+		case ValueType::Integer: return iValue < rhs.iValue;
+		case ValueType::Real: return dValue < rhs.dValue;
+		case ValueType::Boolean: return bValue < rhs.bValue;
+		case ValueType::Integer | ValueType::Real: return ToReal() < rhs.ToReal();
+		case ValueType::Integer | ValueType::Boolean: return ToBoolean() < rhs.ToBoolean();
+		case ValueType::String: return ::strcmp(strValue, rhs.strValue) < 0;
+	}
+	return Value(false);
+}
+
+Value Value::LessThanOrEqual(Value const& rhs) const noexcept {
+	switch (Type() | rhs.Type()) {
+		case ValueType::Integer: return iValue <= rhs.iValue;
+		case ValueType::Real: return dValue <= rhs.dValue;
+		case ValueType::Boolean: return bValue <= rhs.bValue;
+		case ValueType::Integer | ValueType::Real: return ToReal() <= rhs.ToReal();
+		case ValueType::Integer | ValueType::Boolean: return ToBoolean() <= rhs.ToBoolean();
+		case ValueType::String: return ::strcmp(strValue, rhs.strValue) <= 0;
+		case ValueType::Null: return true;
+	}
+	return Value(false);
+}
+
+Value Dynamix::Value::Negate() const noexcept {
+	switch (m_Type) {
+		case ValueType::Integer: return -iValue;
+		case ValueType::Real: return -dValue;
+	}
+	return Value::Error(ValueErrorType::TypeMismatch);
+}
+
+Value Value::GreaterThan(Value const& rhs) const noexcept {
+	switch (Type() | rhs.Type()) {
+		case ValueType::Integer: return iValue > rhs.iValue;
+		case ValueType::Real: return dValue > rhs.dValue;
+		case ValueType::Boolean: return bValue > rhs.bValue;
+		case ValueType::Integer | ValueType::Real: return ToReal() > rhs.ToReal();
+		case ValueType::Integer | ValueType::Boolean: return ToBoolean() > rhs.ToBoolean();
+		case ValueType::String: return ::strcmp(strValue, rhs.strValue) > 0;
+	}
+	return Value(false);
+}
+
+Value Value::GreaterThanOrEqual(Value const& rhs) const noexcept {
+	switch (Type() | rhs.Type()) {
+		case ValueType::Integer: return iValue >= rhs.iValue;
+		case ValueType::Real: return dValue >= rhs.dValue;
+		case ValueType::Boolean: return bValue >= rhs.bValue;
+		case ValueType::Integer | ValueType::Real: return ToReal() >= rhs.ToReal();
+		case ValueType::Integer | ValueType::Boolean: return ToBoolean() >= rhs.ToBoolean();
+		case ValueType::String: return ::strcmp(strValue, rhs.strValue) >= 0;
+		case ValueType::Null: return true;
+	}
+	return Value(false);
 }
