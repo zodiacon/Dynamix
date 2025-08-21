@@ -75,6 +75,8 @@ std::string Value::ToString() const noexcept {
 			return oValue->ToString();
 		case ValueType::Error:
 			return "<Error>";
+		case ValueType::String:
+			return strValue;
 	}
 	return "";
 }
@@ -172,7 +174,7 @@ Value::Value(const char* s) noexcept : m_Type(ValueType::String) {
 		error = ValueErrorType::OutOfMemory;
 	}
 	else {
-		memcpy(strValue, s, m_StrLen);
+		memcpy(strValue, s, m_StrLen + 1);
 	}
 }
 

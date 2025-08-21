@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include "Value.h"
 
 namespace Dynamix {
 	class AstNode;
@@ -9,6 +10,7 @@ namespace Dynamix {
 	enum class SymbolType {
 		Variable,
 		Function,
+		NativeFunction,
 		Argument,
 		Enum,
 		Class,
@@ -20,12 +22,18 @@ namespace Dynamix {
 		Const = 1,
 	};
 
+	class Interpreter;
+
+	using NativeFunction = Value(*)(Interpreter&, std::vector<Value>&);
+
 	struct Symbol {
 		std::string Name;
 		SymbolType Type;
-		SymbolFlags Flags;
-		AstNode* Ast;
-
+		SymbolFlags Flags{ SymbolFlags::None };
+		union {
+			AstNode* Ast;
+			NativeFunction Code;
+		};
 		int Arity() const;
 		std::string_view SimpleName() const;
 	};

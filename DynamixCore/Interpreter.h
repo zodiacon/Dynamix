@@ -5,15 +5,17 @@
 #include "Scope.h"
 #include "Visitor.h"
 #include "Value.h"
+#include "Runtime.h"
 
 namespace Dynamix {
 	class Scope;
 	class Parser;
 	class SymbolTable;
+	class Runtime;
 
 	class Interpreter : public Visitor {
 	public:
-		explicit Interpreter(Parser& p);
+		explicit Interpreter(Parser& p, Runtime* rt = nullptr);
 
 		// Inherited via Visitor
 		Value VisitLiteral(LiteralExpression const* expr) override;
@@ -39,11 +41,21 @@ namespace Dynamix {
 		void PopScope();
 
 		Scope* CurrentScope();
+		void AddNativeFunctions();
 
 	private:
+		enum class LoopAction {
+			None,
+			Break,
+			Continue,
+			BreakAll,
+		};
 		Parser& m_Parser;
+		Runtime* m_Runtime;
 		std::stack<std::unique_ptr<Scope>> m_Scopes;
 		Value m_ReturnValue;
+		LoopAction m_LoopAction{ LoopAction::None };
+		int m_InLoop{ 0 };
 		bool m_Return{ false };
 	};
 

@@ -169,6 +169,11 @@
     <ClCompile Include="Value.cpp" />
     <ClCompile Include="Visitor.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DynamixStd\DynamixStd.vcxproj">
+      <Project>{d7b98df8-0f48-4af9-b2a6-59e7ad1de052}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

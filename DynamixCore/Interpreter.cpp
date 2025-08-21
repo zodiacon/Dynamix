@@ -4,11 +4,13 @@
 #include "Interpreter.h"
 #include "AstNode.h"
 #include "Parser.h"
+#include "Runtime.h"
+#include "SymbolTable.h"
 
 using namespace Dynamix;
 using namespace std;
 
-Dynamix::Interpreter::Interpreter(Parser& p) : m_Parser(p) {
+Dynamix::Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runtime(rt) {
     m_Scopes.push(make_unique<Scope>());    // global scope
 }
 
@@ -56,27 +58,53 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
     assert(expr->Symbols());
     assert(expr->Symbols()->Parent());
     auto f = expr->Symbols()->Parent()->FindSymbol(format("{}/{}", expr->Name(), expr->Arguments().size()));
-    if (!f)
-        return Value::Error(ValueErrorType::UndefinedSymbol);
-
-    auto decl = reinterpret_cast<FunctionDeclaration*>(f->Ast);
-    
-    PushScope();
-    for(size_t i = 0; i < decl->Parameters().size(); i++) {
-        Variable v{ expr->Arguments()[i]->Accept(this) };
-        CurrentScope()->AddVariable(decl->Parameters()[i].Name, move(v));
+    if (!f) {
+        // search functions with any number of params
+        f = expr->Symbols()->Parent()->FindSymbol(format("{}/*", expr->Name()));
     }
-    auto result = decl->Body()->Accept(this);
-    PopScope();
-    if (m_Return)
-        m_Return = false;
-    return result;
+    if(!f)
+        return Value::Error(ValueErrorType::UndefinedSymbol);
+    if (f->Type == SymbolType::NativeFunction) {
+        std::vector<Value> args;
+        args.reserve(expr->Arguments().size());
+        for (auto& v : expr->Arguments())
+            args.emplace_back(v->Accept(this));
+        return (*f->Code)(*this, args);
+    }
+    else {
+        auto decl = reinterpret_cast<FunctionDeclaration*>(f->Ast);
+
+        PushScope();
+        for (size_t i = 0; i < expr->Arguments().size(); i++) {
+            Variable v{ expr->Arguments()[i]->Accept(this) };
+            CurrentScope()->AddVariable(decl->Parameters()[i].Name, move(v));
+        }
+        auto result = decl->Body()->Accept(this);
+        PopScope();
+        if (m_Return)
+            m_Return = false;
+        return result;
+    }
 }
 
 Value Interpreter::VisitWhile(WhileStatement const* stmt) {
+    m_InLoop++;
+    PushScope();
     while (stmt->Condition()->Accept(this).ToBoolean()) {
         stmt->Body()->Accept(this);
+        if (m_Return) {
+            PopScope();
+            m_InLoop--;
+            return m_ReturnValue;
+        }
+
+        if (m_LoopAction == LoopAction::Break) {
+            m_LoopAction = LoopAction::None;
+            break;
+        }
     }
+    PopScope();
+    m_InLoop--;
     return Value();
 }
 
@@ -103,6 +131,7 @@ Value Interpreter::VisitReturn(ReturnStatement const* decl) {
 }
 
 Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
+    m_LoopAction = stmt->IsContinue() ? LoopAction::Continue : LoopAction::Break;
     return Value();
 }
 

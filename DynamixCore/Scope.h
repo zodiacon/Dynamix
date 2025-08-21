@@ -19,7 +19,6 @@ namespace Dynamix {
 	public:
 		explicit Scope(Scope* parent = nullptr);
 		bool AddVariable(std::string name, Variable var);
-		//Variable const* FindVariable(std::string const& name, bool localOnly = false) const;
 		Variable* FindVariable(std::string const& name, bool localOnly = false);
 
 	private:

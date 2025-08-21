@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include <string>
+#include <functional>
 
 #include "Value.h"
 #include "Visitor.h"
@@ -245,10 +245,6 @@ namespace Dynamix {
 
 	class FunctionDeclaration : public Statement {
 	public:
-		AstNodeType Type() const {
-			return AstNodeType::FunctionDeclaration;
-		}
-
 		explicit FunctionDeclaration(std::string name);
 		Value Accept(Visitor* visitor) const override;
 
@@ -259,11 +255,24 @@ namespace Dynamix {
 		void Parameters(std::vector<Parameter> parameters);
 		void Body(std::unique_ptr<Expression> body);
 
+		AstNodeType Type() const {
+			return AstNodeType::FunctionDeclaration;
+		}
+
 	private:
 		std::string m_Name;
 		std::vector<Parameter> m_Parameters;
 		std::unique_ptr<Expression> m_Body;
 	};
+
+	//class NativeFunction : public Statement {
+	//public:
+	//	NativeFunction(std::string name, std::vector<Parameter> parameters, NativeFunctionCode code);
+
+	//private:
+	//	std::string m_Name;
+	//	int m_Parameters;
+	//};
 
 	class EnumDeclaration : public Statement {
 	public:
