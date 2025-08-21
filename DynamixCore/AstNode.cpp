@@ -18,11 +18,11 @@ string BinaryExpression::ToString() const {
 	return format("({} {} {})", m_Left->ToString(), m_Operator.Lexeme, m_Right->ToString());
 }
 
-Expression* BinaryExpression::Left() const {
+Expression* BinaryExpression::Left() const noexcept {
 	return m_Left.get();
 }
 
-Expression* BinaryExpression::Right() const {
+Expression* BinaryExpression::Right() const noexcept {
 	return m_Right.get();
 }
 
@@ -37,7 +37,7 @@ string LiteralExpression::ToString() const {
 	return m_Token.Lexeme;
 }
 
-Token const& LiteralExpression::Literal() const {
+Token const& LiteralExpression::Literal() const noexcept {
 	return m_Token;
 }
 
@@ -48,11 +48,11 @@ Value NameExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitName(this);
 }
 
-Token const& BinaryExpression::Operator() const {
+Token const& BinaryExpression::Operator() const noexcept {
 	return m_Operator;
 }
 
-string const& NameExpression::Name() const {
+string const& NameExpression::Name() const noexcept {
 	return m_Name;
 }
 
@@ -72,11 +72,11 @@ string UnaryExpression::ToString() const {
 	return format("({}{})", m_Operator.Lexeme, m_Arg->ToString());
 }
 
-Token const& UnaryExpression::Operator() const {
+Token const& UnaryExpression::Operator() const noexcept {
 	return m_Operator;
 }
 
-Expression* UnaryExpression::Arg() const {
+Expression* UnaryExpression::Arg() const noexcept {
 	return m_Arg.get();
 }
 
@@ -94,15 +94,15 @@ string VarValStatement::ToString() const {
 	return format("{} {} = {};", IsConst() ? "val" : "var", m_Name, Init() ? Init()->ToString() : "");
 }
 
-string const& VarValStatement::Name() const {
+string const& VarValStatement::Name() const noexcept {
 	return m_Name;
 }
 
-Expression const* VarValStatement::Init() const {
+Expression const* VarValStatement::Init() const noexcept {
 	return m_Init.get();
 }
 
-bool VarValStatement::IsConst() const {
+bool VarValStatement::IsConst() const noexcept {
 	return m_IsConst;
 }
 
@@ -116,15 +116,15 @@ Value AssignExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAssign(this);
 }
 
-Expression const* AssignExpression::Left() const {
+Expression const* AssignExpression::Left() const noexcept {
 	return m_Left.get();
 }
 
-Expression const* AssignExpression::Value() const {
+Expression const* AssignExpression::Value() const noexcept {
 	return m_Expr.get();
 }
 
-Token const& AssignExpression::AssignType() const {
+Token const& AssignExpression::AssignType() const noexcept {
 	return m_AssignType;
 }
 
@@ -152,11 +152,11 @@ Value WhileStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitWhile(this);
 }
 
-Expression const* WhileStatement::Condition() const {
+Expression const* WhileStatement::Condition() const noexcept {
 	return m_Condition.get();
 }
 
-Statements const* WhileStatement::Body() const {
+Statements const* WhileStatement::Body() const noexcept {
 	return m_Body.get();
 }
 
@@ -179,15 +179,15 @@ string IfThenElseExpression::ToString() const {
 	return ifThen;
 }
 
-Expression const* IfThenElseExpression::Condition() const {
+Expression const* IfThenElseExpression::Condition() const noexcept {
 	return m_Condition.get();
 }
 
-Statement const* IfThenElseExpression::Then() const {
+Statement const* IfThenElseExpression::Then() const noexcept {
 	return m_Then.get();
 }
 
-Statement const* IfThenElseExpression::Else() const {
+Statement const* IfThenElseExpression::Else() const noexcept {
 	return m_Else.get();
 }
 
@@ -198,23 +198,23 @@ Value FunctionDeclaration::Accept(Visitor* visitor) const {
 	return visitor->VisitFunctionDeclaration(this);
 }
 
-string const& FunctionDeclaration::Name() const {
+string const& FunctionDeclaration::Name() const noexcept {
 	return m_Name;
 }
 
-vector<Parameter> const& FunctionDeclaration::Parameters() const {
+vector<Parameter> const& FunctionDeclaration::Parameters() const noexcept {
 	return m_Parameters;
 }
 
-void FunctionDeclaration::Parameters(vector<Parameter> params) {
+void FunctionDeclaration::Parameters(vector<Parameter> params) noexcept {
 	m_Parameters = move(params);
 }
 
-Expression const* FunctionDeclaration::Body() const {
+Expression const* FunctionDeclaration::Body() const noexcept {
 	return m_Body.get();
 }
 
-void FunctionDeclaration::Body(std::unique_ptr<Expression> body) {
+void FunctionDeclaration::Body(std::unique_ptr<Expression> body) noexcept {
 	m_Body = move(body);
 }
 
@@ -235,7 +235,7 @@ Value ReturnStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitReturn(this);
 }
 
-Expression const* ReturnStatement::ReturnValue() const {
+Expression const* ReturnStatement::ReturnValue() const noexcept {
 	return m_Expr.get();
 }
 
@@ -250,7 +250,7 @@ Value BreakOrContinueStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitBreakContinue(this);
 }
 
-bool BreakOrContinueStatement::IsContinue() const {
+bool BreakOrContinueStatement::IsContinue() const noexcept {
 	return m_IsContinue;
 }
 
@@ -262,15 +262,15 @@ Value ForStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitFor(this);
 }
 
-Statement const* ForStatement::Init() const {
+Statement const* ForStatement::Init() const noexcept {
 	return m_Init.get();
 }
 
-Expression const* ForStatement::While() const {
+Expression const* ForStatement::While() const noexcept {
 	return m_While.get();
 }
 
-Expression const* ForStatement::Inc() const {
+Expression const* ForStatement::Inc() const noexcept {
 	return m_Inc.get();
 }
 
@@ -282,18 +282,18 @@ Value AnonymousFunctionExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAnonymousFunction(this);
 }
 
-vector<Parameter> const& AnonymousFunctionExpression::Args() const {
+vector<Parameter> const& AnonymousFunctionExpression::Args() const noexcept {
 	return m_Args;
 }
 
-Expression const* AnonymousFunctionExpression::Body() const {
+Expression const* AnonymousFunctionExpression::Body() const noexcept {
 	return m_Body.get();
 }
 
 EnumDeclaration::EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values) : m_Name(move(name)), m_Values(move(values)) {
 }
 
-std::unordered_map<std::string, long long> const& EnumDeclaration::Values() const {
+std::unordered_map<std::string, long long> const& EnumDeclaration::Values() const noexcept {
 	return m_Values;
 }
 
@@ -301,11 +301,11 @@ Value EnumDeclaration::Accept(Visitor* visitor) const {
 	return visitor->VisitEnumDeclaration(this);
 }
 
-std::string const& EnumDeclaration::Name() const {
+std::string const& EnumDeclaration::Name() const noexcept {
 	return m_Name;
 }
 
-string const& InvokeFunctionExpression::Name() const {
+string const& InvokeFunctionExpression::Name() const noexcept {
 	return m_Name;
 }
 

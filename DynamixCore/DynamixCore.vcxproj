@@ -138,6 +138,7 @@
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="Interpreter.h" />
+    <ClInclude Include="print.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="RuntimeObject.h" />
     <ClInclude Include="ObjectType.h" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="AstNode.cpp" />
     <ClCompile Include="Interpreter.cpp" />
+    <ClCompile Include="Print.cpp" />
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="RuntimeObject.cpp" />
     <ClCompile Include="ObjectType.cpp" />
@@ -163,16 +165,12 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="SmallString.cpp" />
+    <ClCompile Include="StdLib.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="Tokenizer.cpp" />
     <ClCompile Include="Value.cpp" />
     <ClCompile Include="Visitor.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DynamixStd\DynamixStd.vcxproj">
-      <Project>{d7b98df8-0f48-4af9-b2a6-59e7ad1de052}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,6 @@
-#include "Value.h"
 #include <format>
 #include <cassert>
+
 #include "Value.h"
 #include "RuntimeObject.h"
 
@@ -319,3 +319,8 @@ Value Value::GreaterThanOrEqual(Value const& rhs) const noexcept {
 	}
 	return Value(false);
 }
+
+//std::ostream& operator<<(std::ostream& os, Value const& v) {
+//	os << v.ToString();
+//	return os;
+//}

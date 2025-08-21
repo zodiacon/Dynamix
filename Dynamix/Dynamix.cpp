@@ -40,7 +40,7 @@ int main() {
 		n = p.Parse("fn sqr2(x) { if(x < 5) { return x * x; } else { return x * x * x; } } sqr2(4)");
 		if (n) {
 			auto result = n->Accept(&intr);
-			println ("Result: {}", result.ToString());
+			println("Result: {}", result.ToString());
 		}
 
 		auto code2 = R"(
@@ -58,8 +58,10 @@ int main() {
 			println("Result: {}", result.ToString());
 		}
 
-		n = p.Parse(R"(
-var a = 3; println("{}={}", 12, a + 1);)");
+		auto code3 = R"(
+var a = 5; println("Zebra!! {}+{}={}", a, 3, a + 3);)";
+
+		n = p.Parse(code3);
 		if (n) {
 			auto result = n->Accept(&intr);
 			println("Result: {}", result.ToString());

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <format>
+#include <sstream>
 #include "Token.h"
 #include "EnumClassBitwise.h"
 
@@ -39,12 +41,12 @@ namespace Dynamix {
 
 	class Value final {
 	public:
-		Value() noexcept : m_Type(ValueType::Null) {}
-		Value(Int v) noexcept : iValue(v), m_Type(ValueType::Integer) {}
-		Value(Real d) noexcept : dValue(d), m_Type(ValueType::Real) {}
-		Value(Bool b) noexcept : bValue(b), m_Type(ValueType::Boolean) {}
+		constexpr Value() noexcept : m_Type(ValueType::Null) {}
+		constexpr Value(Int v) noexcept : iValue(v), m_Type(ValueType::Integer) {}
+		constexpr Value(Real d) noexcept : dValue(d), m_Type(ValueType::Real) {}
+		constexpr Value(Bool b) noexcept : bValue(b), m_Type(ValueType::Boolean) {}
+		constexpr Value(ValueType t) noexcept : m_Type(t) {}
 		Value(RuntimeObject* o) noexcept;
-		Value(ValueType t) noexcept : m_Type(t) {}
 		Value(const char* s) noexcept;
 
 		Value(Value const& other) noexcept;
@@ -137,4 +139,24 @@ namespace Dynamix {
 	};
 
 	static_assert(sizeof(Value) <= 16);
+
 }
+
+std::ostream& operator<<(std::ostream& os, const Dynamix::Value& v);
+
+//template<>
+//struct std::formatter<Dynamix::Value> {
+//	template<typename Context>
+//	constexpr auto parse(Context& ctx) {
+//		return ctx.end();
+//	}
+//
+//	template<typename Context>
+//	constexpr auto format(Dynamix::Value const& v, Context& ctx) const {
+//		std::ostringstream out;
+//		out << v;
+//		return ranges::copy(move(out).str(), ctx.out()).out;
+//	}
+//};
+//
+

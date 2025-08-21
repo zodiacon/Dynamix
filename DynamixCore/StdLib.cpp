@@ -1,7 +1,7 @@
-#include <SymbolTable.h>
-#include <Parser.h>
 #include <format>
 #include "print.h"
+#include "Parser.h"
+#include "SymbolTable.h"
 
 using namespace Dynamix;
 

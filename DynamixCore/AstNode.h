@@ -33,10 +33,10 @@ namespace Dynamix {
 			return "";
 		}
 		virtual Value Accept(Visitor* visitor) const = 0;
-		virtual AstNodeType Type() const {
+		virtual AstNodeType Type() const noexcept {
 			return AstNodeType::None;
 		}
-		SymbolTable* Symbols() {
+		SymbolTable* Symbols() noexcept {
 			return &m_Symbols;
 		}
 
@@ -44,11 +44,11 @@ namespace Dynamix {
 			return &m_Symbols;
 		}
 
-		void SetParent(AstNode* parent) {
+		void SetParent(AstNode* parent) noexcept {
 			m_Symbols.SetParent(parent->Symbols());
 		}
 
-		void SetParentSymbols(SymbolTable* symbols) {
+		void SetParentSymbols(SymbolTable* symbols) noexcept {
 			m_Symbols.SetParent(symbols);
 		}
 
@@ -69,14 +69,14 @@ namespace Dynamix {
 
 	class Expression : public AstNode {
 	public:
-		AstNodeType Type() const override {
+		AstNodeType Type() const noexcept override {
 			return AstNodeType::Expression;
 		}
 	};
 
 	class Statement : public Expression {
 	public:
-		AstNodeType Type() const override {
+		AstNodeType Type() const noexcept override {
 			return AstNodeType::Statement;
 		}
 
@@ -97,7 +97,7 @@ namespace Dynamix {
 
 	class Statements final : public Statement {
 	public:
-		AstNodeType Type() const {
+		AstNodeType Type() const noexcept {
 			return AstNodeType::Statements;
 		}
 
@@ -118,9 +118,9 @@ namespace Dynamix {
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
 
-		std::string const& Name() const;
-		Expression const* Init() const;
-		bool IsConst() const;
+		std::string const& Name() const noexcept;
+		Expression const* Init() const noexcept;
+		bool IsConst() const noexcept;
 
 	private:
 		std::string m_Name;
@@ -132,9 +132,9 @@ namespace Dynamix {
 	public:
 		AssignExpression(std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs, Token assignType);
 		Value Accept(Visitor* visitor) const override;
-		Expression const* Left() const;
-		Expression const* Value() const;
-		Token const& AssignType() const;
+		Expression const* Left() const noexcept;
+		Expression const* Value() const noexcept;
+		Token const& AssignType() const noexcept;
 		std::string ToString() const override;
 
 	private:
@@ -148,8 +148,8 @@ namespace Dynamix {
 		PostfixExpression(std::unique_ptr<Expression> expr, Token token);
 		Value Accept(Visitor* visitor) const override;
 
-		Token const& Operator() const;
-		Expression const* Argument() const;
+		Token const& Operator() const noexcept;
+		Expression const* Argument() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Expr;
@@ -163,9 +163,9 @@ namespace Dynamix {
 
 		std::string ToString() const override;
 
-		Expression* Left() const;
-		Expression* Right() const;
-		Token const& Operator() const;
+		Expression* Left() const noexcept;
+		Expression* Right() const noexcept;
+		Token const& Operator() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Left, m_Right;
@@ -176,9 +176,9 @@ namespace Dynamix {
 	public:
 		explicit NameExpression(std::string name);
 		Value Accept(Visitor* visitor) const override;
-		std::string const& Name() const;
+		std::string const& Name() const noexcept;
 		std::string ToString() const override;
-		AstNodeType Type() const override {
+		AstNodeType Type() const noexcept override {
 			return AstNodeType::Name;
 		}
 
@@ -191,8 +191,8 @@ namespace Dynamix {
 		UnaryExpression(Token op, std::unique_ptr<Expression> arg);
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
-		Token const& Operator() const;
-		Expression* Arg() const;
+		Token const& Operator() const noexcept;
+		Expression* Arg() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Arg;
@@ -205,8 +205,8 @@ namespace Dynamix {
 		Value Accept(Visitor* visitor) const override;
 
 		std::string ToString() const override;
-		Token const& Literal() const;
-		AstNodeType Type() const override {
+		Token const& Literal() const noexcept;
+		AstNodeType Type() const noexcept override {
 			return AstNodeType::Literal;
 		}
 
@@ -218,7 +218,7 @@ namespace Dynamix {
 	public:
 		InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args);
 		Value Accept(Visitor* visitor) const override;
-		std::string const& Name() const;
+		std::string const& Name() const noexcept;
 		std::vector<std::unique_ptr<Expression>> const& Arguments() const;
 		std::string ToString() const override;
 
@@ -232,10 +232,10 @@ namespace Dynamix {
 		ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, std::unique_ptr<Expression> incExpr, std::unique_ptr<Statements> body);
 		Value Accept(Visitor* visitor) const override;
 
-		Statement const* Init() const;
-		Expression const* While() const;
-		Expression const* Inc() const;
-		BlockExpression const* Body() const;
+		Statement const* Init() const noexcept;
+		Expression const* While() const noexcept;
+		Expression const* Inc() const noexcept;
+		BlockExpression const* Body() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_While, m_Inc;
@@ -248,14 +248,14 @@ namespace Dynamix {
 		explicit FunctionDeclaration(std::string name);
 		Value Accept(Visitor* visitor) const override;
 
-		std::string const& Name() const;
-		std::vector<Parameter> const& Parameters() const;
-		Expression const* Body() const;
+		std::string const& Name() const noexcept;
+		std::vector<Parameter> const& Parameters() const noexcept;
+		Expression const* Body() const noexcept;
 		std::string ToString() const override;
-		void Parameters(std::vector<Parameter> parameters);
-		void Body(std::unique_ptr<Expression> body);
+		void Parameters(std::vector<Parameter> parameters) noexcept;
+		void Body(std::unique_ptr<Expression> body) noexcept;
 
-		AstNodeType Type() const {
+		AstNodeType Type() const noexcept {
 			return AstNodeType::FunctionDeclaration;
 		}
 
@@ -265,22 +265,13 @@ namespace Dynamix {
 		std::unique_ptr<Expression> m_Body;
 	};
 
-	//class NativeFunction : public Statement {
-	//public:
-	//	NativeFunction(std::string name, std::vector<Parameter> parameters, NativeFunctionCode code);
-
-	//private:
-	//	std::string m_Name;
-	//	int m_Parameters;
-	//};
-
 	class EnumDeclaration : public Statement {
 	public:
 		EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values);
 		Value Accept(Visitor* visitor) const override;
 
-		std::string const& Name() const;
-		std::unordered_map<std::string, long long> const& Values() const;
+		std::string const& Name() const noexcept;
+		std::unordered_map<std::string, long long> const& Values() const noexcept;
 
 	private:
 		std::string m_Name;
@@ -291,8 +282,8 @@ namespace Dynamix {
 	public:
 		AnonymousFunctionExpression(std::vector<Parameter> args, std::unique_ptr<Expression> body);
 		Value Accept(Visitor* visitor) const override;
-		std::vector<Parameter> const& Args() const;
-		Expression const* Body() const;
+		std::vector<Parameter> const& Args() const noexcept;
+		Expression const* Body() const noexcept;
 
 	private:
 		std::vector<Parameter> m_Args;
@@ -303,7 +294,7 @@ namespace Dynamix {
 	public:
 		explicit BreakOrContinueStatement(bool cont);
 		Value Accept(Visitor* visitor) const override;
-		bool IsContinue() const;
+		bool IsContinue() const noexcept;
 
 	private:
 		bool m_IsContinue;
@@ -314,8 +305,8 @@ namespace Dynamix {
 		WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statements> body);
 		Value Accept(Visitor* visitor) const override;
 
-		Expression const* Condition() const;
-		Statements const* Body() const;
+		Expression const* Condition() const noexcept;
+		Statements const* Body() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Condition;
@@ -326,7 +317,7 @@ namespace Dynamix {
 	public:
 		explicit ReturnStatement(std::unique_ptr<Expression> expr = nullptr);
 		Value Accept(Visitor* visitor) const override;
-		Expression const* ReturnValue() const;
+		Expression const* ReturnValue() const noexcept;
 		std::string ToString() const override;
 
 	private:
@@ -338,13 +329,13 @@ namespace Dynamix {
 		IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> thenExpr, std::unique_ptr<Statement> elseExpr = nullptr);
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
-		AstNodeType Type() const {
+		AstNodeType Type() const noexcept {
 			return AstNodeType::IfThenElse;
 		}
 
-		Expression const* Condition() const;
-		Statement const* Then() const;
-		Statement const* Else() const;
+		Expression const* Condition() const noexcept;
+		Statement const* Then() const noexcept;
+		Statement const* Else() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Condition;
