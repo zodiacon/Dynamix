@@ -3,10 +3,12 @@
 
 #include "Value.h"
 #include "RuntimeObject.h"
+#include <stacktrace>
+#include "Runtime.h"
 
 using namespace Dynamix;
 
-Int Value::ToInteger() const noexcept {
+Int Value::ToInteger() const {
 	switch (m_Type) {
 		case ValueType::Integer: return iValue;
 		case ValueType::Real: return static_cast<Int>(dValue);
@@ -16,24 +18,24 @@ Int Value::ToInteger() const noexcept {
 	return 0;
 }
 
-Bool Value::ToBoolean() const noexcept {
+Bool Value::ToBoolean() const {
 	switch (m_Type) {
 		case ValueType::Integer: return iValue ? true : false;
 		case ValueType::Real: return dValue ? true : false;
 		case ValueType::Boolean: return bValue;
 	}
 	assert(false);
-	return false;
+	throw RuntimeError(RuntimeErrorType::CannotConvertToBoolean, std::stacktrace::current());
 }
 
-Real Value::ToReal() const noexcept {
+Real Value::ToReal() const {
 	switch (m_Type) {
 		case ValueType::Integer: return static_cast<Real>(iValue);
 		case ValueType::Real: return dValue;
 		case ValueType::Boolean: return dValue ? 1 : 0;
 	}
 	assert(false);
-	return 0.0;
+	throw RuntimeError(RuntimeErrorType::CannotConvertToReal, std::stacktrace::current());
 }
 
 Value Value::BinaryOperator(TokenType op, Value const& rhs) const noexcept {
@@ -59,6 +61,18 @@ Value Dynamix::Value::UnaryOperator(TokenType op) const noexcept {
 		case TokenType::Operator_Minus: return Negate();
 	}
 	return Value::Error(ValueErrorType::UnsupportedUnaryOperator);
+}
+
+Value& Dynamix::Value::Assign(Value const& right, TokenType assign) {
+	switch (assign) {
+		case TokenType::Operator_Assign: *this = right; break;
+		case TokenType::Operator_Assign_Add: *this = BinaryOperator(TokenType::Operator_Plus, right); break;
+		case TokenType::Operator_Assign_Sub: *this = BinaryOperator(TokenType::Operator_Minus, right); break;
+		case TokenType::Operator_Assign_Mul: *this = BinaryOperator(TokenType::Operator_Mul, right); break;
+		case TokenType::Operator_Assign_Div: *this = BinaryOperator(TokenType::Operator_Div, right); break;
+		case TokenType::Operator_Assign_Mod: *this = BinaryOperator(TokenType::Operator_Mod, right); break;
+	}
+	return *this;
 }
 
 std::string Value::ToString() const noexcept {
@@ -234,6 +248,13 @@ Value Value::Error(ValueErrorType type) {
 
 Value::~Value() {
 	Free();
+}
+
+ObjectType const* Dynamix::Value::GetObjectType() const {
+	switch (m_Type) {
+		case ValueType::Object: return &oValue->Type();
+	}
+	return nullptr;
 }
 
 Value Value::Equal(Value const& rhs) const noexcept {

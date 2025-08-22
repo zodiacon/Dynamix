@@ -371,3 +371,6 @@ Expression const* ExpressionStatement::Expr() const {
 string ExpressionStatement::ToString() const {
 	return Expr()->ToString();
 }
+
+Dynamix::ClassDeclaration::ClassDeclaration(std::unique_ptr<ObjectType> type) : m_ObjectType(move(type)) {
+}

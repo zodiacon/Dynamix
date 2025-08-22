@@ -38,3 +38,5 @@ bool Runtime::Init() {
 	return true;
 }
 
+Dynamix::RuntimeError::RuntimeError(RuntimeErrorType type, std::stacktrace trace) {
+}

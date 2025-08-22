@@ -2,12 +2,14 @@
 
 #include <atomic>
 #include <string_view>
+#include <vector>
 
-#include "RuntimeObject.h"
 #include "Value.h"
 
 namespace Dynamix {
 	class ObjectType;
+	class Interpreter;
+	enum class InvokeFlags;
 
 	class RuntimeObject {
 	public:
@@ -17,7 +19,7 @@ namespace Dynamix {
 		RuntimeObject(RuntimeObject&& other) = default;
 		RuntimeObject& operator=(RuntimeObject&& other) = default;
 
-		void Construct(Value* args, int count);
+		void Construct(std::vector<Value>& args);
 		void Destruct();
 
 		ObjectType& Type() {
@@ -33,7 +35,7 @@ namespace Dynamix {
 		int AddRef();
 		int Release();
 
-		Value Invoke(std::string_view name, Value* args = nullptr, int count = 0);
+		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
 
 	private:
 		std::atomic<int> m_RefCount{ 0 };

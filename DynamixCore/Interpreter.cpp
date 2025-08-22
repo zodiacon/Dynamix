@@ -51,7 +51,15 @@ Value Interpreter::VisitVar(VarValStatement const* expr) {
 }
 
 Value Interpreter::VisitAssign(AssignExpression const* expr) {
-    return Value();
+    // assume a single variable for now
+    assert(expr->Left()->Type() == AstNodeType::Name);
+    auto name = reinterpret_cast<NameExpression const*>(expr->Left());
+
+    auto v = CurrentScope()->FindVariable(name->Name());
+    if (!v)
+        throw RuntimeError(RuntimeErrorType::UnknownIdentifier);
+
+    return v->VarValue.Assign(expr->Value()->Accept(this), expr->AssignType().Type);
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {

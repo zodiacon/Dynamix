@@ -2,20 +2,21 @@
 #include "ObjectType.h"
 #include "Value.h"
 #include <format>
+#include "Interpreter.h"
 
 using namespace Dynamix;
 
 RuntimeObject::RuntimeObject(ObjectType& type) : m_Type(type) {
 }
 
-void RuntimeObject::Construct(Value* args, int count) {
+void RuntimeObject::Construct(std::vector<Value>& args) {
 }
 
 void RuntimeObject::Destruct() {
 }
 
-Value RuntimeObject::Invoke(std::string_view name, Value* args, int count) {
-	return m_Type.Invoke(this, name, args, count);
+Value RuntimeObject::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
+	return m_Type.Invoke(intr, this, name, args, flags);
 }
 
 int RuntimeObject::AddRef() {

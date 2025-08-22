@@ -1,23 +1,27 @@
 #include "ObjectType.h"
 #include "RuntimeObject.h"
 #include "Interfaces.h"
+#include "Runtime.h"
 
 using namespace Dynamix;
 
 ObjectType::ObjectType(Runtime& rt, std::string name) : m_Runtime(rt), m_Name(std::move(name)) {
 }
 
-RuntimeObject* ObjectType::CreateObject(Value* args, int count) {
+RuntimeObject* ObjectType::CreateObject(std::vector<Value>& args) {
 	m_ObjectCount++;
 	auto obj = (RuntimeObject*)m_Runtime.GetAllocator()->Allocate(sizeof(RuntimeObject));
 	new (obj) RuntimeObject(*this);
-	if (count > 0)
-		obj->Construct(args, count);
+	obj->Construct(args);
 	return obj;
 }
 
-Value Dynamix::ObjectType::Invoke(RuntimeObject* instance, std::string_view name, Value* args, int count) {
+Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
 	return Value();
+}
+
+Value ObjectType::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
+	return Invoke(intr, nullptr, name, args, flags);
 }
 
 void ObjectType::DestroyObject(RuntimeObject* instance) {

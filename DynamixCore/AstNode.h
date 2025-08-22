@@ -10,6 +10,7 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "SymbolTable.h"
+#include "ObjectType.h"
 
 namespace Dynamix {
 	enum class AstNodeType {
@@ -265,6 +266,16 @@ namespace Dynamix {
 		std::string m_Name;
 		std::vector<Parameter> m_Parameters;
 		std::unique_ptr<Expression> m_Body;
+	};
+
+	class ClassDeclaration : Statement {
+	public:
+		explicit ClassDeclaration(std::unique_ptr<ObjectType> type);
+
+		ObjectType const* GetObjectType() const;
+
+	private:
+		std::unique_ptr<ObjectType> m_ObjectType;
 	};
 
 	class EnumDeclaration : public Statement {

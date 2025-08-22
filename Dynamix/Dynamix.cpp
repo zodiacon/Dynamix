@@ -73,6 +73,13 @@ var a = 5; println("Zebra!! {}+{}={}", a, 3, a + 3);)";
 			println("Result: {}", result.ToString());
 		}
 
+		n = p.Parse("var i = 1; while(i <= 10) { println(\"{}\", i); i += 1; }");
+		if (n) {
+			auto result = n->Accept(&intr);
+			println("Result: {}", result.ToString());
+		}
+
+
 	}
 	return 0;
 }

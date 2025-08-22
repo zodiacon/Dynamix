@@ -85,6 +85,7 @@ unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expressio
 		parser.AddError(ParseError{ ParseErrorType::IllegalExpression, token });
 
 	auto right = parser.ParseExpression(Precedence() - 1);
+	parser.Match(TokenType::Operator_Semicolon);
 
 	return make_unique<AssignExpression>(move(left), move(right), token);
 }
@@ -112,6 +113,7 @@ unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<E
 		next = parser.Peek();
 	}
 	parser.Match(TokenType::Operator_CloseParen, true, true);
+	parser.Match(TokenType::Operator_Semicolon);
 	return make_unique<InvokeFunctionExpression>(nameExpr->Name(), move(args));
 }
 

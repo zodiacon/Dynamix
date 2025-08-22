@@ -221,7 +221,7 @@ unique_ptr<VarValStatement> Parser::ParseVarConstStatement(bool constant) {
 		AddError(ParseError(ParseErrorType::MissingInitExpression, Peek()));
 	}
 
-	Match(TokenType::Operator_Semicolon, true, true);
+	Match(TokenType::Operator_Semicolon);
 	if (!dup) {
 		Symbol sym;
 		sym.Name = name.Lexeme;
@@ -399,9 +399,11 @@ unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement(bool co
 
 unique_ptr<WhileStatement> Parser::ParseWhileStatement() {
 	Next();	// eat "while"
+	Match(TokenType::Operator_OpenParen, true, true);
 	auto cond = ParseExpression();
 	if (cond == nullptr)
 		AddError(ParseError(ParseErrorType::ConditionExpressionExpected, Peek()));
+	Match(TokenType::Operator_CloseParen, true, true);
 	m_LoopCount++;
 	auto block = ParseBlock();
 	m_LoopCount--;

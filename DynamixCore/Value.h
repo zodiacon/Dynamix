@@ -10,6 +10,7 @@ namespace Dynamix {
 	class RuntimeObject;
 	class AstNode;
 	class NativeStruct;
+	class ObjectType;
 
 	using Real = double;
 	using Int = long long;
@@ -60,6 +61,8 @@ namespace Dynamix {
 
 		~Value() noexcept;
 
+		ObjectType const* GetObjectType() const;
+
 		ValueType Type() const noexcept {
 			return m_Type;
 		}
@@ -90,12 +93,13 @@ namespace Dynamix {
 			return m_Type == ValueType::Error;
 		}
 
-		Int ToInteger() const noexcept;
-		Bool ToBoolean() const noexcept;
-		Real ToReal() const noexcept;
+		Int ToInteger() const;
+		Bool ToBoolean() const;
+		Real ToReal() const;
 
 		Value BinaryOperator(TokenType op, Value const& rhs) const noexcept;
 		Value UnaryOperator(TokenType op) const noexcept;
+		Value& Assign(Value const& right, TokenType assign);
 
 		std::string ToString() const noexcept;
 
