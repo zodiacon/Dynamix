@@ -32,7 +32,8 @@ namespace Dynamix {
 		Token ParseOperator();
 		Token ParseString(bool raw);
 
-		int m_Line, m_Col{ 1 };
+		int m_Line;
+		uint16_t m_Col{ 1 };
 		std::unordered_map<std::string_view, TokenType> m_TokenTypes;
 		std::unordered_map<TokenType, std::string_view> m_TokenTypesRev;
 		std::string_view m_Text;

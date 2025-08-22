@@ -4,7 +4,7 @@
 #include <string_view>
 
 namespace Dynamix {
-	enum class TokenType {
+	enum class TokenType : uint16_t {
 		Invalid,	
 		Integer = 1,	
 		Real = 2,
@@ -94,7 +94,7 @@ namespace Dynamix {
 		TokenType Type;
 		std::string Lexeme;
 		int Line;
-		int Col;
+		uint16_t Col;
 		union {
 			long long iValue;
 			double rValue;

@@ -20,6 +20,9 @@ int main() {
 	Parser p(t, true);
 	Runtime rt(p);
 	rt.Init();
+
+	//auto node = p.ParseFile("d:\\temp\\test.dmx");
+
 	char text[] = "123 hello 12 for if x 9.34 < > 77 !- \"this is a text\" while";
 	auto code = "fn sqr(x) { if(x < 5) { x += 1 } return 2 + x * x; }\n"
 		"fn main() { val a = sqr(10); return 0; }";
@@ -78,7 +81,10 @@ var a = 5; println("Zebra!! {}+{}={}", a, 3, a + 3);)";
 			auto result = n->Accept(&intr);
 			println("Result: {}", result.ToString());
 		}
-
+		n = p.Parse("fn max(x, y) { if(x > 0 and y > 0) { println(\"both positive\"); } else { println(\"at least one non-positive\"); } } max(-10, 3);");
+		if (n) {
+			n->Accept(&intr);
+		}
 
 	}
 	return 0;

@@ -5,9 +5,6 @@
 
 using namespace Dynamix;
 
-ObjectType::ObjectType(std::string name) : m_Name(std::move(name)) {
-}
-
 Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const {
 	return Value();
 }

@@ -31,5 +31,6 @@ void InitStdLibrary(Parser& parser) {
 	}
 
 	auto type = std::make_unique<ObjectType>("String");
-
+	auto prop = std::make_unique<PropertyInfo>("Length");
+	
 }

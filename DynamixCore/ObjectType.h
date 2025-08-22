@@ -52,10 +52,21 @@ namespace Dynamix {
 	};
 
 	struct MemberInfo {
-		std::string Name;
+		MemberInfo(std::string name, MemberType type) : m_Name(std::move(name)), m_Type(type) {}
+		std::string const& Name() const {
+			return m_Name;
+		}
+
+		MemberType Type() const {
+			return m_Type;
+		}
+
 		MemberVisibility Visibility;
-		MemberType Type;
 		MemberFlags Flags;
+
+	private:
+		std::string m_Name;
+		MemberType m_Type;
 	};
 
 	struct MethodInfo : MemberInfo {
@@ -63,17 +74,14 @@ namespace Dynamix {
 	};
 
 	struct PropertyInfo : MemberInfo {
+		explicit PropertyInfo(std::string name) : MemberInfo(name, MemberType::Property) {}
 		MemberCode Set;
 		MemberCode Get;
 	};
 
-	class ObjectType : MemberInfo {
+	class ObjectType : public MemberInfo {
 	public:
-		explicit ObjectType(std::string name);
-
-		std::string const& Name() const {
-			return m_Name;
-		}
+		explicit ObjectType(std::string name) : MemberInfo(name, MemberType::Class) {}
 
 		// instance 
 		Value Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;
