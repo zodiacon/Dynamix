@@ -37,7 +37,7 @@ int PostfixOperatorParslet::Precedence() const {
 
 unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
 	string ns;
-	//while (parser.Peek().Type == TokenType::Operator_ScopeRes) {
+	//while (parser.Peek().Type == TokenType::ScopeRes) {
 	//	ns += "::" + parser.Next().Lexeme;
 	//	if (parser.Peek().Type != TokenType::Identifier) {
 	//		parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
@@ -46,7 +46,7 @@ unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
 	//}
 	//
 	string name = token.Lexeme;
-	while (parser.Peek().Type == TokenType::Operator_Dot) {
+	while (parser.Peek().Type == TokenType::Dot) {
 		parser.Next();
 		if (parser.Peek().Type != TokenType::Identifier) {
 			parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
@@ -76,7 +76,7 @@ int GroupParslet::Precedence() const {
 
 unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 	auto expr = parser.ParseExpression();
-	parser.Match(TokenType::Operator_CloseParen);
+	parser.Match(TokenType::CloseParen);
 	return expr;
 }
 
@@ -104,48 +104,48 @@ unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<E
 
 	auto next = parser.Peek();
 	vector<unique_ptr<Expression>> args;
-	while (next.Type != TokenType::Operator_CloseParen) {
+	while (next.Type != TokenType::CloseParen) {
 		auto param = parser.ParseExpression();
 		args.push_back(move(param));
-		if (!parser.Match(TokenType::Operator_Comma) && !parser.Match(TokenType::Operator_CloseParen, false))
+		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false))
 			parser.AddError(ParseError{ ParseErrorType::CommaExpected, next });
 		next = parser.Peek();
 	}
-	parser.Match(TokenType::Operator_CloseParen, true, true);
+	parser.Match(TokenType::CloseParen, true, true);
 	return make_unique<InvokeFunctionExpression>(nameExpr->Name(), move(args));
 }
 
 unique_ptr<Expression> IfThenElseParslet::Parse(Parser& parser, Token const& token) {
-	parser.Match(TokenType::Operator_OpenParen, true, true);
+	parser.Match(TokenType::OpenParen, true, true);
 	auto cond = parser.ParseExpression();
-	parser.Match(TokenType::Operator_CloseParen, true, true);
+	parser.Match(TokenType::CloseParen, true, true);
 	auto then = parser.ParseBlock();
 	unique_ptr<Statement> elseExpr;
-	if (parser.Match(TokenType::Keyword_Else))
+	if (parser.Match(TokenType::Else))
 		elseExpr = parser.ParseBlock();
 	return make_unique<IfThenElseExpression>(move(cond), move(then), move(elseExpr));
 }
 
 unique_ptr<Expression> AnonymousFunctionParslet::Parse(Parser& parser, Token const& token) {
-	assert(token.Type == TokenType::Keyword_Fn);
-	if (!parser.Match(TokenType::Operator_OpenParen))
+	assert(token.Type == TokenType::Fn);
+	if (!parser.Match(TokenType::OpenParen))
 		throw ParseError(ParseErrorType::OpenParenExpected, parser.Peek());
 
 	//
 	// parse args
 	//
 	vector<Parameter> args;
-	while (parser.Peek().Type != TokenType::Operator_CloseParen) {
+	while (parser.Peek().Type != TokenType::CloseParen) {
 		auto arg = parser.Next();
 		if (arg.Type != TokenType::Identifier)
 			throw ParseError(ParseErrorType::IdentifierExpected, arg);
 		args.push_back(Parameter{ move(arg.Lexeme) });
-		if (parser.Match(TokenType::Operator_Comma) || parser.Match(TokenType::Operator_CloseParen, false))
+		if (parser.Match(TokenType::Comma) || parser.Match(TokenType::CloseParen, false))
 			continue;
 		throw ParseError(ParseErrorType::CommaOrCloseParenExpected, parser.Peek());
 	}
 	parser.Next();		// eat close paren
-	if (parser.Match(TokenType::Operator_GoesTo)) {
+	if (parser.Match(TokenType::GoesTo)) {
 		auto expr = parser.ParseExpression();
 		return make_unique<AnonymousFunctionExpression>(move(args), move(expr));
 	}

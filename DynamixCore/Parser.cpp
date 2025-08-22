@@ -13,97 +13,97 @@ Parser::Parser(Tokenizer& t, bool test) : m_Tokenizer(t), m_Repl(test) {
 
 void Parser::Init() {
 	m_Tokenizer.AddTokens({
-		{ "if", TokenType::Keyword_If },
-		{ "while", TokenType::Keyword_While },
-		{ "fn", TokenType::Keyword_Fn },
-		{ "else", TokenType::Keyword_Else },
-		{ "var", TokenType::Keyword_Var },
-		{ "val", TokenType::Keyword_Val },
-		{ "const", TokenType::Keyword_Const },
-		{ "true", TokenType::Keyword_True },
-		{ "false", TokenType::Keyword_False },
-		{ "for", TokenType::Keyword_For },
-		{ "repeat", TokenType::Keyword_Repeat },
-		{ "break", TokenType::Keyword_Break },
-		{ "continue", TokenType::Keyword_Continue },
-		{ "return", TokenType::Keyword_Return },
-		{ "do", TokenType::Keyword_Do },
-		{ "foreach", TokenType::Keyword_ForEach },
-		{ "new", TokenType::Keyword_New },
-		{ "in", TokenType::Keyword_In },
-		{ "interface", TokenType::Keyword_Interface },
-		{ "class", TokenType::Keyword_Class },
-		{ "object", TokenType::Keyword_Object },
-		{ "enum", TokenType::Keyword_Enum },
-		{ "struct", TokenType::Keyword_Struct },
-		{ "and", TokenType::Keyword_And },
-		{ "or", TokenType::Keyword_Or },
-		{ "(", TokenType::Operator_OpenParen },
-		{ ")", TokenType::Operator_CloseParen },
-		{ "{", TokenType::Operator_OpenBrace },
-		{ "}", TokenType::Operator_CloseBrace },
-		{ ">", TokenType::Operator_GreaterThan },
-		{ "<", TokenType::Operator_LessThan },
-		{ ">=", TokenType::Operator_GreaterThanOrEqual },
-		{ "<=", TokenType::Operator_LessThanOrEqual },
-		{ "!=", TokenType::Operator_NotEqual },
-		{ "==", TokenType::Operator_Equal },
-		{ "=", TokenType::Operator_Assign },
-		{ ",", TokenType::Operator_Comma },
-		{ "|", TokenType::Operator_BitwiseOr },
-		{ "&", TokenType::Operator_BitwiseAnd },
-		{ ";", TokenType::Operator_Semicolon },
-		{ ":", TokenType::Operator_Colon },
-		{ "[", TokenType::Operator_OpenBracket },
-		{ "]", TokenType::Operator_CloseBracket },
-		{ ".", TokenType::Operator_Dot },
-		{ "::", TokenType::Operator_ScopeRes },
-		{ "+", TokenType::Operator_Plus },
-		{ "-", TokenType::Operator_Minus },
-		{ "*", TokenType::Operator_Mul },
-		{ "/", TokenType::Operator_Div },
-		{ "%", TokenType::Operator_Mod },
-		{ "+=", TokenType::Operator_Assign_Add },
+		{ "if", TokenType::If },
+		{ "while", TokenType::While },
+		{ "fn", TokenType::Fn },
+		{ "else", TokenType::Else },
+		{ "var", TokenType::Var },
+		{ "val", TokenType::Val },
+		{ "const", TokenType::Const },
+		{ "true", TokenType::True },
+		{ "false", TokenType::False },
+		{ "for", TokenType::For },
+		{ "repeat", TokenType::Repeat },
+		{ "break", TokenType::Break },
+		{ "continue", TokenType::Continue },
+		{ "return", TokenType::Return },
+		{ "do", TokenType::Do },
+		{ "foreach", TokenType::ForEach },
+		{ "new", TokenType::New },
+		{ "in", TokenType::In },
+		{ "interface", TokenType::Interface },
+		{ "class", TokenType::Class },
+		{ "object", TokenType::Object },
+		{ "enum", TokenType::Enum },
+		{ "struct", TokenType::Struct },
+		{ "and", TokenType::And },
+		{ "or", TokenType::Or },
+		{ "(", TokenType::OpenParen },
+		{ ")", TokenType::CloseParen },
+		{ "{", TokenType::OpenBrace },
+		{ "}", TokenType::CloseBrace },
+		{ ">", TokenType::GreaterThan },
+		{ "<", TokenType::LessThan },
+		{ ">=", TokenType::GreaterThanOrEqual },
+		{ "<=", TokenType::LessThanOrEqual },
+		{ "!=", TokenType::NotEqual },
+		{ "==", TokenType::Equal },
+		{ "=", TokenType::Assign },
+		{ ",", TokenType::Comma },
+		{ "|", TokenType::BitwiseOr },
+		{ "&", TokenType::BitwiseAnd },
+		{ ";", TokenType::Semicolon },
+		{ ":", TokenType::Colon },
+		{ "[", TokenType::OpenBracket },
+		{ "]", TokenType::CloseBracket },
+		{ ".", TokenType::Dot },
+		{ "::", TokenType::DoubleColon },
+		{ "+", TokenType::Plus },
+		{ "-", TokenType::Minus },
+		{ "*", TokenType::Mul },
+		{ "/", TokenType::Div },
+		{ "%", TokenType::Mod },
+		{ "+=", TokenType::Assign_Add },
 		});
 
-	AddParslet(TokenType::Keyword_And, make_unique<BinaryOperatorParslet>(80));
-	AddParslet(TokenType::Keyword_Or, make_unique<BinaryOperatorParslet>(70));
-	AddParslet(TokenType::Keyword_Not, make_unique<PrefixOperatorParslet>(90));
-	AddParslet(TokenType::Operator_Plus, make_unique<BinaryOperatorParslet>(100));
-	AddParslet(TokenType::Operator_Minus, make_unique<BinaryOperatorParslet>(100));
-	AddParslet(TokenType::Operator_Mul, make_unique<BinaryOperatorParslet>(200));
-	AddParslet(TokenType::Operator_Div, make_unique<BinaryOperatorParslet>(200));
-	AddParslet(TokenType::Operator_Mod, make_unique<BinaryOperatorParslet>(200));
-	AddParslet(TokenType::Operator_Minus, make_unique<PrefixOperatorParslet>(300));
+	AddParslet(TokenType::And, make_unique<BinaryOperatorParslet>(80));
+	AddParslet(TokenType::Or, make_unique<BinaryOperatorParslet>(70));
+	AddParslet(TokenType::Not, make_unique<PrefixOperatorParslet>(90));
+	AddParslet(TokenType::Plus, make_unique<BinaryOperatorParslet>(100));
+	AddParslet(TokenType::Minus, make_unique<BinaryOperatorParslet>(100));
+	AddParslet(TokenType::Mul, make_unique<BinaryOperatorParslet>(200));
+	AddParslet(TokenType::Div, make_unique<BinaryOperatorParslet>(200));
+	AddParslet(TokenType::Mod, make_unique<BinaryOperatorParslet>(200));
+	AddParslet(TokenType::Minus, make_unique<PrefixOperatorParslet>(300));
 	AddParslet(TokenType::Integer, make_unique<LiteralParslet>());
 	AddParslet(TokenType::String, make_unique<LiteralParslet>());
-	AddParslet(TokenType::Keyword_True, make_unique<LiteralParslet>());
-	AddParslet(TokenType::Keyword_False, make_unique<LiteralParslet>());
+	AddParslet(TokenType::True, make_unique<LiteralParslet>());
+	AddParslet(TokenType::False, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Real, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Identifier, make_unique<NameParslet>());
-	AddParslet(TokenType::Operator_OpenParen, make_unique<GroupParslet>());
-	AddParslet(TokenType::Operator_Power, make_unique<BinaryOperatorParslet>(350, true));
-	AddParslet(TokenType::Operator_Assign, make_unique<AssignParslet>());
-	AddParslet(TokenType::Operator_Assign_Add, make_unique<AssignParslet>());
-	AddParslet(TokenType::Operator_Assign_Sub, make_unique<AssignParslet>());
-	AddParslet(TokenType::Operator_Assign_Mul, make_unique<AssignParslet>());
-	AddParslet(TokenType::Operator_Assign_Div, make_unique<AssignParslet>());
-	AddParslet(TokenType::Operator_Assign_Mod, make_unique<AssignParslet>());
-	AddParslet(TokenType::Operator_Assign_And, make_unique<AssignParslet>());
+	AddParslet(TokenType::OpenParen, make_unique<GroupParslet>());
+	AddParslet(TokenType::Power, make_unique<BinaryOperatorParslet>(350, true));
+	AddParslet(TokenType::Assign, make_unique<AssignParslet>());
+	AddParslet(TokenType::Assign_Add, make_unique<AssignParslet>());
+	AddParslet(TokenType::Assign_Sub, make_unique<AssignParslet>());
+	AddParslet(TokenType::Assign_Mul, make_unique<AssignParslet>());
+	AddParslet(TokenType::Assign_Div, make_unique<AssignParslet>());
+	AddParslet(TokenType::Assign_Mod, make_unique<AssignParslet>());
+	AddParslet(TokenType::Assign_And, make_unique<AssignParslet>());
 
-	AddParslet(TokenType::Operator_Equal, make_unique<BinaryOperatorParslet>(90));
-	AddParslet(TokenType::Operator_NotEqual, make_unique<BinaryOperatorParslet>(90));
-	AddParslet(TokenType::Operator_LessThan, make_unique<BinaryOperatorParslet>(90));
-	AddParslet(TokenType::Operator_LessThanOrEqual, make_unique<BinaryOperatorParslet>(90));
-	AddParslet(TokenType::Operator_GreaterThan, make_unique<BinaryOperatorParslet>(90));
-	AddParslet(TokenType::Operator_GreaterThanOrEqual, make_unique<BinaryOperatorParslet>(90));
-	AddParslet(TokenType::Operator_OpenParen, make_unique<InvokeFunctionParslet>());
-	AddParslet(TokenType::Keyword_If, make_unique<IfThenElseParslet>());
-	AddParslet(TokenType::Operator_BitwiseAnd, make_unique<BinaryOperatorParslet>(400));
-	AddParslet(TokenType::Operator_BitwiseOr, make_unique<BinaryOperatorParslet>(390));
-	AddParslet(TokenType::Operator_BitwiseXor, make_unique<BinaryOperatorParslet>(390));
-	AddParslet(TokenType::Keyword_Fn, make_unique<AnonymousFunctionParslet>());
-	AddParslet(TokenType::Operator_BitwiseNot, make_unique<PrefixOperatorParslet>(500));
+	AddParslet(TokenType::Equal, make_unique<BinaryOperatorParslet>(90));
+	AddParslet(TokenType::NotEqual, make_unique<BinaryOperatorParslet>(90));
+	AddParslet(TokenType::LessThan, make_unique<BinaryOperatorParslet>(90));
+	AddParslet(TokenType::LessThanOrEqual, make_unique<BinaryOperatorParslet>(90));
+	AddParslet(TokenType::GreaterThan, make_unique<BinaryOperatorParslet>(90));
+	AddParslet(TokenType::GreaterThanOrEqual, make_unique<BinaryOperatorParslet>(90));
+	AddParslet(TokenType::OpenParen, make_unique<InvokeFunctionParslet>());
+	AddParslet(TokenType::If, make_unique<IfThenElseParslet>());
+	AddParslet(TokenType::BitwiseAnd, make_unique<BinaryOperatorParslet>(400));
+	AddParslet(TokenType::BitwiseOr, make_unique<BinaryOperatorParslet>(390));
+	AddParslet(TokenType::BitwiseXor, make_unique<BinaryOperatorParslet>(390));
+	AddParslet(TokenType::Fn, make_unique<AnonymousFunctionParslet>());
+	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
 
 	m_Symbols.push(&m_GlobalSymbols);
 }
@@ -229,14 +229,14 @@ unique_ptr<VarValStatement> Parser::ParseVarConstStatement(bool constant) {
 		dup = true;
 	}
 	unique_ptr<Expression> init;
-	if (Match(TokenType::Operator_Assign)) {
+	if (Match(TokenType::Assign)) {
 		init = ParseExpression();
 	}
 	else if (constant) {
 		AddError(ParseError(ParseErrorType::MissingInitExpression, Peek()));
 	}
 
-	Match(TokenType::Operator_Semicolon);
+	Match(TokenType::Semicolon);
 	if (!dup) {
 		Symbol sym;
 		sym.Name = name.Lexeme;
@@ -253,18 +253,18 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	if (ident.Type != TokenType::Identifier)
 		AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
 
-	Match(TokenType::Operator_OpenParen, true, true);
+	Match(TokenType::OpenParen, true, true);
 
 	//
 	// get list of arguments
 	//
 	vector<Parameter> parameters;
-	while (Peek().Type != TokenType::Operator_CloseParen) {
+	while (Peek().Type != TokenType::CloseParen) {
 		auto param = Next();
 		if (param.Type != TokenType::Identifier)
 			AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
 		parameters.push_back(Parameter{ param.Lexeme });
-		Match(TokenType::Operator_Comma);
+		Match(TokenType::Comma);
 	}
 
 	Next();		// eat close paren
@@ -278,7 +278,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	auto decl = make_unique<FunctionDeclaration>(move(ident.Lexeme));
 
 	unique_ptr<Expression> body;
-	if (Match(TokenType::Operator_GoesTo))
+	if (Match(TokenType::GoesTo))
 		body = ParseExpression();
 	else
 		body = ParseBlock(parameters);
@@ -317,7 +317,7 @@ void Parser::PopScope() {
 }
 
 unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
-	Match(TokenType::Operator_OpenBrace, true, true);
+	Match(TokenType::OpenBrace, true, true);
 
 	auto block = make_unique<Statements>();
 	PushScope(block.get());
@@ -330,14 +330,14 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
 		AddSymbol(sym);
 	}
 
-	while (Peek().Type != TokenType::Operator_CloseBrace) {
+	while (Peek().Type != TokenType::CloseBrace) {
 		auto stmt = ParseStatement();
 		if (!stmt)
 			break;
 		stmt->SetParent(block.get());
 		block->Add(move(stmt));
 	}
-	Match(TokenType::Operator_CloseBrace, true, true);
+	Match(TokenType::CloseBrace, true, true);
 	PopScope();
 	return block;
 }
@@ -352,35 +352,35 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 		return nullptr;
 
 	switch (peek.Type) {
-		case TokenType::Keyword_Var: return ParseVarConstStatement(false);
-		case TokenType::Keyword_Val: return ParseVarConstStatement(true);
-			//case TokenType::Keyword_Repeat: return ParseRepeatStatement();
-		case TokenType::Keyword_While:
+		case TokenType::Var: return ParseVarConstStatement(false);
+		case TokenType::Val: return ParseVarConstStatement(true);
+			//case TokenType::Repeat: return ParseRepeatStatement();
+		case TokenType::While:
 			if (!topLevel)
 				return ParseWhileStatement();
 			break;
 
-		case TokenType::Keyword_Fn: return ParseFunctionDeclaration();
-		case TokenType::Keyword_Return:
+		case TokenType::Fn: return ParseFunctionDeclaration();
+		case TokenType::Return:
 			if (!topLevel)
 				return ParseReturnStatement();
 			break;
-		case TokenType::Keyword_Break:
-		case TokenType::Keyword_Continue:
+		case TokenType::Break:
+		case TokenType::Continue:
 			if (!topLevel)
-				return ParseBreakContinueStatement(peek.Type == TokenType::Keyword_Continue);
+				return ParseBreakContinueStatement(peek.Type == TokenType::Continue);
 			break;
 
-		case TokenType::Keyword_For: 
+		case TokenType::For: 
 			if(!topLevel)
 				return ParseForStatement();
 			break;
-		case TokenType::Keyword_Enum: return ParseEnumDeclaration();
-		case TokenType::Operator_OpenBrace:
+		case TokenType::Enum: return ParseEnumDeclaration();
+		case TokenType::OpenBrace:
 			if (!topLevel)
 				return ParseBlock();
 			break;
-		case TokenType::Operator_Semicolon:
+		case TokenType::Semicolon:
 			if (!topLevel) {
 				Next();		// eat semicolon empty statement
 				return ParseStatement();
@@ -390,7 +390,7 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 			if (!topLevel) {
 				auto expr = ParseExpression();
 				if (expr) {
-					Match(TokenType::Operator_Semicolon);
+					Match(TokenType::Semicolon);
 					return std::make_unique<ExpressionStatement>(move(expr));
 				}
 			}
@@ -401,7 +401,7 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 
 unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement(bool cont) {
 	Next();		// eat keyword
-	if (!Match(TokenType::Operator_Semicolon))
+	if (!Match(TokenType::Semicolon))
 		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
 	if (m_LoopCount == 0)
 		AddError(ParseError(ParseErrorType::BreakContinueNoLoop, Peek()));
@@ -411,11 +411,11 @@ unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement(bool co
 
 unique_ptr<WhileStatement> Parser::ParseWhileStatement() {
 	Next();	// eat "while"
-	Match(TokenType::Operator_OpenParen, true, true);
+	Match(TokenType::OpenParen, true, true);
 	auto cond = ParseExpression();
 	if (cond == nullptr)
 		AddError(ParseError(ParseErrorType::ConditionExpressionExpected, Peek()));
-	Match(TokenType::Operator_CloseParen, true, true);
+	Match(TokenType::CloseParen, true, true);
 	m_LoopCount++;
 	auto block = ParseBlock();
 	m_LoopCount--;
@@ -427,7 +427,7 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 	auto name = Next();
 	if (name.Type != TokenType::Identifier) {
 		AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Expected identifier after 'enum'"));
-		SkipTo(TokenType::Operator_CloseBrace);
+		SkipTo(TokenType::CloseBrace);
 		return nullptr;
 	}
 	auto sym = FindSymbol(name.Lexeme);
@@ -436,10 +436,10 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 	}
 
 	unordered_map<string, long long> values;
-	Match(TokenType::Operator_OpenBrace, true, true);
+	Match(TokenType::OpenBrace, true, true);
 
 	long long current = 0;
-	while (Peek().Type != TokenType::Operator_CloseBrace && Peek().Type != TokenType::Invalid) {
+	while (Peek().Type != TokenType::CloseBrace && Peek().Type != TokenType::Invalid) {
 		auto next = Next();
 		bool error = false;
 		if (next.Type != TokenType::Identifier) {
@@ -450,7 +450,7 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 			AddError(ParseError(ParseErrorType::DuplicateDefinition, name, format("Duplicate enum value '{}'", next.Lexeme)));
 			error = true;
 		}
-		if (Match(TokenType::Operator_Assign)) {
+		if (Match(TokenType::Assign)) {
 			auto value = ParseExpression();
 			if (value == nullptr || value->Type() != AstNodeType::Literal) {
 				AddError(ParseError(ParseErrorType::IllegalExpression, Peek(), "Expression must be constant"));
@@ -469,7 +469,7 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 		if (!error)
 			values.insert({ move(next.Lexeme), current });
 		current++;
-		Match(TokenType::Operator_Comma, true, Peek().Type != TokenType::Operator_CloseBrace);
+		Match(TokenType::Comma, true, Peek().Type != TokenType::CloseBrace);
 	}
 	Next();		// consume close brace
 	if (sym)
@@ -492,7 +492,7 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	auto init = ParseStatement();
 
 	auto whileExpr = ParseExpression();
-	if (!Match(TokenType::Operator_Semicolon))
+	if (!Match(TokenType::Semicolon))
 		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
 
 	auto inc = ParseExpression();
@@ -506,6 +506,6 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 unique_ptr<ReturnStatement> Parser::ParseReturnStatement() {
 	Next();		// eat return keyword
 	auto expr = ParseExpression();
-	Match(TokenType::Operator_Semicolon, true, true);
+	Match(TokenType::Semicolon, true, true);
 	return make_unique<ReturnStatement>(move(expr));
 }

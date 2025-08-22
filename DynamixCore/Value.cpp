@@ -43,40 +43,40 @@ Real Value::ToReal() const {
 
 Value Value::BinaryOperator(TokenType op, Value const& rhs) const noexcept {
 	switch (op) {
-		case TokenType::Operator_Plus: return Add(rhs);
-		case TokenType::Operator_Minus: return Sub(rhs);
-		case TokenType::Operator_Mul: return Mul(rhs);
-		case TokenType::Operator_Div: return Div(rhs);
-		case TokenType::Operator_Mod: return Mod(rhs);
+		case TokenType::Plus: return Add(rhs);
+		case TokenType::Minus: return Sub(rhs);
+		case TokenType::Mul: return Mul(rhs);
+		case TokenType::Div: return Div(rhs);
+		case TokenType::Mod: return Mod(rhs);
 
-		case TokenType::Operator_Equal: return Equal(rhs);
-		case TokenType::Operator_GreaterThan: return GreaterThan(rhs);
-		case TokenType::Operator_GreaterThanOrEqual: return GreaterThanOrEqual(rhs);
-		case TokenType::Operator_NotEqual: return NotEqual(rhs);
-		case TokenType::Operator_LessThan: return LessThan(rhs);
-		case TokenType::Operator_LessThanOrEqual: return LessThanOrEqual(rhs);
+		case TokenType::Equal: return Equal(rhs);
+		case TokenType::GreaterThan: return GreaterThan(rhs);
+		case TokenType::GreaterThanOrEqual: return GreaterThanOrEqual(rhs);
+		case TokenType::NotEqual: return NotEqual(rhs);
+		case TokenType::LessThan: return LessThan(rhs);
+		case TokenType::LessThanOrEqual: return LessThanOrEqual(rhs);
 
-		case TokenType::Keyword_And: return And(rhs);
-		case TokenType::Keyword_Or: return Or(rhs);
+		case TokenType::And: return And(rhs);
+		case TokenType::Or: return Or(rhs);
 	}
 	return Value::Error(ValueErrorType::UnsupportedBinaryOperator);
 }
 
 Value Dynamix::Value::UnaryOperator(TokenType op) const noexcept {
 	switch (op) {
-		case TokenType::Operator_Minus: return Negate();
+		case TokenType::Minus: return Negate();
 	}
 	return Value::Error(ValueErrorType::UnsupportedUnaryOperator);
 }
 
 Value& Dynamix::Value::Assign(Value const& right, TokenType assign) {
 	switch (assign) {
-		case TokenType::Operator_Assign: *this = right; break;
-		case TokenType::Operator_Assign_Add: *this = BinaryOperator(TokenType::Operator_Plus, right); break;
-		case TokenType::Operator_Assign_Sub: *this = BinaryOperator(TokenType::Operator_Minus, right); break;
-		case TokenType::Operator_Assign_Mul: *this = BinaryOperator(TokenType::Operator_Mul, right); break;
-		case TokenType::Operator_Assign_Div: *this = BinaryOperator(TokenType::Operator_Div, right); break;
-		case TokenType::Operator_Assign_Mod: *this = BinaryOperator(TokenType::Operator_Mod, right); break;
+		case TokenType::Assign: *this = right; break;
+		case TokenType::Assign_Add: *this = BinaryOperator(TokenType::Plus, right); break;
+		case TokenType::Assign_Sub: *this = BinaryOperator(TokenType::Minus, right); break;
+		case TokenType::Assign_Mul: *this = BinaryOperator(TokenType::Mul, right); break;
+		case TokenType::Assign_Div: *this = BinaryOperator(TokenType::Div, right); break;
+		case TokenType::Assign_Mod: *this = BinaryOperator(TokenType::Mod, right); break;
 	}
 	return *this;
 }
@@ -250,8 +250,8 @@ Value Value::FromToken(Token const& token) {
 	switch (token.Type) {
 		case TokenType::Integer: return Value(token.iValue);
 		case TokenType::Real: return Value(token.rValue);
-		case TokenType::Keyword_True: return Value(true);
-		case TokenType::Keyword_False: return Value(false);
+		case TokenType::True: return Value(true);
+		case TokenType::False: return Value(false);
 		case TokenType::String: return Value(token.Lexeme.c_str());
 	}
 	assert(false);

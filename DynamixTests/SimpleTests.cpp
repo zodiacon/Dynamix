@@ -76,7 +76,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(whileStmt != nullptr);
         auto* cond = dynamic_cast<const LiteralExpression*>(whileStmt->Condition());
         REQUIRE(cond != nullptr);
-        REQUIRE(cond->Literal().Type == TokenType::Keyword_True);
+        REQUIRE(cond->Literal().Type == TokenType::True);
         auto* body = whileStmt->Body();
         REQUIRE(body != nullptr);
         REQUIRE(body->Get().size() == 1);
@@ -127,7 +127,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(right != nullptr);
         REQUIRE(left->Literal().Lexeme == "1");
         REQUIRE(right->Literal().Lexeme == "2");
-        REQUIRE(binExpr->Operator().Type == TokenType::Operator_Plus);
+        REQUIRE(binExpr->Operator().Type == TokenType::Plus);
     }
 }
 
