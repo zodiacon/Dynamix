@@ -41,7 +41,7 @@ Token const& LiteralExpression::Literal() const noexcept {
 	return m_Token;
 }
 
-NameExpression::NameExpression(string name) : m_Name(move(name)) {
+NameExpression::NameExpression(string name, string ns) : m_Name(move(name)), m_NameSpace(move(ns)) {
 }
 
 Value NameExpression::Accept(Visitor* visitor) const {
@@ -272,6 +272,10 @@ Expression const* ForStatement::While() const noexcept {
 
 Expression const* ForStatement::Inc() const noexcept {
 	return m_Inc.get();
+}
+
+Statements const* ForStatement::Body() const noexcept {
+	return m_Body.get();
 }
 
 AnonymousFunctionExpression::AnonymousFunctionExpression(vector<Parameter> args, unique_ptr<Expression> body) :

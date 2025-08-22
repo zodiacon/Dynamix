@@ -37,6 +37,7 @@ namespace Dynamix {
 		TypeMismatch,
 		DuplicateName,
 		UndefinedSymbol,
+		Parse,
 	};
 
 	class Value final {

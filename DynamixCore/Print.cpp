@@ -1,12 +1,9 @@
 #include <print>
-//#include <format>
-//#include <ostream>
-//#include <sstream>
-#include <ranges>
 
 #include "print.h"
 #include "Value.h"
 #include "Interpreter.h"
+#include "AstNode.h"
 
 using namespace Dynamix;
 
@@ -28,11 +25,25 @@ Value print(Interpreter&, std::vector<Value>& args) {
 		auto text = std::vformat(args[0].ToString().c_str(), fmt);
 		std::print("{}", text);
 	}
-	return Value();
+	return Int(args.size());
 }
 
 Value println(Interpreter& intr, std::vector<Value>& args) {
-	print(intr, args);
+	auto result = print(intr, args);
 	std::println();
-	return Value();
+	return result;
+}
+
+Value eval(Interpreter& intr, std::vector<Value>& args) {
+	if (args.size() > 1)
+		return Value::Error();
+
+	if (args.empty())
+		return Value();
+
+	auto node = intr.Parse(args[0].ToString());
+	if (!node)
+		return Value::Error(ValueErrorType::Parse);
+
+	return node->Accept(&intr);
 }

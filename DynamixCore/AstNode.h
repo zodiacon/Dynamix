@@ -174,16 +174,17 @@ namespace Dynamix {
 
 	class NameExpression : public Expression {
 	public:
-		explicit NameExpression(std::string name);
+		NameExpression(std::string ns, std::string name);
 		Value Accept(Visitor* visitor) const override;
 		std::string const& Name() const noexcept;
+		std::string const& NameSpace() const noexcept;
 		std::string ToString() const override;
 		AstNodeType Type() const noexcept override {
 			return AstNodeType::Name;
 		}
 
 	private:
-		std::string m_Name;
+		std::string m_Name, m_NameSpace;
 	};
 
 	class UnaryExpression : public Expression {
@@ -229,13 +230,14 @@ namespace Dynamix {
 
 	class ForStatement : public Statement {
 	public:
-		ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, std::unique_ptr<Expression> incExpr, std::unique_ptr<Statements> body);
+		ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, 
+			std::unique_ptr<Expression> incExpr, std::unique_ptr<Statements> body);
 		Value Accept(Visitor* visitor) const override;
 
 		Statement const* Init() const noexcept;
 		Expression const* While() const noexcept;
 		Expression const* Inc() const noexcept;
-		BlockExpression const* Body() const noexcept;
+		Statements const* Body() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_While, m_Inc;

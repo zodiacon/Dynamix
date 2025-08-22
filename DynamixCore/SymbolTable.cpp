@@ -10,16 +10,12 @@ bool SymbolTable::AddSymbol(Symbol sym) {
 	return m_Symbols.insert({ sym.Name, move(sym) }).second;
 }
 
-Symbol const* SymbolTable::FindSymbol(string const& name, bool localOnly) const {
-	if (auto it = m_Symbols.find(name); it != m_Symbols.end())
+Symbol const* SymbolTable::FindSymbol(string const& name, int8_t arity, bool localOnly) const {
+	if (auto it = m_Symbols.find(name); it != m_Symbols.end() && it->second.Arity == arity)
 		return &(it->second);
 
 	if (!localOnly && m_Parent)
-		return m_Parent->FindSymbol(name, localOnly);
+		return m_Parent->FindSymbol(name, arity, localOnly);
 	return nullptr;
 }
 
-int Symbol::Arity() const {
-	auto n = Name.find('/');
-	return n == std::string::npos ? -1 : std::strtol(Name.substr(n + 1).c_str(), nullptr, 10);
-}

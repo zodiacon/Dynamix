@@ -12,6 +12,7 @@ namespace Dynamix {
 	class Parser;
 	class SymbolTable;
 	class Runtime;
+	class AstNode;
 
 	class Interpreter : public Visitor {
 	public:
@@ -42,6 +43,8 @@ namespace Dynamix {
 
 		Scope* CurrentScope();
 		void AddNativeFunctions();
+
+		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 
 	private:
 		enum class LoopAction {

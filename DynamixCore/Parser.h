@@ -34,7 +34,7 @@ namespace Dynamix {
 		void PopScope();
 
 		bool AddSymbol(Symbol sym);
-		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
+		Symbol const* FindSymbol(std::string const& name, int8_t arity = -1, bool localOnly = false) const;
 		SymbolTable const* GetSymbolTable() const;
 
 		int GetPrecedence() const;
@@ -50,6 +50,7 @@ namespace Dynamix {
 		std::unique_ptr<BreakOrContinueStatement> ParseBreakContinueStatement(bool cont);
 		//std::unique_ptr<ForStatement> ParseForStatement();
 		std::unique_ptr<EnumDeclaration> ParseEnumDeclaration();
+		std::unique_ptr<ForStatement> ParseForStatement();
 
 		Token Next();
 		Token Peek() const;

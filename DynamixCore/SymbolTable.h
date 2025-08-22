@@ -7,7 +7,7 @@
 namespace Dynamix {
 	class AstNode;
 
-	enum class SymbolType {
+	enum class SymbolType : uint8_t {
 		Variable,
 		Function,
 		NativeFunction,
@@ -17,9 +17,10 @@ namespace Dynamix {
 		Struct,
 	};
 
-	enum class SymbolFlags {
+	enum class SymbolFlags : uint16_t {
 		None = 0,
 		Const = 1,
+		VarArg = 2,
 	};
 
 	class Interpreter;
@@ -29,13 +30,12 @@ namespace Dynamix {
 	struct Symbol {
 		std::string Name;
 		SymbolType Type;
+		int8_t Arity{ -1 };
 		SymbolFlags Flags{ SymbolFlags::None };
 		union {
 			AstNode* Ast;
 			NativeFunction Code;
 		};
-		int Arity() const;
-		std::string_view SimpleName() const;
 	};
 
 	class SymbolTable {
@@ -43,7 +43,7 @@ namespace Dynamix {
 	public:
 		explicit SymbolTable(SymbolTable* parent = nullptr);
 		bool AddSymbol(Symbol sym);
-		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
+		Symbol const* FindSymbol(std::string const& name, int8_t arity = -1, bool localOnly = false) const;
 		SymbolTable const* Parent() const {
 			return m_Parent;
 		}

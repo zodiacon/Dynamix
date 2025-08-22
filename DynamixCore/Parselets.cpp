@@ -36,16 +36,25 @@ int PostfixOperatorParslet::Precedence() const {
 }
 
 unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
-	auto name = token.Lexeme;
-	while (parser.Peek().Type == TokenType::Operator_ScopeRes) {
+	string ns;
+	//while (parser.Peek().Type == TokenType::Operator_ScopeRes) {
+	//	ns += "::" + parser.Next().Lexeme;
+	//	if (parser.Peek().Type != TokenType::Identifier) {
+	//		parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
+	//		break;
+	//	}
+	//}
+	//
+	string name = token.Lexeme;
+	while (parser.Peek().Type == TokenType::Operator_Dot) {
 		parser.Next();
 		if (parser.Peek().Type != TokenType::Identifier) {
 			parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
 			break;
 		}
-		name += "::" + parser.Next().Lexeme;
+		name += "." + parser.Next().Lexeme;
 	}
-	return make_unique<NameExpression>(name);
+	return make_unique<NameExpression>(name, ns);
 }
 
 unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
@@ -72,9 +81,11 @@ unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 }
 
 unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
+	if (left->Type() != AstNodeType::Name)
+		parser.AddError(ParseError{ ParseErrorType::IllegalExpression, token });
+
 	auto right = parser.ParseExpression(Precedence() - 1);
 
-	parser.Match(TokenType::Operator_Comma);
 	return make_unique<AssignExpression>(move(left), move(right), token);
 }
 

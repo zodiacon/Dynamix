@@ -57,10 +57,11 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
     assert(expr->Symbols());
     assert(expr->Symbols()->Parent());
-    auto f = expr->Symbols()->Parent()->FindSymbol(format("{}/{}", expr->Name(), expr->Arguments().size()));
+    auto f = expr->Symbols()->Parent()->FindSymbol(expr->Name(), (int8_t)expr->Arguments().size());
     if (!f) {
-        // search functions with any number of params
-        f = expr->Symbols()->Parent()->FindSymbol(format("{}/*", expr->Name()));
+        f = expr->Symbols()->Parent()->FindSymbol(expr->Name());
+        if (f && ((f->Flags & SymbolFlags::VarArg) != SymbolFlags::VarArg || (int8_t)expr->Arguments().size() <= f->Arity))
+            f = nullptr;
     }
     if(!f)
         return Value::Error(ValueErrorType::UndefinedSymbol);
@@ -136,6 +137,25 @@ Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
 }
 
 Value Interpreter::VisitFor(ForStatement const* stmt) {
+    if(stmt->Init())
+        stmt->Init()->Accept(this);
+    m_InLoop++;
+    while (stmt->While()->Accept(this).ToBoolean()) {
+        if (stmt->Body()) {
+            stmt->Body();
+            if (m_Return) {
+                m_InLoop--;
+                return m_ReturnValue;
+            }
+            if (m_LoopAction == LoopAction::Break) {
+                m_LoopAction = LoopAction::None;
+                break;
+            }
+        }
+        if(stmt->Inc())
+            stmt->Inc()->Accept(this);
+    }
+    m_InLoop--;
     return Value();
 }
 
@@ -173,4 +193,8 @@ void Interpreter::PushScope() {
 void Interpreter::PopScope() {
     m_Scopes.pop();
     assert(!m_Scopes.empty());
+}
+
+std::unique_ptr<AstNode> Interpreter::Parse(std::string_view code) const {
+    return m_Parser.Parse(code);
 }

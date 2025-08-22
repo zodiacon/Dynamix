@@ -3,6 +3,7 @@
 #include "Parser.h"
 #include <cstdlib>
 #include <print>
+#include "Interpreter.h"
 
 using namespace Dynamix;
 

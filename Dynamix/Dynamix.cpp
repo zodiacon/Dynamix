@@ -67,6 +67,12 @@ var a = 5; println("Zebra!! {}+{}={}", a, 3, a + 3);)";
 			println("Result: {}", result.ToString());
 		}
 
+		n = p.Parse("eval(\"2*8\");");
+		if (n) {
+			auto result = n->Accept(&intr);
+			println("Result: {}", result.ToString());
+		}
+
 	}
 	return 0;
 }

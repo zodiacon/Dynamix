@@ -256,7 +256,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	if (parameters.size() > 127)
 		AddError(ParseError{ ParseErrorType::TooManyFunctionArgs, Peek() });
 
-	auto sym = FindSymbol(format("{}/{}", ident.Lexeme, parameters.size()), true);
+	auto sym = FindSymbol(ident.Lexeme, (int8_t)parameters.size(), true);
 	if (sym)
 		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident));
 
@@ -275,7 +275,8 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 
 	if (sym == nullptr) {
 		Symbol sym;
-		sym.Name = format("{}/{}", decl->Name(), params);
+		sym.Name = decl->Name();
+		sym.Arity = (int8_t)params;
 		sym.Type = SymbolType::Function;
 		sym.Flags = SymbolFlags::None;
 		sym.Ast = decl.get();
@@ -288,8 +289,8 @@ bool Parser::AddSymbol(Symbol sym) {
 	return m_Symbols.top()->AddSymbol(move(sym));
 }
 
-Symbol const* Parser::FindSymbol(string const& name, bool localOnly) const {
-	return m_Symbols.top()->FindSymbol(name, localOnly);
+Symbol const* Parser::FindSymbol(string const& name, int8_t arity, bool localOnly) const {
+	return m_Symbols.top()->FindSymbol(name, arity, localOnly);
 }
 
 void Parser::PushScope(AstNode* node) {
@@ -355,7 +356,10 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 				return ParseBreakContinueStatement(peek.Type == TokenType::Keyword_Continue);
 			break;
 
-			//case TokenType::Keyword_For: return ParseForStatement();
+		case TokenType::Keyword_For: 
+			if(!topLevel)
+				return ParseForStatement();
+			break;
 		case TokenType::Keyword_Enum: return ParseEnumDeclaration();
 		case TokenType::Operator_OpenBrace:
 			if (!topLevel)
@@ -467,6 +471,22 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 	}
 
 	return decl;
+}
+
+unique_ptr<ForStatement> Parser::ParseForStatement() {
+	Next();		// eat for
+	auto init = ParseStatement();
+
+	auto whileExpr = ParseExpression();
+	if (!Match(TokenType::Operator_Semicolon))
+		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
+
+	auto inc = ParseExpression();
+	m_LoopCount++;
+	auto body = ParseBlock();
+	m_LoopCount--;
+	PopScope();
+	return make_unique<ForStatement>(move(init), move(whileExpr), move(inc), move(body));
 }
 
 unique_ptr<ReturnStatement> Parser::ParseReturnStatement() {
