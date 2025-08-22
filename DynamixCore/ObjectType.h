@@ -62,26 +62,24 @@ namespace Dynamix {
 		MemberCode Code;
 	};
 
-	struct PropertuInfo : MemberInfo {
+	struct PropertyInfo : MemberInfo {
 		MemberCode Set;
 		MemberCode Get;
 	};
 
 	class ObjectType : MemberInfo {
 	public:
-		ObjectType(Runtime& rt, std::string name);
+		explicit ObjectType(std::string name);
 
 		std::string const& Name() const {
 			return m_Name;
 		}
 
-		RuntimeObject* CreateObject(std::vector<Value>& args);
 		// instance 
-		Value Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
+		Value Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;
+		Value Invoke(Interpreter& intr, Value& instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;
 		// static
-		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
-
-		void DestroyObject(RuntimeObject* instance);
+		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;
 
 		unsigned GetObjectCount() const;
 
@@ -92,6 +90,5 @@ namespace Dynamix {
 		std::atomic<unsigned> m_ObjectCount{ 0 };
 		std::unordered_map<std::string, std::unique_ptr<MemberInfo>> m_Members;
 		std::string m_Name;
-		Runtime& m_Runtime;
 	};
 }

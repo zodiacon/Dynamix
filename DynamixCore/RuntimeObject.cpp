@@ -24,9 +24,9 @@ int RuntimeObject::AddRef() {
 }
 
 int RuntimeObject::Release() {
-	auto count = --m_RefCount;
-	if (count == 0)
-		m_Type.DestroyObject(this);
+	//auto count = --m_RefCount;
+	//if (count == 0)
+	//	m_Type.DestroyObject(this);
 	return 0;
 }
 

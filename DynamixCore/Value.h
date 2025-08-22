@@ -3,6 +3,7 @@
 #include <string>
 #include <format>
 #include <sstream>
+#include <vector>
 #include "Token.h"
 #include "EnumClassBitwise.h"
 
@@ -11,6 +12,8 @@ namespace Dynamix {
 	class AstNode;
 	class NativeStruct;
 	class ObjectType;
+	class Interpreter;
+	enum class InvokeFlags;
 
 	using Real = double;
 	using Int = long long;
@@ -125,6 +128,8 @@ namespace Dynamix {
 		Value Negate() const noexcept;
 		Value Not() const noexcept;
 		Value BitwiseNot() const noexcept;
+
+		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
 
 		void Free() noexcept;
 

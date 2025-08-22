@@ -1,6 +1,8 @@
 #include "Parser.h"
 #include "AstNode.h"
 #include <format>
+#include <fstream>
+#include <filesystem>
 
 using namespace std;
 using namespace Dynamix;
@@ -34,9 +36,8 @@ void Parser::Init() {
 		{ "object", TokenType::Keyword_Object },
 		{ "enum", TokenType::Keyword_Enum },
 		{ "struct", TokenType::Keyword_Struct },
-		});
-
-	m_Tokenizer.AddTokens({
+		{ "and", TokenType::Keyword_And },
+		{ "or", TokenType::Keyword_Or },
 		{ "(", TokenType::Operator_OpenParen },
 		{ ")", TokenType::Operator_CloseParen },
 		{ "{", TokenType::Operator_OpenBrace },
@@ -112,6 +113,20 @@ std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
 		return nullptr;
 
 	return DoParse();
+}
+
+std::unique_ptr<Statements> Parser::ParseFile(std::string_view filename) {
+	error_code ec;
+	auto len = filesystem::file_size(filename, ec);
+	if (ec.value())
+		return nullptr;
+	ifstream stm(filename.data());
+	if (!stm.good())
+		return nullptr;
+
+	auto text = std::make_unique<char[]>(len);
+	stm.read(text.get(), len);
+	return Parse(text.get());
 }
 
 unique_ptr<Statements> Parser::DoParse() {
@@ -373,12 +388,9 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 			break;
 		default:
 			if (!topLevel) {
-				//auto it = m_PrefixParslets.find(peek.Type);
-				//if (it != m_PrefixParslets.end())
-				//	return std::make_unique<ExpressionStatement>(it->second->Parse(*this, peek));
-
 				auto expr = ParseExpression();
 				if (expr) {
+					Match(TokenType::Operator_Semicolon);
 					return std::make_unique<ExpressionStatement>(move(expr));
 				}
 			}

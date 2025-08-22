@@ -1,7 +1,9 @@
-#include <format>
+#include <vector>
+
 #include "print.h"
 #include "Parser.h"
 #include "SymbolTable.h"
+#include "ObjectType.h"
 
 using namespace Dynamix;
 
@@ -27,4 +29,7 @@ void InitStdLibrary(Parser& parser) {
 		s.Flags = f.Flags;
 		parser.AddSymbol(std::move(s));
 	}
+
+	auto type = std::make_unique<ObjectType>("String");
+
 }

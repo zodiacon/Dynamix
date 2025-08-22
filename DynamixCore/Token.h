@@ -54,8 +54,6 @@ namespace Dynamix {
 		Operator_Mod,
 		Operator_Neg,
 		Operator_Power,
-		Operator_And,
-		Operator_Or,
 		Operator_Xor,
 		Operator_Not,
 		Operator_OpenParen,

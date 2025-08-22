@@ -5,6 +5,7 @@
 #include "RuntimeObject.h"
 #include <stacktrace>
 #include "Runtime.h"
+#include "ObjectType.h"
 
 using namespace Dynamix;
 
@@ -23,6 +24,8 @@ Bool Value::ToBoolean() const {
 		case ValueType::Integer: return iValue ? true : false;
 		case ValueType::Real: return dValue ? true : false;
 		case ValueType::Boolean: return bValue;
+		case ValueType::Null: return false;
+		case ValueType::String: return m_StrLen > 0;
 	}
 	assert(false);
 	throw RuntimeError(RuntimeErrorType::CannotConvertToBoolean, std::stacktrace::current());
@@ -52,6 +55,9 @@ Value Value::BinaryOperator(TokenType op, Value const& rhs) const noexcept {
 		case TokenType::Operator_NotEqual: return NotEqual(rhs);
 		case TokenType::Operator_LessThan: return LessThan(rhs);
 		case TokenType::Operator_LessThanOrEqual: return LessThanOrEqual(rhs);
+
+		case TokenType::Keyword_And: return And(rhs);
+		case TokenType::Keyword_Or: return Or(rhs);
 	}
 	return Value::Error(ValueErrorType::UnsupportedBinaryOperator);
 }
@@ -166,6 +172,18 @@ Value Value::Mod(Value const& rhs) const noexcept {
 	return Value::Error(ValueErrorType::TypeMismatch);
 }
 
+Value Value::And(Value const& rhs) const noexcept {
+	return ToBoolean() && rhs.ToBoolean();
+}
+
+Value Value::Or(Value const& rhs) const noexcept {
+	return ToBoolean() || rhs.ToBoolean();
+}
+
+Value Value::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
+	return GetObjectType()->Invoke(intr, *this, name, args, flags);
+}
+
 void Value::Free() noexcept {
 	if (m_Type == ValueType::Null)
 		return;
@@ -250,7 +268,7 @@ Value::~Value() {
 	Free();
 }
 
-ObjectType const* Dynamix::Value::GetObjectType() const {
+ObjectType const* Value::GetObjectType() const {
 	switch (m_Type) {
 		case ValueType::Object: return &oValue->Type();
 	}

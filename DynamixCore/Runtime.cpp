@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <print>
 #include "Interpreter.h"
+#include "RuntimeObject.h"
 
 using namespace Dynamix;
 
@@ -38,5 +39,20 @@ bool Runtime::Init() {
 	return true;
 }
 
-Dynamix::RuntimeError::RuntimeError(RuntimeErrorType type, std::stacktrace trace) {
+void Runtime::DestroyObject(RuntimeObject* instance) {
+	//instance->Type().RemoveObject(instance);
+	instance->Destruct();
+	instance->~RuntimeObject();
+	GetAllocator()->Free(instance);
+}
+
+RuntimeObject* Runtime::CreateObject(ObjectType* type, std::vector<Value>& args) {
+	auto obj = (RuntimeObject*)GetAllocator()->Allocate(sizeof(RuntimeObject));
+	new (obj) RuntimeObject(*type);
+	obj->Construct(args);
+	// type->AddObject(obj);
+	return obj;
+}
+
+RuntimeError::RuntimeError(RuntimeErrorType type, std::stacktrace trace) {
 }
