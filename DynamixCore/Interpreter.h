@@ -18,6 +18,8 @@ namespace Dynamix {
 	public:
 		explicit Interpreter(Parser& p, Runtime* rt = nullptr);
 
+		Value Run(AstNode* root);
+
 		// Inherited via Visitor
 		Value VisitLiteral(LiteralExpression const* expr) override;
 		Value VisitBinary(BinaryExpression const* expr) override;

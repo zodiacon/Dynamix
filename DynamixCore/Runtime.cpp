@@ -8,6 +8,11 @@
 
 using namespace Dynamix;
 
+RuntimeError::RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation location) :
+	m_Type(type), m_Message(std::move(msg)), m_Location(std::move(location)) {
+}
+
+
 struct DefaultAllocator : Allocator {
 	void* Allocate(size_t size) {
 		return std::malloc(size);
@@ -54,5 +59,3 @@ RuntimeObject* Runtime::CreateObject(ObjectType* type, std::vector<Value>& args)
 	return obj;
 }
 
-RuntimeError::RuntimeError(RuntimeErrorType type, std::stacktrace trace) {
-}

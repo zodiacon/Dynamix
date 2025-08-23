@@ -112,6 +112,7 @@ std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
 	if (!m_Tokenizer.Tokenize(text, line))
 		return nullptr;
 
+	m_Errors.clear();
 	return DoParse();
 }
 
@@ -126,7 +127,11 @@ std::unique_ptr<Statements> Parser::ParseFile(std::string_view filename) {
 
 	auto text = std::make_unique<char[]>(len);
 	stm.read(text.get(), len);
-	return Parse(text.get());
+	auto file = m_CurrentFile;
+	m_CurrentFile = filename;
+	auto node = Parse(text.get());
+	m_CurrentFile = file;
+	return node;
 }
 
 unique_ptr<Statements> Parser::DoParse() {
@@ -331,9 +336,11 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
 	}
 
 	while (Peek().Type != TokenType::CloseBrace) {
+		auto peek = m_Tokenizer.Peek();
 		auto stmt = ParseStatement();
 		if (!stmt)
 			break;
+		stmt->SetLocation(CodeLocation{ m_CurrentFile, peek.Line, peek.Col });
 		stmt->SetParent(block.get());
 		block->Add(move(stmt));
 	}

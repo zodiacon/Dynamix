@@ -27,6 +27,12 @@ namespace Dynamix {
 		VarValStatement,
 	};
 
+	struct CodeLocation {
+		std::string FileName;
+		int Line;
+		uint16_t Col;
+	};
+
 	class AstNode {
 	public:
 		virtual ~AstNode() noexcept = default;
@@ -37,6 +43,15 @@ namespace Dynamix {
 		virtual AstNodeType Type() const noexcept {
 			return AstNodeType::None;
 		}
+
+		void SetLocation(CodeLocation loc) {
+			m_Location = std::move(loc);
+		}
+
+		CodeLocation const& Location() const {
+			return m_Location;
+		}
+
 		SymbolTable* Symbols() noexcept {
 			return &m_Symbols;
 		}
@@ -55,6 +70,7 @@ namespace Dynamix {
 
 	private:
 		SymbolTable m_Symbols;
+		CodeLocation m_Location;
 	};
 
 	enum class ParameterFlags {

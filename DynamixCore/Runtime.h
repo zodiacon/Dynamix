@@ -2,6 +2,7 @@
 
 #include <stacktrace>
 #include <vector>
+#include "AstNode.h"
 
 namespace Dynamix {
 	struct Allocator;
@@ -9,15 +10,32 @@ namespace Dynamix {
 	class RuntimeObject;
 	class ObjectType;
 	class Value;
-
+	
 	enum class RuntimeErrorType {
 		CannotConvertToBoolean,
 		CannotConvertToReal,
+		CannotConvertToInteger,
 		UnknownIdentifier,
+		TypeMismatch,
+		DivisionByZero,
 	};
 
 	struct RuntimeError {
-		RuntimeError(RuntimeErrorType type, std::stacktrace trace = std::stacktrace::current());
+		RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation location = CodeLocation());
+		RuntimeErrorType Type() const {
+			return m_Type;
+		}
+		std::string const& Message() const {
+			return m_Message;
+		}
+		CodeLocation const& Location() const {
+			return m_Location;
+		}
+
+	private:
+		RuntimeErrorType m_Type;
+		std::string m_Message;
+		CodeLocation m_Location;
 	};
 
 	class Runtime {

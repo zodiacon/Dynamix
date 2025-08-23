@@ -100,34 +100,34 @@ namespace Dynamix {
 		Bool ToBoolean() const;
 		Real ToReal() const;
 
-		Value BinaryOperator(TokenType op, Value const& rhs) const noexcept;
-		Value UnaryOperator(TokenType op) const noexcept;
+		Value BinaryOperator(TokenType op, Value const& rhs) const;
+		Value UnaryOperator(TokenType op) const;
 		Value& Assign(Value const& right, TokenType assign);
 
 		std::string ToString() const noexcept;
 
-		Value Add(Value const& rhs) const noexcept;
-		Value Sub(Value const& rhs) const noexcept;
-		Value Mul(Value const& rhs) const noexcept;
-		Value Div(Value const& rhs) const noexcept;
-		Value Mod(Value const& rhs) const noexcept;
+		Value Add(Value const& rhs) const;
+		Value Sub(Value const& rhs) const;
+		Value Mul(Value const& rhs) const;
+		Value Div(Value const& rhs) const;
+		Value Mod(Value const& rhs) const;
 
-		Value And(Value const& rhs) const noexcept;
-		Value Or(Value const& rhs) const noexcept;
-		Value BitwiseAnd(Value const& rhs) const noexcept;
-		Value BitwiseOr(Value const& rhs) const noexcept;
-		Value BitwiseXor(Value const& rhs) const noexcept;
+		Value And(Value const& rhs) const;
+		Value Or(Value const& rhs) const;
+		Value BitwiseAnd(Value const& rhs) const;
+		Value BitwiseOr(Value const& rhs) const;
+		Value BitwiseXor(Value const& rhs) const;
 
-		Value Equal(Value const& rhs) const noexcept;
-		Value NotEqual(Value const& rhs) const noexcept;
-		Value GreaterThan(Value const& rhs) const noexcept;
-		Value LessThan(Value const& rhs) const noexcept;
-		Value GreaterThanOrEqual(Value const& rhs) const noexcept;
-		Value LessThanOrEqual(Value const& rhs) const noexcept;
+		Value Equal(Value const& rhs) const;
+		Value NotEqual(Value const& rhs) const;
+		Value GreaterThan(Value const& rhs) const;
+		Value LessThan(Value const& rhs) const;
+		Value GreaterThanOrEqual(Value const& rhs) const;
+		Value LessThanOrEqual(Value const& rhs) const;
 
-		Value Negate() const noexcept;
-		Value Not() const noexcept;
-		Value BitwiseNot() const noexcept;
+		Value Negate() const;
+		Value Not() const;
+		Value BitwiseNot() const;
 
 		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
 

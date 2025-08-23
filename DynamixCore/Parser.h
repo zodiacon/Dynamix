@@ -68,6 +68,7 @@ namespace Dynamix {
 		SymbolTable m_GlobalSymbols;
 		std::stack<SymbolTable*> m_Symbols;
 		std::stack<std::string> m_Namespaces;
+		std::string m_CurrentFile;
 		int m_LoopCount{ 0 };
 		bool m_Repl;
 	};

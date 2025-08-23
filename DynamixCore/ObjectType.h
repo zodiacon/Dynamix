@@ -47,6 +47,7 @@ namespace Dynamix {
 	using NativeCode = Value(*)(RuntimeObject*, std::vector<Value>&);
 
 	union MemberCode {
+		MemberCode() : Node(nullptr) {}
 		AstNode* Node;
 		NativeCode Native;
 	};
@@ -70,7 +71,10 @@ namespace Dynamix {
 	};
 
 	struct MethodInfo : MemberInfo {
+		explicit MethodInfo(std::string name) : MemberInfo(name, MemberType::Method) {}
+
 		MemberCode Code;
+		int8_t Arity;
 	};
 
 	struct PropertyInfo : MemberInfo {

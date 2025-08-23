@@ -14,6 +14,10 @@ Dynamix::Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runti
 	m_Scopes.push(make_unique<Scope>());    // global scope
 }
 
+Value Dynamix::Interpreter::Run(AstNode* root) {
+	return root->Accept(this);
+}
+
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 	return Value::FromToken(expr->Literal());
 }
@@ -69,7 +73,7 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 
 	auto v = CurrentScope()->FindVariable(name->Name());
 	if (!v)
-		throw RuntimeError(RuntimeErrorType::UnknownIdentifier);
+		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: {}", name->Name()), expr->Left()->Location());
 
 	return v->VarValue.Assign(expr->Value()->Accept(this), expr->AssignType().Type);
 }
@@ -84,7 +88,8 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			f = nullptr;
 	}
 	if (!f)
-		return Value::Error(ValueErrorType::UndefinedSymbol);
+		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Undefined function: {}", expr->Name()), expr->Location());
+
 	if (f->Type == SymbolType::NativeFunction) {
 		std::vector<Value> args;
 		args.reserve(expr->Arguments().size());

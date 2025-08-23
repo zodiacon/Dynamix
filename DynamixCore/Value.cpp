@@ -15,8 +15,7 @@ Int Value::ToInteger() const {
 		case ValueType::Real: return static_cast<Int>(dValue);
 		case ValueType::Boolean: return bValue ? 1 : 0;
 	}
-	assert(false);
-	return 0;
+	throw RuntimeError(RuntimeErrorType::CannotConvertToInteger, std::format("Cannot convert {} to Integer", ToString()));
 }
 
 Bool Value::ToBoolean() const {
@@ -27,8 +26,7 @@ Bool Value::ToBoolean() const {
 		case ValueType::Null: return false;
 		case ValueType::String: return m_StrLen > 0;
 	}
-	assert(false);
-	throw RuntimeError(RuntimeErrorType::CannotConvertToBoolean, std::stacktrace::current());
+	throw RuntimeError(RuntimeErrorType::CannotConvertToBoolean, std::format("Cannot convert {} to Boolean", ToString()));
 }
 
 Real Value::ToReal() const {
@@ -37,11 +35,10 @@ Real Value::ToReal() const {
 		case ValueType::Real: return dValue;
 		case ValueType::Boolean: return dValue ? 1 : 0;
 	}
-	assert(false);
-	throw RuntimeError(RuntimeErrorType::CannotConvertToReal, std::stacktrace::current());
+	throw RuntimeError(RuntimeErrorType::CannotConvertToReal, std::format("Cannot convert {} to Real", ToString()));
 }
 
-Value Value::BinaryOperator(TokenType op, Value const& rhs) const noexcept {
+Value Value::BinaryOperator(TokenType op, Value const& rhs) const {
 	switch (op) {
 		case TokenType::Plus: return Add(rhs);
 		case TokenType::Minus: return Sub(rhs);
@@ -62,7 +59,7 @@ Value Value::BinaryOperator(TokenType op, Value const& rhs) const noexcept {
 	return Value::Error(ValueErrorType::UnsupportedBinaryOperator);
 }
 
-Value Dynamix::Value::UnaryOperator(TokenType op) const noexcept {
+Value Dynamix::Value::UnaryOperator(TokenType op) const {
 	switch (op) {
 		case TokenType::Minus: return Negate();
 	}
@@ -101,7 +98,7 @@ std::string Value::ToString() const noexcept {
 	return "";
 }
 
-Value Value::Add(Value const& rhs) const noexcept {
+Value Value::Add(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer:
 			return iValue + rhs.iValue;
@@ -113,10 +110,10 @@ Value Value::Add(Value const& rhs) const noexcept {
 		case ValueType::Integer | ValueType::Boolean:
 			return ToInteger() + rhs.ToInteger();
 	}
-	return Value::Error(ValueErrorType::TypeMismatch);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot add {} and {}", ToString(), rhs.ToString()));
 }
 
-Value Value::Sub(Value const& rhs) const noexcept {
+Value Value::Sub(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer:
 			return iValue - rhs.iValue;
@@ -125,10 +122,10 @@ Value Value::Sub(Value const& rhs) const noexcept {
 		case ValueType::Real:
 			return dValue - rhs.dValue;
 	}
-	return Value::Error(ValueErrorType::TypeMismatch);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot subtract {} from {}", rhs.ToString(), ToString()));
 }
 
-Value Value::Mul(Value const& rhs) const noexcept {
+Value Value::Mul(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer:
 			return iValue * rhs.iValue;
@@ -140,11 +137,10 @@ Value Value::Mul(Value const& rhs) const noexcept {
 		case ValueType::Integer | ValueType::Boolean:
 			return ToInteger() * rhs.ToInteger();
 	}
-	assert(false);
-	return Value::Error(ValueErrorType::TypeMismatch);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot multiply {} and {}", ToString(), rhs.ToString()));
 }
 
-Value Value::Div(Value const& rhs) const noexcept {
+Value Value::Div(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Real:
 			if (rhs.dValue == 0)
@@ -152,31 +148,30 @@ Value Value::Div(Value const& rhs) const noexcept {
 			return dValue / rhs.dValue;
 		case ValueType::Integer:
 			if (rhs.iValue == 0)
-				return Value::Error();
+				throw RuntimeError(RuntimeErrorType::DivisionByZero, "Cannot divide by zero");
 			return iValue / rhs.iValue;
 		case ValueType::Integer | ValueType::Real:
 			auto r = rhs.ToReal();
 			if (r == 0)
-				break;
+				throw RuntimeError(RuntimeErrorType::DivisionByZero, "Cannot divide by zero");
 			return ToReal() / rhs.ToReal();
 	}
-	assert(false);
-	return Value::Error();
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot divide {} by {}", ToString(), rhs.ToString()));
 }
 
-Value Value::Mod(Value const& rhs) const noexcept {
+Value Value::Mod(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer: 
 			return rhs.iValue == 0 ? Value::Error(ValueErrorType::DivideByZero) : iValue % rhs.iValue;
 	}
-	return Value::Error(ValueErrorType::TypeMismatch);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot modulo {} by {}", ToString(), rhs.ToString()));
 }
 
-Value Value::And(Value const& rhs) const noexcept {
+Value Value::And(Value const& rhs) const {
 	return ToBoolean() && rhs.ToBoolean();
 }
 
-Value Value::Or(Value const& rhs) const noexcept {
+Value Value::Or(Value const& rhs) const {
 	return ToBoolean() || rhs.ToBoolean();
 }
 
@@ -215,12 +210,12 @@ Value::Value(Value const& other) noexcept : oValue(other.oValue), m_Type(other.m
 		oValue->AddRef();
 	else if (m_Type == ValueType::String) {
 		m_StrLen = other.m_StrLen;
-		strValue = (char*)malloc(m_StrLen);
+		strValue = (char*)malloc(m_StrLen + 1);
 		if (strValue == nullptr) {
 			*this = Value::Error(ValueErrorType::OutOfMemory);
 			return;
 		}
-		memcpy(strValue, other.strValue, m_StrLen);
+		memcpy(strValue, other.strValue, m_StrLen + 1);
 	}
 }
 
@@ -228,12 +223,15 @@ Value& Value::operator=(Value const& other) noexcept {
 	if (this != &other) {
 		Free();
 		m_Type = other.m_Type;
+		m_StrLen = other.m_StrLen;
+		oValue = other.oValue;
 	}
 	return *this;
 }
 
-Dynamix::Value::Value(Value&& other) noexcept : m_Type(other.m_Type), oValue(other.oValue) {
+Value::Value(Value&& other) noexcept : m_Type(other.m_Type), oValue(other.oValue), m_StrLen(other.m_StrLen) {
 	other.m_Type = ValueType::Null;
+
 }
 
 Value& Value::operator=(Value&& other) noexcept {
@@ -275,7 +273,7 @@ ObjectType const* Value::GetObjectType() const {
 	return nullptr;
 }
 
-Value Value::Equal(Value const& rhs) const noexcept {
+Value Value::Equal(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer: return iValue == rhs.iValue;
 		case ValueType::Real: return dValue == rhs.dValue;
@@ -285,10 +283,10 @@ Value Value::Equal(Value const& rhs) const noexcept {
 		case ValueType::Integer | ValueType::Boolean: return ToBoolean() == rhs.ToBoolean();
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) == 0;
 	}
-	return Value(false);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
 
-Value Value::NotEqual(Value const& rhs) const noexcept {
+Value Value::NotEqual(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer: return iValue != rhs.iValue;
 		case ValueType::Real: return dValue != rhs.dValue;
@@ -298,10 +296,10 @@ Value Value::NotEqual(Value const& rhs) const noexcept {
 		case ValueType::Integer | ValueType::Boolean: return ToBoolean() != rhs.ToBoolean();
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) != 0;
 	}
-	return Value(true);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
 
-Value Value::LessThan(Value const& rhs) const noexcept {
+Value Value::LessThan(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer: return iValue < rhs.iValue;
 		case ValueType::Real: return dValue < rhs.dValue;
@@ -310,10 +308,10 @@ Value Value::LessThan(Value const& rhs) const noexcept {
 		case ValueType::Integer | ValueType::Boolean: return ToBoolean() < rhs.ToBoolean();
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) < 0;
 	}
-	return Value(false);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
 
-Value Value::LessThanOrEqual(Value const& rhs) const noexcept {
+Value Value::LessThanOrEqual(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer: return iValue <= rhs.iValue;
 		case ValueType::Real: return dValue <= rhs.dValue;
@@ -323,10 +321,10 @@ Value Value::LessThanOrEqual(Value const& rhs) const noexcept {
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) <= 0;
 		case ValueType::Null: return true;
 	}
-	return Value(false);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
 
-Value Dynamix::Value::Negate() const noexcept {
+Value Dynamix::Value::Negate() const {
 	switch (m_Type) {
 		case ValueType::Integer: return -iValue;
 		case ValueType::Real: return -dValue;
@@ -334,7 +332,7 @@ Value Dynamix::Value::Negate() const noexcept {
 	return Value::Error(ValueErrorType::TypeMismatch);
 }
 
-Value Value::GreaterThan(Value const& rhs) const noexcept {
+Value Value::GreaterThan(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer: return iValue > rhs.iValue;
 		case ValueType::Real: return dValue > rhs.dValue;
@@ -343,10 +341,10 @@ Value Value::GreaterThan(Value const& rhs) const noexcept {
 		case ValueType::Integer | ValueType::Boolean: return ToBoolean() > rhs.ToBoolean();
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) > 0;
 	}
-	return Value(false);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
 
-Value Value::GreaterThanOrEqual(Value const& rhs) const noexcept {
+Value Value::GreaterThanOrEqual(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
 		case ValueType::Integer: return iValue >= rhs.iValue;
 		case ValueType::Real: return dValue >= rhs.dValue;
@@ -356,7 +354,7 @@ Value Value::GreaterThanOrEqual(Value const& rhs) const noexcept {
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) >= 0;
 		case ValueType::Null: return true;
 	}
-	return Value(false);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
 
 //std::ostream& operator<<(std::ostream& os, Value const& v) {
