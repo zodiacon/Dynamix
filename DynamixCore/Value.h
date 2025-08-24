@@ -4,6 +4,8 @@
 #include <format>
 #include <sstream>
 #include <vector>
+#include <cassert>
+
 #include "Token.h"
 #include "EnumClassBitwise.h"
 
@@ -29,6 +31,7 @@ namespace Dynamix {
 		AstNode = 0x20,
 		Struct = 0x40,
 		String = 0x80,
+		NativeFunction = 0x100,
 		Error = 0xf000,
 	};
 
@@ -44,6 +47,10 @@ namespace Dynamix {
 		Parse,
 	};
 
+	class Value;
+
+	using NativeFunction = Value(*)(Interpreter&, std::vector<Value>&);
+
 	class Value final {
 	public:
 		constexpr Value() noexcept : m_Type(ValueType::Null) {}
@@ -51,8 +58,10 @@ namespace Dynamix {
 		constexpr Value(Real d) noexcept : dValue(d), m_Type(ValueType::Real) {}
 		constexpr Value(Bool b) noexcept : bValue(b), m_Type(ValueType::Boolean) {}
 		constexpr Value(ValueType t) noexcept : m_Type(t) {}
-		Value(RuntimeObject* o) noexcept;
+		constexpr Value(AstNode const* node) : nValue(node), m_Type(ValueType::AstNode) {}
+		constexpr Value(NativeFunction f) : fValue(f), m_Type(ValueType::NativeFunction) {}
 		Value(const char* s) noexcept;
+		Value(RuntimeObject* o) noexcept;
 
 		Value(Value const& other) noexcept;
 		Value& operator=(Value const& other) noexcept;
@@ -95,10 +104,22 @@ namespace Dynamix {
 		bool IsError() const noexcept {
 			return m_Type == ValueType::Error;
 		}
+		bool IsNativeFunction() const noexcept {
+			return m_Type == ValueType::NativeFunction;
+		}
 
 		Int ToInteger() const;
 		Bool ToBoolean() const;
 		Real ToReal() const;
+		AstNode const* AsAstNode() const {
+			assert(IsAstNode());
+			return nValue;
+		}
+
+		NativeFunction AsNativeCode() const {
+			assert(IsNativeFunction());
+			return fValue;
+		}
 
 		Value BinaryOperator(TokenType op, Value const& rhs) const;
 		Value UnaryOperator(TokenType op) const;
@@ -139,10 +160,11 @@ namespace Dynamix {
 			Real dValue;
 			Bool bValue;
 			RuntimeObject* oValue;
-			AstNode* nValue;
+			AstNode const* nValue;
 			NativeStruct* sValue;
 			ValueErrorType error;
 			char* strValue;
+			NativeFunction fValue;
 		};
 		ValueType m_Type;
 		unsigned m_StrLen;

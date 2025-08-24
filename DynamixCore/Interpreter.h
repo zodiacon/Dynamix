@@ -18,7 +18,7 @@ namespace Dynamix {
 	public:
 		explicit Interpreter(Parser& p, Runtime* rt = nullptr);
 
-		Value Run(AstNode* root);
+		Value Eval(AstNode const* root);
 
 		// Inherited via Visitor
 		Value VisitLiteral(LiteralExpression const* expr) override;
@@ -58,10 +58,8 @@ namespace Dynamix {
 		Parser& m_Parser;
 		Runtime* m_Runtime;
 		std::stack<std::unique_ptr<Scope>> m_Scopes;
-		Value m_ReturnValue;
 		LoopAction m_LoopAction{ LoopAction::None };
 		int m_InLoop{ 0 };
-		bool m_Return{ false };
 	};
 
 }

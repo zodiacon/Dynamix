@@ -12,7 +12,7 @@ using namespace std;
 void ShowErrors(Parser const& p) {
 	println("{} Errors:", p.Errors().size());
 	for (auto& e : p.Errors()) {
-		println("{},{}: '{}' {}", e.Info.Line, e.Info.Col, e.Info.Lexeme, e.Description);
+		println("{},{}: {}", e.Location().Line, e.Location().Col, e.Description());
 	}
 }
 
@@ -25,13 +25,13 @@ int RunRepl(Parser& p, Interpreter& intr, std::unique_ptr<AstNode> node) {
 	for (;;) {
 		print(">> ");
 		gets_s(text);
-		if (_strcmpi(text, "quit") == 0)
+		if (_strcmpi(text, "$quit") == 0)
 			break;
 
 		auto n = p.Parse(text);
 		if(n) {
 			try {
-				auto result = intr.Run(n.get());
+				auto result = intr.Eval(n.get());
 				println("{}", result.ToString());
 				nodes.push_back(move(n));
 			}

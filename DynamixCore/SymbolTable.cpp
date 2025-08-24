@@ -19,3 +19,11 @@ Symbol const* SymbolTable::FindSymbol(string const& name, int8_t arity, bool loc
 	return nullptr;
 }
 
+std::vector<Symbol const*> SymbolTable::EnumSymbols() const {
+	std::vector<Symbol const*> symbols;
+	symbols.reserve(m_Symbols.size());
+	for (auto& [name, sym] : m_Symbols)
+		symbols.push_back(&sym);
+	return symbols;
+}
+

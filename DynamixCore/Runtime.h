@@ -18,6 +18,11 @@ namespace Dynamix {
 		UnknownIdentifier,
 		TypeMismatch,
 		DivisionByZero,
+		NonCallable,
+	};
+
+	struct ReturnStatementException {
+		Value ReturnValue;
 	};
 
 	struct RuntimeError {

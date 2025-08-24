@@ -83,7 +83,6 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
         // Right: fact(n - 1)
         auto* callExpr = reinterpret_cast<const InvokeFunctionExpression*>(binExpr->Right());
         REQUIRE(callExpr != nullptr);
-        REQUIRE(callExpr->Name() == "fact");
         REQUIRE(callExpr->Arguments().size() == 1);
 
         auto* argExpr = reinterpret_cast<const BinaryExpression*>(callExpr->Arguments()[0].get());

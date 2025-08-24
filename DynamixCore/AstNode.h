@@ -11,6 +11,7 @@
 #include "Token.h"
 #include "SymbolTable.h"
 #include "ObjectType.h"
+#include "ParseError.h"
 
 namespace Dynamix {
 	enum class AstNodeType {
@@ -25,12 +26,6 @@ namespace Dynamix {
 		Statements,
 		FunctionDeclaration,
 		VarValStatement,
-	};
-
-	struct CodeLocation {
-		std::string FileName;
-		int Line;
-		uint16_t Col;
 	};
 
 	class AstNode {
@@ -234,14 +229,14 @@ namespace Dynamix {
 
 	class InvokeFunctionExpression : public Expression {
 	public:
-		InvokeFunctionExpression(std::string name, std::vector<std::unique_ptr<Expression>> args);
+		InvokeFunctionExpression(std::unique_ptr<Expression> callable, std::vector<std::unique_ptr<Expression>> args);
 		Value Accept(Visitor* visitor) const override;
-		std::string const& Name() const noexcept;
+		Expression const* Callable() const;
 		std::vector<std::unique_ptr<Expression>> const& Arguments() const;
 		std::string ToString() const override;
 
 	private:
-		std::string m_Name;
+		std::unique_ptr<Expression> m_Callable;
 		std::vector<std::unique_ptr<Expression>> m_Arguments;
 	};
 

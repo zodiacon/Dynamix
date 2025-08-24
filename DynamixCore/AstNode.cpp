@@ -132,10 +132,14 @@ string AssignExpression::ToString() const {
 	return format("{} {} {}", Left()->ToString(), AssignType().Lexeme, Value()->ToString());
 }
 
-InvokeFunctionExpression::InvokeFunctionExpression(string name, vector<unique_ptr<Expression>> args) :
-	m_Name(move(name)), m_Arguments(move(args)) {
+InvokeFunctionExpression::InvokeFunctionExpression(unique_ptr<Expression> callable, vector<unique_ptr<Expression>> args) :
+	m_Callable(move(callable)), m_Arguments(move(args)) {
 	for (auto& arg : m_Arguments)
 		arg->SetParent(this);
+}
+
+Expression const* InvokeFunctionExpression::Callable() const {
+	return m_Callable.get();
 }
 
 Value InvokeFunctionExpression::Accept(Visitor* visitor) const {
@@ -309,10 +313,6 @@ std::string const& EnumDeclaration::Name() const noexcept {
 	return m_Name;
 }
 
-string const& InvokeFunctionExpression::Name() const noexcept {
-	return m_Name;
-}
-
 vector<std::unique_ptr<Expression>> const& Dynamix::InvokeFunctionExpression::Arguments() const {
 	return m_Arguments;
 }
@@ -323,7 +323,7 @@ string InvokeFunctionExpression::ToString() const {
 		result += arg->ToString() + ", ";
 	if (result.empty())
 		result = ", ";
-	return format("{} ({})", Name(), result.substr(0, result.length() - 2));
+	return format("{} ({})", m_Callable->ToString(), result.substr(0, result.length() - 2));
 }
 
 Value Statements::Accept(Visitor* visitor) const {

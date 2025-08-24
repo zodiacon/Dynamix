@@ -3,6 +3,12 @@
 #include <string_view>
 #include "Token.h"
 
+struct CodeLocation {
+	std::string FileName;
+	int Line;
+	uint16_t Col;
+};
+
 namespace Dynamix {
 	enum class ParseErrorType {
 		NoError,
@@ -31,9 +37,25 @@ namespace Dynamix {
 	};
 
 	struct ParseError {
-		ParseErrorType Type;
-		Token Info;
-		std::string Description;
+		ParseError(ParseErrorType type, Token const& token, std::string desc = "");
+		ParseError(ParseErrorType type, CodeLocation location, std::string desc = "");
+
+		std::string const& Description() const {
+			return m_Description;
+		}
+
+		CodeLocation const& Location() const {
+			return m_Location;
+		}
+
+		ParseErrorType Type() const {
+			return m_Type;
+		}
+
+	private:
+		ParseErrorType m_Type;
+		CodeLocation m_Location;
+		std::string m_Description;
 	};
 }
 

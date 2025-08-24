@@ -189,7 +189,7 @@ unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 		}
 		return left;
 	}
-	AddError(ParseError{ ParseErrorType::UnknownOperator, token });
+	AddError(ParseError(ParseErrorType::UnknownOperator, token, format("Unexpected token: {}", token.Lexeme)));
 	return nullptr;
 }
 
@@ -224,7 +224,7 @@ unique_ptr<VarValStatement> Parser::ParseVarConstStatement(bool constant) {
 	auto next = Next();		// eat var or val
 	auto name = Next();		// variable name
 	if (name.Type != TokenType::Identifier)
-		throw ParseError(ParseErrorType::IdentifierExpected, name);
+		AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Identifier expected"));
 
 	bool dup = false;
 	{
@@ -311,6 +311,10 @@ bool Parser::AddSymbol(Symbol sym) {
 
 Symbol const* Parser::FindSymbol(string const& name, int8_t arity, bool localOnly) const {
 	return m_Symbols.top()->FindSymbol(name, arity, localOnly);
+}
+
+std::vector<Symbol const*> Parser::GlobalSymbols() const {
+	return m_GlobalSymbols.EnumSymbols();
 }
 
 void Parser::PushScope(AstNode* node) {

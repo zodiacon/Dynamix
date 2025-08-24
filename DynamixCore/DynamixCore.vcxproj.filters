@@ -19,6 +19,9 @@
     <Filter Include="Parsing">
       <UniqueIdentifier>{81fd9c63-3895-4185-bebd-d993f7478e8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Interpret">
+      <UniqueIdentifier>{a8ff446e-ae01-42a9-9e5a-f64e3df6dbee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Token.h">
@@ -51,13 +54,7 @@
     <ClInclude Include="Runtime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Interpreter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EnumClassBitwise.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scope.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="print.h">
@@ -74,6 +71,12 @@
     </ClInclude>
     <ClInclude Include="Tokenizer.h">
       <Filter>Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="Interpreter.h">
+      <Filter>Interpret</Filter>
+    </ClInclude>
+    <ClInclude Include="Scope.h">
+      <Filter>Interpret</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -104,12 +107,6 @@
     <ClCompile Include="Runtime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Interpreter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scope.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Print.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
@@ -127,6 +124,12 @@
     </ClCompile>
     <ClCompile Include="Tokenizer.cpp">
       <Filter>Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="Interpreter.cpp">
+      <Filter>Interpret</Filter>
+    </ClCompile>
+    <ClCompile Include="Scope.cpp">
+      <Filter>Interpret</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

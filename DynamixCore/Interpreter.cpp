@@ -12,9 +12,17 @@ using namespace std;
 
 Dynamix::Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runtime(rt) {
 	m_Scopes.push(make_unique<Scope>());    // global scope
+	for (auto sym : p.GlobalSymbols()) {
+		if (sym->Type == SymbolType::NativeFunction) {
+			Variable v;
+			v.Flags = VariableFlags::NativeFunction;
+			v.VarValue = sym->Code;
+			CurrentScope()->AddVariable(sym->Name, move(v));
+		}
+	}
 }
 
-Value Dynamix::Interpreter::Run(AstNode* root) {
+Value Interpreter::Eval(AstNode const* root) {
 	return root->Accept(this);
 }
 
@@ -23,7 +31,7 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 }
 
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {
-	auto left = expr->Left()->Accept(this);
+	auto left = Eval(expr->Left());
 	switch (expr->Operator().Type) {
 		case TokenType::And:
 			if (!left.ToBoolean())
@@ -35,19 +43,23 @@ Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 			break;
 	}
 
-	return left.BinaryOperator(expr->Operator().Type, expr->Right()->Accept(this));
+	return left.BinaryOperator(expr->Operator().Type, Eval(expr->Right()));
 }
 
 Value Interpreter::VisitUnary(UnaryExpression const* expr) {
-	return expr->Arg()->Accept(this).UnaryOperator(expr->Operator().Type);
+	return Eval(expr->Arg()).UnaryOperator(expr->Operator().Type);
 }
 
 Value Interpreter::VisitName(NameExpression const* expr) {
 	auto v = CurrentScope()->FindVariable(expr->Name());
-	if (!v)
-		return Value::Error(ValueErrorType::UndefinedSymbol);
+	if (v) {
+		return v->VarValue;
+	}
+	auto sym = expr->Symbols()->FindSymbol(expr->Name());
+	if (sym)
+		return sym->Ast;
+	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, "Unknown identifier", expr->Location());
 
-	return v->VarValue;
 }
 
 Value Interpreter::VisitBlock(BlockExpression const* expr) {
@@ -79,38 +91,36 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
-	assert(expr->Symbols());
-	assert(expr->Symbols()->Parent());
-	auto f = expr->Symbols()->Parent()->FindSymbol(expr->Name(), (int8_t)expr->Arguments().size());
-	if (!f) {
-		f = expr->Symbols()->Parent()->FindSymbol(expr->Name());
-		if (f && ((f->Flags & SymbolFlags::VarArg) != SymbolFlags::VarArg || (int8_t)expr->Arguments().size() <= f->Arity))
-			f = nullptr;
-	}
-	if (!f)
-		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Undefined function: {}", expr->Name()), expr->Location());
-
-	if (f->Type == SymbolType::NativeFunction) {
-		std::vector<Value> args;
-		args.reserve(expr->Arguments().size());
-		for (auto& v : expr->Arguments())
-			args.emplace_back(v->Accept(this));
-		return (*f->Code)(*this, args);
-	}
-	else {
-		auto decl = reinterpret_cast<FunctionDeclaration*>(f->Ast);
+	auto f = Eval(expr->Callable());
+	if (f.IsAstNode()) {
+		auto decl = reinterpret_cast<FunctionDeclaration const*>(f.AsAstNode());
 
 		PushScope();
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
 			Variable v{ expr->Arguments()[i]->Accept(this) };
 			CurrentScope()->AddVariable(decl->Parameters()[i].Name, move(v));
 		}
-		auto result = decl->Body()->Accept(this);
-		PopScope();
-		if (m_Return)
-			m_Return = false;
-		return result;
+		try {
+			auto result = Eval(decl->Body());
+			PopScope();
+			return result;
+		}
+		catch (ReturnStatementException const& ret) {
+			PopScope();
+			m_InLoop = 0;
+			m_LoopAction = LoopAction::None;
+			return ret.ReturnValue;
+		}
 	}
+
+	if (!f.IsNativeFunction())
+		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
+
+	std::vector<Value> args;
+	args.reserve(expr->Arguments().size());
+	for (auto& v : expr->Arguments())
+		args.emplace_back(v->Accept(this));
+	return (*f.AsNativeCode())(*this, args);
 }
 
 Value Interpreter::VisitWhile(WhileStatement const* stmt) {
@@ -118,12 +128,6 @@ Value Interpreter::VisitWhile(WhileStatement const* stmt) {
 	PushScope();
 	while (stmt->Condition()->Accept(this).ToBoolean()) {
 		stmt->Body()->Accept(this);
-		if (m_Return) {
-			PopScope();
-			m_InLoop--;
-			return m_ReturnValue;
-		}
-
 		if (m_LoopAction == LoopAction::Break) {
 			m_LoopAction = LoopAction::None;
 			break;
@@ -147,13 +151,16 @@ Value Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
 }
 
 Value Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
+	Variable v;
+	v.VarValue = decl;
+	CurrentScope()->AddVariable(decl->Name(), move(v));
+
 	return Value();
 }
 
 Value Interpreter::VisitReturn(ReturnStatement const* decl) {
-	m_ReturnValue = decl->ReturnValue()->Accept(this);
-	m_Return = true;
-	return m_ReturnValue;
+	auto ret = decl->ReturnValue()->Accept(this);
+	throw ReturnStatementException{ ret };
 }
 
 Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
@@ -168,10 +175,6 @@ Value Interpreter::VisitFor(ForStatement const* stmt) {
 	while (stmt->While()->Accept(this).ToBoolean()) {
 		if (stmt->Body()) {
 			stmt->Body();
-			if (m_Return) {
-				m_InLoop--;
-				return m_ReturnValue;
-			}
 			if (m_LoopAction == LoopAction::Break) {
 				m_LoopAction = LoopAction::None;
 				break;
@@ -188,9 +191,6 @@ Value Interpreter::VisitStatements(Statements const* stmts) {
 	Value result;
 	for (auto& stmt : stmts->Get()) {
 		result = stmt->Accept(this);
-		if (m_Return) {
-			break;
-		}
 	}
 	return result;
 }

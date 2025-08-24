@@ -82,7 +82,7 @@ unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 
 unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	if (left->Type() != AstNodeType::Name)
-		parser.AddError(ParseError{ ParseErrorType::IllegalExpression, token });
+		parser.AddError(ParseError(ParseErrorType::IllegalExpression, token, "Identifier expected"));
 
 	auto right = parser.ParseExpression(Precedence() - 1);
 
@@ -97,10 +97,10 @@ InvokeFunctionParslet::InvokeFunctionParslet() : PostfixOperatorParslet(1200) {
 }
 
 unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
-	if (left->Type() != AstNodeType::Name)
-		parser.AddError(ParseError{ ParseErrorType::Syntax, token });
+	//if (left->Type() == AstNodeType::Name)
+	//	parser.AddError(ParseError(ParseErrorType::Syntax, token, "Identifier expected"));
 
-	auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
+	//auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
 
 	auto next = parser.Peek();
 	vector<unique_ptr<Expression>> args;
@@ -108,11 +108,11 @@ unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<E
 		auto param = parser.ParseExpression();
 		args.push_back(move(param));
 		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false))
-			parser.AddError(ParseError{ ParseErrorType::CommaExpected, next });
+			parser.AddError(ParseError(ParseErrorType::CommaExpected, next, "Expected , or )"));
 		next = parser.Peek();
 	}
 	parser.Match(TokenType::CloseParen, true, true);
-	return make_unique<InvokeFunctionExpression>(nameExpr->Name(), move(args));
+	return make_unique<InvokeFunctionExpression>(move(left), move(args));
 }
 
 unique_ptr<Expression> IfThenElseParslet::Parse(Parser& parser, Token const& token) {
@@ -128,8 +128,7 @@ unique_ptr<Expression> IfThenElseParslet::Parse(Parser& parser, Token const& tok
 
 unique_ptr<Expression> AnonymousFunctionParslet::Parse(Parser& parser, Token const& token) {
 	assert(token.Type == TokenType::Fn);
-	if (!parser.Match(TokenType::OpenParen))
-		throw ParseError(ParseErrorType::OpenParenExpected, parser.Peek());
+	parser.Match(TokenType::OpenParen, true, true);
 
 	//
 	// parse args
@@ -138,11 +137,11 @@ unique_ptr<Expression> AnonymousFunctionParslet::Parse(Parser& parser, Token con
 	while (parser.Peek().Type != TokenType::CloseParen) {
 		auto arg = parser.Next();
 		if (arg.Type != TokenType::Identifier)
-			throw ParseError(ParseErrorType::IdentifierExpected, arg);
+			parser.AddError(ParseError(ParseErrorType::IdentifierExpected, arg));
 		args.push_back(Parameter{ move(arg.Lexeme) });
 		if (parser.Match(TokenType::Comma) || parser.Match(TokenType::CloseParen, false))
 			continue;
-		throw ParseError(ParseErrorType::CommaOrCloseParenExpected, parser.Peek());
+		parser.AddError(ParseError(ParseErrorType::CommaOrCloseParenExpected, parser.Peek()));
 	}
 	parser.Next();		// eat close paren
 	if (parser.Match(TokenType::GoesTo)) {

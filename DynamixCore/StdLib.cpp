@@ -8,7 +8,6 @@
 using namespace Dynamix;
 
 void InitStdLibrary(Parser& parser) {
-
 	struct {
 		const char* Name;
 		NativeFunction Code;
