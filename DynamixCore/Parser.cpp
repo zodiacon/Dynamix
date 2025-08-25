@@ -38,6 +38,8 @@ void Parser::Init() {
 		{ "struct", TokenType::Struct },
 		{ "and", TokenType::And },
 		{ "or", TokenType::Or },
+		{ "breakout", TokenType::BreakOut },
+		{ "match", TokenType::Match },
 		{ "(", TokenType::OpenParen },
 		{ ")", TokenType::CloseParen },
 		{ "{", TokenType::OpenBrace },

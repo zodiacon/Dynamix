@@ -49,17 +49,9 @@ namespace Dynamix {
 		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 
 	private:
-		enum class LoopAction {
-			None,
-			Break,
-			Continue,
-			BreakAll,
-		};
 		Parser& m_Parser;
 		Runtime* m_Runtime;
 		std::stack<std::unique_ptr<Scope>> m_Scopes;
-		LoopAction m_LoopAction{ LoopAction::None };
-		int m_InLoop{ 0 };
 	};
 
 }

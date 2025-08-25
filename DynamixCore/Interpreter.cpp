@@ -72,7 +72,7 @@ Value Interpreter::VisitVar(VarValStatement const* expr) {
 
 	Variable v;
 	if (expr->Init())
-		v.VarValue = expr->Init()->Accept(this);
+		v.VarValue = Eval(expr->Init());
 
 	CurrentScope()->AddVariable(expr->Name(), move(v));
 	return Value();
@@ -87,7 +87,7 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 	if (!v)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: {}", name->Name()), expr->Left()->Location());
 
-	return v->VarValue.Assign(expr->Value()->Accept(this), expr->AssignType().Type);
+	return v->VarValue.Assign(Eval(expr->Value()), expr->AssignType().Type);
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
@@ -107,9 +107,9 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		}
 		catch (ReturnStatementException const& ret) {
 			PopScope();
-			m_InLoop = 0;
-			m_LoopAction = LoopAction::None;
 			return ret.ReturnValue;
+		}
+		catch (BreakAllStatementException const&) {
 		}
 	}
 
@@ -119,22 +119,23 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	std::vector<Value> args;
 	args.reserve(expr->Arguments().size());
 	for (auto& v : expr->Arguments())
-		args.emplace_back(v->Accept(this));
+		args.emplace_back(Eval(v.get()));
 	return (*f.AsNativeCode())(*this, args);
 }
 
 Value Interpreter::VisitWhile(WhileStatement const* stmt) {
-	m_InLoop++;
 	PushScope();
-	while (stmt->Condition()->Accept(this).ToBoolean()) {
-		stmt->Body()->Accept(this);
-		if (m_LoopAction == LoopAction::Break) {
-			m_LoopAction = LoopAction::None;
+	while (Eval(stmt->Condition()).ToBoolean()) {
+		try {
+			Eval(stmt->Body());
+		}
+		catch (BreakStatementException const&) {
 			break;
+		}
+		catch (ContinueStatementException const&) {
 		}
 	}
 	PopScope();
-	m_InLoop--;
 	return Value();
 }
 
@@ -164,28 +165,29 @@ Value Interpreter::VisitReturn(ReturnStatement const* decl) {
 }
 
 Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
-	m_LoopAction = stmt->IsContinue() ? LoopAction::Continue : LoopAction::Break;
-	return Value();
+	if (stmt->IsContinue())
+		throw ContinueStatementException();
+	else
+		throw BreakStatementException();
+
 }
 
 Value Interpreter::VisitFor(ForStatement const* stmt) {
 	PushScope();
 	Eval(stmt->Init());
-	m_InLoop++;
 	while (Eval(stmt->While()).ToBoolean()) {
-		PushScope();
-		if (stmt->Body()) {
-			Eval(stmt->Body());
-			if (m_LoopAction == LoopAction::Break) {
-				m_LoopAction = LoopAction::None;
-				break;
+		try {
+			if (stmt->Body()) {
+				Eval(stmt->Body());
 			}
 		}
-		PopScope();
-		if (stmt->Inc())
-			stmt->Inc()->Accept(this);
+		catch (BreakStatementException) {
+			break;
+		}
+		catch (ContinueStatementException) {
+		}
+		Eval(stmt->Inc());
 	}
-	m_InLoop--;
 	PopScope();
 	return Value();
 }
@@ -193,7 +195,7 @@ Value Interpreter::VisitFor(ForStatement const* stmt) {
 Value Interpreter::VisitStatements(Statements const* stmts) {
 	Value result;
 	for (auto& stmt : stmts->Get()) {
-		result = stmt->Accept(this);
+		result = Eval(stmt.get());
 	}
 	return result;
 }
@@ -207,7 +209,7 @@ Value Interpreter::VisitEnumDeclaration(EnumDeclaration const* decl) {
 }
 
 Value Interpreter::VisitExpressionStatement(ExpressionStatement const* expr) {
-	return expr->Expr()->Accept(this);
+	return Eval(expr->Expr());
 }
 
 Scope* Interpreter::CurrentScope() {

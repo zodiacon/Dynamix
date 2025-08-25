@@ -45,6 +45,7 @@ namespace Dynamix {
 		Not,
 		Enum,
 		Struct,
+		Match,
 		Native,
 
 		Plus = Operator,

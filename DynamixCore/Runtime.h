@@ -25,6 +25,15 @@ namespace Dynamix {
 		Value ReturnValue;
 	};
 
+	struct BreakStatementException {
+	};
+
+	struct ContinueStatementException {
+	};
+
+	struct BreakAllStatementException {
+	};
+
 	struct RuntimeError {
 		RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation location = CodeLocation());
 		RuntimeErrorType Type() const {
