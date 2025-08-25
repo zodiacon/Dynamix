@@ -48,9 +48,6 @@
     <ClInclude Include="ObjectType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Interfaces.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Runtime.h">
       <Filter>Header Files</Filter>
     </ClInclude>

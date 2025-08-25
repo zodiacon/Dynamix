@@ -53,7 +53,7 @@ namespace Dynamix {
 		std::unique_ptr<ForStatement> ParseForStatement();
 
 		Token Next();
-		Token Peek() const;
+		Token const& Peek() const;
 		bool SkipTo(TokenType type);
 		bool Match(TokenType type, bool consume = true, bool errorIfNotFound = false);
 		bool Match(std::string_view lexeme, bool consume = true, bool errorIfNotFound = false);
@@ -63,6 +63,7 @@ namespace Dynamix {
 
 	private:
 		Tokenizer& m_Tokenizer;
+		mutable Token m_NextToken{ TokenType::Invalid };
 		std::unordered_map<TokenType, std::unique_ptr<InfixParslet>> m_InfixParslets;
 		std::unordered_map<TokenType, std::unique_ptr<PrefixParslet>> m_PrefixParslets;
 		std::vector<ParseError> m_Errors;

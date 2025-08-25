@@ -23,7 +23,7 @@ Dynamix::Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runti
 }
 
 Value Interpreter::Eval(AstNode const* root) {
-	return root->Accept(this);
+	return root ? root->Accept(this) : Value();
 }
 
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
@@ -169,21 +169,24 @@ Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
 }
 
 Value Interpreter::VisitFor(ForStatement const* stmt) {
-	if (stmt->Init())
-		stmt->Init()->Accept(this);
+	PushScope();
+	Eval(stmt->Init());
 	m_InLoop++;
-	while (stmt->While()->Accept(this).ToBoolean()) {
+	while (Eval(stmt->While()).ToBoolean()) {
+		PushScope();
 		if (stmt->Body()) {
-			stmt->Body();
+			Eval(stmt->Body());
 			if (m_LoopAction == LoopAction::Break) {
 				m_LoopAction = LoopAction::None;
 				break;
 			}
 		}
+		PopScope();
 		if (stmt->Inc())
 			stmt->Inc()->Accept(this);
 	}
 	m_InLoop--;
+	PopScope();
 	return Value();
 }
 

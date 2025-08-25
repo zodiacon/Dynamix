@@ -136,7 +136,6 @@
   <ItemGroup>
     <ClInclude Include="AstNode.h" />
     <ClInclude Include="EnumClassBitwise.h" />
-    <ClInclude Include="Interfaces.h" />
     <ClInclude Include="Interpreter.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="Runtime.h" />

@@ -47,12 +47,6 @@ namespace Dynamix {
 	public:
 		Runtime(Parser& parser);
 
-		bool SetAllocator(Allocator* allocator);
-		Allocator* GetAllocator() const;
-
-		RuntimeObject* CreateObject(ObjectType* type, std::vector<Value>& args);
-		void DestroyObject(RuntimeObject* object);
-
 		void AddNativeFunctions();
 		bool Init();
 

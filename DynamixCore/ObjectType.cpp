@@ -1,6 +1,5 @@
 #include "ObjectType.h"
 #include "RuntimeObject.h"
-#include "Interfaces.h"
 #include "Runtime.h"
 
 using namespace Dynamix;
@@ -19,4 +18,15 @@ Value ObjectType::Invoke(Interpreter& intr, std::string_view name, std::vector<V
 
 unsigned ObjectType::GetObjectCount() const {
 	return m_ObjectCount.load();
+}
+
+void ObjectType::DestroyObject(RuntimeObject* instance) {
+	instance->Destruct();
+	delete instance;
+}
+
+RuntimeObject* ObjectType::CreateObject(std::vector<Value>& args) {
+	auto obj = new RuntimeObject(*this);
+	obj->Construct(args);
+	return obj;
 }

@@ -112,6 +112,7 @@ std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
 	if (!m_Tokenizer.Tokenize(text, line))
 		return nullptr;
 
+	m_NextToken.Type = TokenType::Invalid;
 	m_Errors.clear();
 	return DoParse();
 }
@@ -147,11 +148,15 @@ unique_ptr<Statements> Parser::DoParse() {
 }
 
 Token Parser::Next() {
-	return m_Tokenizer.Next();
+	auto next = m_Tokenizer.Next();
+	m_NextToken.Type = TokenType::Invalid;
+	return next;
 }
 
-Token Parser::Peek() const {
-	return m_Tokenizer.Peek();
+Token const& Parser::Peek() const {
+	if (m_NextToken.Type == TokenType::Invalid)
+		m_NextToken = m_Tokenizer.Peek();
+	return m_NextToken;
 }
 
 bool Parser::SkipTo(TokenType type) {
@@ -441,7 +446,7 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 		SkipTo(TokenType::CloseBrace);
 		return nullptr;
 	}
-	auto sym = FindSymbol(name.Lexeme);
+	auto sym = FindSymbol(name.Lexeme, -1, true);
 	if (sym) {
 		AddError(ParseError(ParseErrorType::DuplicateDefinition, name, "Idenitifier already defined in current scope"));
 	}
@@ -500,17 +505,19 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 
 unique_ptr<ForStatement> Parser::ParseForStatement() {
 	Next();		// eat for
+	Match(TokenType::OpenParen, true, true);
+
 	auto init = ParseStatement();
 
 	auto whileExpr = ParseExpression();
-	if (!Match(TokenType::Semicolon))
-		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
+	Match(TokenType::Semicolon, true, true);
 
 	auto inc = ParseExpression();
+	Match(TokenType::CloseParen, true, true);
+
 	m_LoopCount++;
 	auto body = ParseBlock();
 	m_LoopCount--;
-	PopScope();
 	return make_unique<ForStatement>(move(init), move(whileExpr), move(inc), move(body));
 }
 
