@@ -13,7 +13,7 @@ namespace Dynamix {
 		void SetCommentToEndOfLine(std::string_view chars);
 
 		bool AddToken(std::string_view lexeme, TokenType type);
-		int AddTokens(std::initializer_list<std::pair<std::string_view, TokenType>> tokens);
+		bool AddTokens(std::initializer_list<std::pair<std::string_view, TokenType>> tokens);
 
 		Token Next();
 		Token Peek();

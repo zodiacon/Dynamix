@@ -79,6 +79,10 @@ namespace Dynamix {
 			return m_Type;
 		}
 
+		bool IsNull() const noexcept {
+			return m_Type == ValueType::Null;
+		}
+
 		bool IsInteger() const noexcept {
 			return m_Type == ValueType::Integer;
 		}

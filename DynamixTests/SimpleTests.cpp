@@ -13,6 +13,7 @@ using namespace Dynamix;
 TEST_CASE("Parser and Tokenizer integration with AST validation") {
     Tokenizer tokenizer;
     Parser parser(tokenizer, true);
+    REQUIRE(parser.Init());
 
     SECTION("Parse simple var statement and check AST") {
         auto stmts = parser.Parse("var x = 1;", 1);

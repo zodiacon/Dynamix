@@ -18,3 +18,8 @@ std::string_view Dynamix::Token::TypeToString() const {
         return "Operator";
     return "(Unknown)";
 }
+
+std::string_view Dynamix::Token::TypeToString(TokenType type) {
+    return (Token{ type }).TypeToString();
+}
+

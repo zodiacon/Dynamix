@@ -55,18 +55,22 @@ Value Value::BinaryOperator(TokenType op, Value const& rhs) const {
 
 		case TokenType::And: return And(rhs);
 		case TokenType::Or: return Or(rhs);
+
+		case TokenType::BitwiseAnd: return BitwiseAnd(rhs);
+		case TokenType::BitwiseOr: return BitwiseOr(rhs);
+		case TokenType::BitwiseXor: return BitwiseXor(rhs);
 	}
-	return Value::Error(ValueErrorType::UnsupportedBinaryOperator);
+	throw RuntimeError(RuntimeErrorType::UnknownOperator, std::format("Unsupported operator {}", Token::TypeToString(op)));
 }
 
-Value Dynamix::Value::UnaryOperator(TokenType op) const {
+Value Value::UnaryOperator(TokenType op) const {
 	switch (op) {
 		case TokenType::Minus: return Negate();
 	}
-	return Value::Error(ValueErrorType::UnsupportedUnaryOperator);
+	throw RuntimeError(RuntimeErrorType::UnknownOperator, std::format("Unsupported operator {}", Token::TypeToString(op)));
 }
 
-Value& Dynamix::Value::Assign(Value const& right, TokenType assign) {
+Value& Value::Assign(Value const& right, TokenType assign) {
 	switch (assign) {
 		case TokenType::Assign: *this = right; break;
 		case TokenType::Assign_Add: *this = BinaryOperator(TokenType::Plus, right); break;
@@ -74,6 +78,9 @@ Value& Dynamix::Value::Assign(Value const& right, TokenType assign) {
 		case TokenType::Assign_Mul: *this = BinaryOperator(TokenType::Mul, right); break;
 		case TokenType::Assign_Div: *this = BinaryOperator(TokenType::Div, right); break;
 		case TokenType::Assign_Mod: *this = BinaryOperator(TokenType::Mod, right); break;
+		case TokenType::Assign_And: *this = BinaryOperator(TokenType::BitwiseAnd, right); break;
+		case TokenType::Assign_Or: *this = BinaryOperator(TokenType::BitwiseOr, right); break;
+		case TokenType::Assign_Xor: *this = BinaryOperator(TokenType::BitwiseXor, right); break;
 	}
 	return *this;
 }
@@ -109,6 +116,8 @@ Value Value::Add(Value const& rhs) const {
 			return ToReal() + rhs.ToReal();
 		case ValueType::Integer | ValueType::Boolean:
 			return ToInteger() + rhs.ToInteger();
+		case ValueType::String:
+			return Value((std::string(strValue) + rhs.strValue).c_str());
 	}
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot add {} and {}", ToString(), rhs.ToString()));
 }
@@ -175,6 +184,27 @@ Value Value::Or(Value const& rhs) const {
 	return ToBoolean() || rhs.ToBoolean();
 }
 
+Value Value::BitwiseAnd(Value const& rhs) const {
+	if (IsInteger() && rhs.IsInteger())
+		return Value(iValue & rhs.iValue);
+
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot bitwise AND {} by {}", ToString(), rhs.ToString()));
+}
+
+Value Value::BitwiseOr(Value const& rhs) const {
+	if (IsInteger() && rhs.IsInteger())
+		return Value(iValue | rhs.iValue);
+
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot bitwise OR {} by {}", ToString(), rhs.ToString()));
+}
+
+Value Value::BitwiseXor(Value const& rhs) const {
+	if (IsInteger() && rhs.IsInteger())
+		return Value(iValue ^ rhs.iValue);
+
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot bitwise XOR {} by {}", ToString(), rhs.ToString()));
+}
+
 Value Value::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
 	return GetObjectType()->Invoke(intr, *this, name, args, flags);
 }
@@ -239,6 +269,7 @@ Value& Value::operator=(Value&& other) noexcept {
 		Free();
 		m_Type = other.m_Type;
 		oValue = other.oValue;
+		m_StrLen = other.m_StrLen;
 		other.m_Type = ValueType::Null;
 	}
 	return *this;

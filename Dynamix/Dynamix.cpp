@@ -32,7 +32,8 @@ int RunRepl(Parser& p, Interpreter& intr, std::unique_ptr<AstNode> node) {
 		if(n) {
 			try {
 				auto result = intr.Eval(n.get());
-				println("{}", result.ToString());
+				if(!result.IsNull())
+					println("{}", result.ToString());
 				nodes.push_back(move(n));
 			}
 			catch (RuntimeError err) {

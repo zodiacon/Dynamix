@@ -8,11 +8,13 @@ using namespace std;
 using namespace Dynamix;
 
 Parser::Parser(Tokenizer& t, bool test) : m_Tokenizer(t), m_Repl(test) {
-	Init();
 }
 
-void Parser::Init() {
-	m_Tokenizer.AddTokens({
+bool Parser::Init() {
+	if (!m_InfixParslets.empty())
+		return true;
+
+	if (!m_Tokenizer.AddTokens({
 		{ "if", TokenType::If },
 		{ "while", TokenType::While },
 		{ "fn", TokenType::Fn },
@@ -67,7 +69,15 @@ void Parser::Init() {
 		{ "/", TokenType::Div },
 		{ "%", TokenType::Mod },
 		{ "+=", TokenType::Assign_Add },
-		});
+		{ "-=", TokenType::Assign_Sub },
+		{ "*=", TokenType::Assign_Mul },
+		{ "/=", TokenType::Assign_Div },
+		{ "%=", TokenType::Assign_Mod },
+		{ "&=", TokenType::Assign_And },
+		{ "|=", TokenType::Assign_Or },
+		{ "^=", TokenType::Assign_Xor },
+		}))
+		return false;
 
 	AddParslet(TokenType::And, make_unique<BinaryOperatorParslet>(80));
 	AddParslet(TokenType::Or, make_unique<BinaryOperatorParslet>(70));
@@ -109,6 +119,7 @@ void Parser::Init() {
 	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
 
 	m_Symbols.push(&m_GlobalSymbols);
+	return true;
 }
 
 std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
@@ -281,7 +292,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	}
 
 	Next();		// eat close paren
-	if (parameters.size() > 127)
+	if (parameters.size() > 64)
 		AddError(ParseError{ ParseErrorType::TooManyFunctionArgs, Peek() });
 
 	auto sym = FindSymbol(ident.Lexeme, (int8_t)parameters.size(), true);

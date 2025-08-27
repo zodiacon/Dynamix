@@ -19,6 +19,7 @@ namespace Dynamix {
 		TypeMismatch,
 		DivisionByZero,
 		NonCallable,
+		UnknownOperator,
 	};
 
 	struct ReturnStatementException {

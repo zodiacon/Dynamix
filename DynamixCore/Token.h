@@ -101,6 +101,7 @@ namespace Dynamix {
 			double rValue;
 		};
 		std::string_view TypeToString() const;
+		static std::string_view TypeToString(TokenType type);
 	};
 }
 

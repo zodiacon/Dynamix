@@ -10,6 +10,7 @@ using namespace Dynamix;
 TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
     Tokenizer tokenizer;
     Parser parser(tokenizer, true);
+    REQUIRE(parser.Init());
     Interpreter interpreter(parser);
 
     SECTION("Integer literal") {
@@ -52,6 +53,7 @@ TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
 TEST_CASE("Interpreter evaluates variable declaration and assignment") {
     Tokenizer tokenizer;
     Parser parser(tokenizer, true);
+    REQUIRE(parser.Init());
     Interpreter interpreter(parser);
 
     SECTION("Variable declaration and use") {
@@ -75,6 +77,7 @@ TEST_CASE("Interpreter evaluates variable declaration and assignment") {
 TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
     Tokenizer tokenizer;
     Parser parser(tokenizer, true);
+    REQUIRE(parser.Init());
     Interpreter interpreter(parser);
 
     const char* code = R"(

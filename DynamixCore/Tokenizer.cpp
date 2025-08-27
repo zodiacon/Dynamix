@@ -17,12 +17,12 @@ bool Tokenizer::AddToken(string_view lexeme, TokenType type) {
 	m_TokenTypes.try_emplace(lexeme, type).second;
 }
 
-int Tokenizer::AddTokens(initializer_list<pair<string_view, TokenType>> tokens) {
+bool Tokenizer::AddTokens(initializer_list<pair<string_view, TokenType>> tokens) {
 	auto count = 0;
 	for (auto const& [str, type] : tokens) {
 		count += AddToken(str, type) ? 1 : 0;
 	}
-	return count;
+	return count == tokens.size();
 }
 
 Token Tokenizer::Next() {

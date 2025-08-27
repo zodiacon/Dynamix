@@ -21,6 +21,9 @@ void Runtime::AddNativeFunctions() {
 }
 
 bool Runtime::Init() {
+	if (!m_Parser.Init())
+		return false;
+
 	AddNativeFunctions();
 	return true;
 }
