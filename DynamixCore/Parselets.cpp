@@ -81,9 +81,6 @@ unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 }
 
 unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
-	if (left->Type() != AstNodeType::Name)
-		parser.AddError(ParseError(ParseErrorType::IllegalExpression, token, "Identifier expected"));
-
 	auto right = parser.ParseExpression(Precedence() - 1);
 
 	return make_unique<AssignExpression>(move(left), move(right), token);
@@ -149,7 +146,7 @@ unique_ptr<Expression> AnonymousFunctionParslet::Parse(Parser& parser, Token con
 		return make_unique<AnonymousFunctionExpression>(move(args), move(expr));
 	}
 	auto block = parser.ParseBlock(args);
-	return make_unique<AnonymousFunctionExpression>(move(args), move(block));
+	return make_unique<AnonymousFunctionExpression>(move(args), make_unique<ExpressionStatement>(move(block), false));
 }
 
 int AnonymousFunctionParslet::Precedence() const {

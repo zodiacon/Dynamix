@@ -51,6 +51,7 @@ void Parser::Init() {
 		{ "!=", TokenType::NotEqual },
 		{ "==", TokenType::Equal },
 		{ "=", TokenType::Assign },
+		{ "=>", TokenType::GoesTo },
 		{ ",", TokenType::Comma },
 		{ "|", TokenType::BitwiseOr },
 		{ "&", TokenType::BitwiseAnd },
@@ -408,8 +409,8 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 			if (!topLevel) {
 				auto expr = ParseExpression();
 				if (expr) {
-					Match(TokenType::Semicolon);
-					return std::make_unique<ExpressionStatement>(move(expr));
+					bool semi = Match(TokenType::Semicolon);
+					return std::make_unique<ExpressionStatement>(move(expr), semi);
 				}
 			}
 	}

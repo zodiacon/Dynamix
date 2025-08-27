@@ -356,12 +356,13 @@ string Statements::ToString() const {
 	return result;
 }
 
-ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr) : m_Expr(move(expr)) {
+ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr, bool sc) : m_Expr(move(expr)), m_Semicolon(sc) {
 	m_Expr->SetParent(this);
 }
 
 Value ExpressionStatement::Accept(Visitor* visitor) const {
-	return visitor->VisitExpressionStatement(this);
+	auto result = visitor->VisitExpressionStatement(this);
+	return m_Semicolon ? Value() : result;
 }
 
 Expression const* ExpressionStatement::Expr() const {
@@ -372,5 +373,5 @@ string ExpressionStatement::ToString() const {
 	return Expr()->ToString();
 }
 
-Dynamix::ClassDeclaration::ClassDeclaration(std::unique_ptr<ObjectType> type) : m_ObjectType(move(type)) {
+ClassDeclaration::ClassDeclaration(std::unique_ptr<ObjectType> type) : m_ObjectType(move(type)) {
 }

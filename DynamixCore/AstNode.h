@@ -98,13 +98,14 @@ namespace Dynamix {
 
 	class ExpressionStatement final : public Statement {
 	public:
-		ExpressionStatement(std::unique_ptr<Expression> expr);
+		ExpressionStatement(std::unique_ptr<Expression> expr, bool semicolon);
 		Value Accept(Visitor* visitor) const override;
 		Expression const* Expr() const;
 		std::string ToString() const override;
 
 	private:
 		std::unique_ptr<Expression> m_Expr;
+		bool m_Semicolon;
 	};
 
 	class Statements final : public Statement {
