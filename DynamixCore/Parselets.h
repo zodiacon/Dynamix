@@ -81,4 +81,10 @@ namespace Dynamix {
 		int Precedence() const override;
 	};
 
+	struct ArrayExpressionParslet : PrefixParslet {
+		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
+		int Precedence() const override {
+			return 0;
+		}
+	};
 }

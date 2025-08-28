@@ -87,8 +87,13 @@ namespace Dynamix {
 	public:
 		explicit ObjectType(std::string name) : MemberInfo(name, MemberType::Class) {}
 
-		RuntimeObject* CreateObject(std::vector<Value>& args);
-		void DestroyObject(RuntimeObject* object);
+		ObjectType(ObjectType const&) = delete;
+		ObjectType& operator=(ObjectType const&) = delete;
+		ObjectType(ObjectType&&) = delete;
+		ObjectType& operator=(ObjectType&&) = delete;
+
+		virtual RuntimeObject* CreateObject(std::vector<Value>& args);
+		virtual void DestroyObject(RuntimeObject* object);
 
 		// instance 
 		Value Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;

@@ -7,3 +7,7 @@ ParseError::ParseError(ParseErrorType type, Token const& token, std::string desc
 
 ParseError::ParseError(ParseErrorType type, CodeLocation location, std::string desc) : m_Type(type), m_Location(std::move(location)), m_Description(std::move(desc)) {
 }
+
+CodeLocation CodeLocation::FromToken(Token const& token) {
+	return CodeLocation{ "", token.Line, token.Col };
+}

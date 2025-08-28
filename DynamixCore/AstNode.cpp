@@ -356,6 +356,18 @@ string Statements::ToString() const {
 	return result;
 }
 
+void ArrayExpression::Add(std::unique_ptr<Expression> expr) {
+	m_Items.push_back(move(expr));
+}
+
+Value ArrayExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitArrayExpression(this);
+}
+
+vector<unique_ptr<Expression>> const& ArrayExpression::Items() const {
+	return m_Items;
+}
+
 ExpressionStatement::ExpressionStatement(std::unique_ptr<Expression> expr, bool sc) : m_Expr(move(expr)), m_Semicolon(sc) {
 	m_Expr->SetParent(this);
 }

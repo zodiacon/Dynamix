@@ -6,6 +6,7 @@
 #include "AstNode.h"
 #include "ParseError.h"
 #include "SymbolTable.h"
+#include "ArrayType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -151,4 +152,16 @@ unique_ptr<Expression> AnonymousFunctionParslet::Parse(Parser& parser, Token con
 
 int AnonymousFunctionParslet::Precedence() const {
 	return 2000;
+}
+
+std::unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token const& token) {
+	auto array = make_unique<ArrayExpression>();
+	while (parser.Peek().Type != TokenType::CloseBracket) {
+		auto expr = parser.ParseExpression();
+		array->Add(move(expr));
+		if (!parser.Match(TokenType::Comma) && parser.Peek().Type != TokenType::CloseBracket)
+			parser.AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(parser.Peek()), "Expected: ,"));
+	}
+	parser.Next();
+	return array;
 }

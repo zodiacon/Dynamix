@@ -96,6 +96,17 @@ namespace Dynamix {
 		Statement() = default;
 	};
 
+	class ArrayExpression : public Expression {
+	public:
+		void Add(std::unique_ptr<Expression> expr);
+		Value Accept(Visitor* visitor) const override;
+
+		std::vector<std::unique_ptr<Expression>> const& Items() const;
+
+	private:
+		std::vector<std::unique_ptr<Expression>> m_Items;
+	};
+
 	class ExpressionStatement final : public Statement {
 	public:
 		ExpressionStatement(std::unique_ptr<Expression> expr, bool semicolon);

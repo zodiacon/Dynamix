@@ -20,6 +20,10 @@ unsigned ObjectType::GetObjectCount() const {
 	return m_ObjectCount.load();
 }
 
+bool ObjectType::AddMember(std::unique_ptr<MemberInfo> member) {
+	return m_Members.insert({ member->Name(), std::move(member) }).second;
+}
+
 void ObjectType::DestroyObject(RuntimeObject* instance) {
 	instance->Destruct();
 	delete instance;

@@ -5,13 +5,14 @@
 #include <vector>
 
 #include "Value.h"
+//#include "NoCopyMove.h"
 
 namespace Dynamix {
 	class ObjectType;
 	class Interpreter;
 	enum class InvokeFlags;
 
-	class RuntimeObject {
+	class RuntimeObject /*: NotCopyable*/ {
 	public:
 		explicit RuntimeObject(ObjectType& type);
 		RuntimeObject(RuntimeObject const& other) = delete;
@@ -19,8 +20,8 @@ namespace Dynamix {
 		RuntimeObject(RuntimeObject&& other) = default;
 		RuntimeObject& operator=(RuntimeObject&& other) = default;
 
-		void Construct(std::vector<Value>& args);
-		void Destruct();
+		virtual void Construct(std::vector<Value>& args);
+		virtual void Destruct();
 
 		ObjectType& Type() {
 			return m_Type;
@@ -30,7 +31,7 @@ namespace Dynamix {
 			return m_Type;
 		}
 
-		std::string ToString() const;
+		virtual std::string ToString() const;
 
 		int AddRef();
 		int Release();

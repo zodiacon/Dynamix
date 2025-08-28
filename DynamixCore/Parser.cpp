@@ -117,6 +117,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::BitwiseXor, make_unique<BinaryOperatorParslet>(390));
 	AddParslet(TokenType::Fn, make_unique<AnonymousFunctionParslet>());
 	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
+	AddParslet(TokenType::OpenBracket, make_unique<ArrayExpressionParslet>());
 
 	m_Symbols.push(&m_GlobalSymbols);
 	return true;

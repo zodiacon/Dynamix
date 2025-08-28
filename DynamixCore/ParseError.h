@@ -3,13 +3,15 @@
 #include <string_view>
 #include "Token.h"
 
-struct CodeLocation {
-	std::string FileName;
-	int Line;
-	uint16_t Col;
-};
-
 namespace Dynamix {
+	struct CodeLocation {
+		std::string FileName;
+		int Line;
+		uint16_t Col;
+
+		static CodeLocation FromToken(Token const&);
+	};
+
 	enum class ParseErrorType {
 		NoError,
 		Syntax,

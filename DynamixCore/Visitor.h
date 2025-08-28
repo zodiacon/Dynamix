@@ -22,6 +22,7 @@ namespace Dynamix {
 	class AnonymousFunctionExpression;
 	class EnumDeclaration;
 	class ExpressionStatement;
+	class ArrayExpression;
 
 	class Visitor {
 	public:
@@ -46,5 +47,6 @@ namespace Dynamix {
 		virtual Value VisitAnonymousFunction(AnonymousFunctionExpression const* func) = 0;
 		virtual Value VisitEnumDeclaration(EnumDeclaration const* decl) = 0;
 		virtual Value VisitExpressionStatement(ExpressionStatement const* expr) = 0;
+		virtual Value VisitArrayExpression(ArrayExpression const* expr) = 0;
 	};
 }

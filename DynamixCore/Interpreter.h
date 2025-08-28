@@ -39,6 +39,7 @@ namespace Dynamix {
 		Value VisitAnonymousFunction(AnonymousFunctionExpression const* func) override;
 		Value VisitEnumDeclaration(EnumDeclaration const* decl) override;
 		Value VisitExpressionStatement(ExpressionStatement const* expr) override;
+		Value VisitArrayExpression(ArrayExpression const* expr) override;
 
 		void PushScope();
 		void PopScope();

@@ -6,6 +6,7 @@
 #include "Parser.h"
 #include "Runtime.h"
 #include "SymbolTable.h"
+#include "ArrayType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -210,6 +211,16 @@ Value Interpreter::VisitEnumDeclaration(EnumDeclaration const* decl) {
 
 Value Interpreter::VisitExpressionStatement(ExpressionStatement const* expr) {
 	return Eval(expr->Expr());
+}
+
+Value Interpreter::VisitArrayExpression(ArrayExpression const* expr) {
+	auto& type = ArrayType::Get();
+	std::vector<Value> values;
+	values.reserve(expr->Items().size());
+	for (auto& item : expr->Items())
+		values.emplace_back(Eval(item.get()));
+
+	return type.CreateArray(values);
 }
 
 Scope* Interpreter::CurrentScope() {

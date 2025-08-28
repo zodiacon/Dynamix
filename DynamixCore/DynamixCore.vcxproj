@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ArrayType.h" />
     <ClInclude Include="AstNode.h" />
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="Interpreter.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Visitor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ArrayType.cpp" />
     <ClCompile Include="AstNode.cpp" />
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="Print.cpp" />

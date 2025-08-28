@@ -75,6 +75,9 @@
     <ClInclude Include="Scope.h">
       <Filter>Interpret</Filter>
     </ClInclude>
+    <ClInclude Include="ArrayType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp">
@@ -127,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="Scope.cpp">
       <Filter>Interpret</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayType.cpp">
+      <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
