@@ -36,7 +36,7 @@ namespace Dynamix {
 		virtual Value VisitVar(VarValStatement const* expr) = 0;
 		virtual Value VisitAssign(AssignExpression const* expr) = 0;
 		virtual Value VisitInvokeFunction(InvokeFunctionExpression const* expr) = 0;
-		//virtual Value VisitRepeat(RepeatStatement const* expr) = 0;
+		virtual Value VisitRepeat(RepeatStatement const* expr) = 0;
 		virtual Value VisitWhile(WhileStatement const* stmt) = 0;
 		virtual Value VisitIfThenElse(IfThenElseExpression const* expr) = 0;
 		virtual Value VisitFunctionDeclaration(FunctionDeclaration const* decl) = 0;

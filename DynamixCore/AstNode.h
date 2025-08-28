@@ -360,6 +360,19 @@ namespace Dynamix {
 		std::unique_ptr<Expression> m_Expr;
 	};
 
+	class RepeatStatement : public Statement {
+	public:
+		RepeatStatement(std::unique_ptr<Expression> times, std::unique_ptr<Statements> body);
+		Value Accept(Visitor* visitor) const override;
+
+		Expression const* Times() const noexcept;
+		Statements const* Body() const noexcept;
+
+	private:
+		std::unique_ptr<Expression> m_Times;
+		std::unique_ptr<Statements> m_Body;
+	};
+
 	class IfThenElseExpression : public Expression {
 	public:
 		IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> thenExpr, std::unique_ptr<Statement> elseExpr = nullptr);

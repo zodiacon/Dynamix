@@ -160,6 +160,21 @@ Expression const* WhileStatement::Condition() const noexcept {
 	return m_Condition.get();
 }
 
+RepeatStatement::RepeatStatement(unique_ptr<Expression> times, unique_ptr<Statements> body) : m_Times(move(times)), m_Body(move(body)) {
+}
+
+Value RepeatStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitRepeat(this);
+}
+
+Expression const* RepeatStatement::Times() const noexcept {
+	return m_Times.get();
+}
+
+Statements const* RepeatStatement::Body() const noexcept {
+	return m_Body.get();
+}
+
 Statements const* WhileStatement::Body() const noexcept {
 	return m_Body.get();
 }

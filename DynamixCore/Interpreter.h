@@ -40,6 +40,7 @@ namespace Dynamix {
 		Value VisitEnumDeclaration(EnumDeclaration const* decl) override;
 		Value VisitExpressionStatement(ExpressionStatement const* expr) override;
 		Value VisitArrayExpression(ArrayExpression const* expr) override;
+		Value VisitRepeat(RepeatStatement const* stmt) override;
 
 		void PushScope();
 		void PopScope();

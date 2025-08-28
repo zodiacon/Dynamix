@@ -325,6 +325,17 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	return decl;
 }
 
+std::unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
+	Next();		// eat repeat keyword
+	auto times = ParseExpression();
+	if (!times)
+		return nullptr;
+	auto body = ParseBlock();
+	if (!body)
+		return nullptr;
+	return make_unique<RepeatStatement>(move(times), move(body));
+}
+
 bool Parser::AddSymbol(Symbol sym) {
 	return m_Symbols.top()->AddSymbol(move(sym));
 }
@@ -385,7 +396,10 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 	switch (peek.Type) {
 		case TokenType::Var: return ParseVarConstStatement(false);
 		case TokenType::Val: return ParseVarConstStatement(true);
-			//case TokenType::Repeat: return ParseRepeatStatement();
+		case TokenType::Repeat: 
+			if (!topLevel)
+				return ParseRepeatStatement();
+			break;
 		case TokenType::While:
 			if (!topLevel)
 				return ParseWhileStatement();

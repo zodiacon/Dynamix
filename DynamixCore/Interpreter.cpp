@@ -223,6 +223,21 @@ Value Interpreter::VisitArrayExpression(ArrayExpression const* expr) {
 	return type.CreateArray(values);
 }
 
+Value Interpreter::VisitRepeat(RepeatStatement const* stmt) {
+	auto times = Eval(stmt->Times()).ToInteger();
+	for (; times > 0; --times) {
+		try {
+			Eval(stmt->Body());
+		}
+		catch (BreakStatementException const&) {
+			break;
+		}
+		catch (ContinueStatementException const&) {
+		}
+	}
+	return Value();
+}
+
 Scope* Interpreter::CurrentScope() {
 	return m_Scopes.top().get();
 }
