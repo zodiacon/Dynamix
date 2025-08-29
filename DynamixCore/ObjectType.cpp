@@ -24,6 +24,11 @@ bool ObjectType::AddMember(std::unique_ptr<MemberInfo> member) {
 	return m_Members.insert({ member->Name(), std::move(member) }).second;
 }
 
+MemberInfo const* Dynamix::ObjectType::GetMember(std::string const& name) const {
+	auto it = m_Members.find(name);
+	return it == m_Members.end() ? nullptr : it->second.get();
+}
+
 void ObjectType::DestroyObject(RuntimeObject* instance) {
 	instance->Destruct();
 	delete instance;

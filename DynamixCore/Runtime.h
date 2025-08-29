@@ -20,6 +20,11 @@ namespace Dynamix {
 		DivisionByZero,
 		NonCallable,
 		UnknownOperator,
+		ObjectExpected,
+		UnknownMember,
+		IndexerNotSupported,
+		IndexerTypeMismatch,
+		IndexOutOfRange,
 	};
 
 	struct ReturnStatementException {

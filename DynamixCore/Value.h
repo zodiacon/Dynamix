@@ -21,8 +21,8 @@ namespace Dynamix {
 	using Int = long long;
 	using Bool = bool;
 
-	enum class ValueType : uint16_t {
-		Invalid = 0,
+	enum class ValueType : uint32_t {
+		Error = 0,
 		Null = 1,
 		Integer = 2,
 		Real = 4,
@@ -32,7 +32,7 @@ namespace Dynamix {
 		Struct = 0x40,
 		String = 0x80,
 		NativeFunction = 0x100,
-		Error = 0xf000,
+		Callable = 0x200,
 	};
 
 	enum class ValueErrorType {
@@ -51,6 +51,12 @@ namespace Dynamix {
 
 	using NativeFunction = Value(*)(Interpreter&, std::vector<Value>&);
 
+	struct Callable {
+		RuntimeObject* Instance{ nullptr };
+		AstNode* Node{ nullptr };
+		NativeFunction Native{ nullptr };
+	};
+
 	class Value final {
 	public:
 		constexpr Value() noexcept : m_Type(ValueType::Null) {}
@@ -62,6 +68,7 @@ namespace Dynamix {
 		constexpr Value(NativeFunction f) : fValue(f), m_Type(ValueType::NativeFunction) {}
 		Value(const char* s) noexcept;
 		Value(RuntimeObject* o) noexcept;
+		Value(Callable* c) noexcept;
 
 		Value(Value const& other) noexcept;
 		Value& operator=(Value const& other) noexcept;
@@ -112,17 +119,31 @@ namespace Dynamix {
 			return m_Type == ValueType::NativeFunction;
 		}
 
+		bool IsCallable() const noexcept {
+			return m_Type == ValueType::Callable;
+		}
+
 		Int ToInteger() const;
 		Bool ToBoolean() const;
 		Real ToReal() const;
-		AstNode const* AsAstNode() const {
+		AstNode const* AsAstNode() const noexcept {
 			assert(IsAstNode());
 			return nValue;
 		}
 
-		NativeFunction AsNativeCode() const {
+		RuntimeObject* AsObject() noexcept {
+			assert(IsObject());
+			return oValue;
+		}
+
+		NativeFunction AsNativeCode() const noexcept {
 			assert(IsNativeFunction());
 			return fValue;
+		}
+
+		Callable* AsCallable() const noexcept {
+			assert(IsCallable());
+			return cValue;
 		}
 
 		Value BinaryOperator(TokenType op, Value const& rhs) const;
@@ -156,6 +177,8 @@ namespace Dynamix {
 
 		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
 
+		Value InvokeIndexer(Value const& index) const;
+
 		void Free() noexcept;
 
 	private:
@@ -166,15 +189,22 @@ namespace Dynamix {
 			RuntimeObject* oValue;
 			AstNode const* nValue;
 			NativeStruct* sValue;
+			Callable* cValue;
 			ValueErrorType error;
 			char* strValue;
 			NativeFunction fValue;
 		};
-		ValueType m_Type;
-		unsigned m_StrLen;
+		union {
+			struct {
+				ValueType m_Type;
+				uint32_t m_StrLen;
+			};
+			AstNode* MemberNode;
+			NativeFunction memberCode;
+		};
 	};
 
-	static_assert(sizeof(Value) <= 16);
+	static_assert(sizeof(Value) == 16);
 
 }
 

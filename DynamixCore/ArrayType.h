@@ -26,6 +26,8 @@ namespace Dynamix {
 
 		std::string ToString() const override;
 
+		Value InvokeIndexer(Value const& index) override;
+
 	private:
 		std::vector<Value> m_Items;
 	};

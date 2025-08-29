@@ -57,6 +57,16 @@ namespace Dynamix {
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
 	};
 
+	struct GetMemberParslet : PostfixOperatorParslet {
+		GetMemberParslet() : PostfixOperatorParslet(1200) {}
+		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
+	};
+
+	struct ArrayAccessParslet : PostfixOperatorParslet {
+		ArrayAccessParslet() : PostfixOperatorParslet(1250) {}
+		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
+	};
+
 	struct BinaryOperatorParslet : InfixParslet {
 		explicit BinaryOperatorParslet(int precedence, bool right = false);
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;

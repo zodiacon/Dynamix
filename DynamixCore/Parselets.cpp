@@ -47,15 +47,15 @@ unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
 	//}
 	//
 	string name = token.Lexeme;
-	while (parser.Peek().Type == TokenType::Dot) {
-		parser.Next();
-		if (parser.Peek().Type != TokenType::Identifier) {
-			parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
-			break;
-		}
-		name += "." + parser.Next().Lexeme;
-	}
-	return make_unique<NameExpression>(name, ns);
+	//while (parser.Peek().Type == TokenType::Dot) {
+	//	parser.Next();
+	//	if (parser.Peek().Type != TokenType::Identifier) {
+	//		parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
+	//		break;
+	//	}
+	//	name += "." + parser.Next().Lexeme;
+	//}
+	return make_unique<NameExpression>(move(name), move(ns));
 }
 
 unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
@@ -95,11 +95,6 @@ InvokeFunctionParslet::InvokeFunctionParslet() : PostfixOperatorParslet(1200) {
 }
 
 unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
-	//if (left->Type() == AstNodeType::Name)
-	//	parser.AddError(ParseError(ParseErrorType::Syntax, token, "Identifier expected"));
-
-	//auto nameExpr = reinterpret_cast<NameExpression*>(left.get());
-
 	auto next = parser.Peek();
 	vector<unique_ptr<Expression>> args;
 	while (next.Type != TokenType::CloseParen) {
@@ -154,7 +149,7 @@ int AnonymousFunctionParslet::Precedence() const {
 	return 2000;
 }
 
-std::unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token const& token) {
+unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token const& token) {
 	auto array = make_unique<ArrayExpression>();
 	while (parser.Peek().Type != TokenType::CloseBracket) {
 		auto expr = parser.ParseExpression();
@@ -164,4 +159,17 @@ std::unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token 
 	}
 	parser.Next();
 	return array;
+}
+
+unique_ptr<Expression> GetMemberParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
+	assert(token.Type == TokenType::Dot);
+	auto next = parser.Next();
+	return std::make_unique<GetMemberExpression>(move(left), next.Lexeme);
+}
+
+unique_ptr<Expression> ArrayAccessParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
+	assert(token.Type == TokenType::OpenBracket);
+	auto expr = parser.ParseExpression();
+	parser.Match(TokenType::CloseBracket, true, true);
+	return make_unique<AccessArrayExpression>(move(left), move(expr));
 }

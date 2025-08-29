@@ -118,6 +118,8 @@ bool Parser::Init() {
 	AddParslet(TokenType::Fn, make_unique<AnonymousFunctionParslet>());
 	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayExpressionParslet>());
+	AddParslet(TokenType::Dot, make_unique<GetMemberParslet>());
+	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 
 	m_Symbols.push(&m_GlobalSymbols);
 	return true;

@@ -37,6 +37,7 @@ namespace Dynamix {
 		int Release();
 
 		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
+		virtual Value InvokeIndexer(Value const& index);
 
 	private:
 		std::atomic<int> m_RefCount{ 0 };

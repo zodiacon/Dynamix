@@ -86,6 +86,31 @@ namespace Dynamix {
 		}
 	};
 
+	class GetMemberExpression : public Expression {
+	public:
+		GetMemberExpression(std::unique_ptr<Expression> left, std::string member) noexcept;
+		Expression const* Left() const noexcept;
+		std::string const& Member() const noexcept;
+
+		Value Accept(Visitor* visitor) const override;
+
+	private:
+		std::unique_ptr<Expression> m_Left;
+		std::string m_Member;
+	};
+
+	class AccessArrayExpression : public Expression {
+	public:
+		AccessArrayExpression(std::unique_ptr<Expression> left, std::unique_ptr<Expression> index) noexcept;
+		Value Accept(Visitor* visitor) const override;
+
+		Expression const* Left() const noexcept;
+		Expression const* Index() const noexcept;
+
+	private:
+		std::unique_ptr<Expression> m_Left, m_Index;
+	};
+
 	class Statement : public Expression {
 	public:
 		AstNodeType Type() const noexcept override {

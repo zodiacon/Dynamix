@@ -18,6 +18,21 @@ string BinaryExpression::ToString() const {
 	return format("({} {} {})", m_Left->ToString(), m_Operator.Lexeme, m_Right->ToString());
 }
 
+GetMemberExpression::GetMemberExpression(unique_ptr<Expression> left, string member) noexcept : m_Left(move(left)), m_Member(move(member)) {
+}
+
+Expression const* GetMemberExpression::Left() const noexcept {
+	return m_Left.get();
+}
+
+std::string const& GetMemberExpression::Member() const noexcept {
+	return m_Member;
+}
+
+Value GetMemberExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitGetMember(this);
+}
+
 Expression* BinaryExpression::Left() const noexcept {
 	return m_Left.get();
 }
@@ -114,6 +129,21 @@ AssignExpression::AssignExpression(unique_ptr<Expression> lhs, unique_ptr<Expres
 
 Value AssignExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAssign(this);
+}
+
+AccessArrayExpression::AccessArrayExpression(unique_ptr<Expression> left, unique_ptr<Expression> index) noexcept : m_Left(move(left)), m_Index(move(index)) {
+}
+
+Value AccessArrayExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitAccessArray(this);
+}
+
+Expression const* AccessArrayExpression::Left() const noexcept {
+	return m_Left.get();
+}
+
+Expression const* AccessArrayExpression::Index() const noexcept {
+	return m_Index.get();
 }
 
 Expression const* AssignExpression::Left() const noexcept {

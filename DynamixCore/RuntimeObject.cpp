@@ -19,6 +19,10 @@ Value RuntimeObject::Invoke(Interpreter& intr, std::string_view name, std::vecto
 	return m_Type.Invoke(intr, this, name, args, flags);
 }
 
+Value RuntimeObject::InvokeIndexer(Value const& index) {
+	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, format("Indexer not supported on {}", Type().Name()));
+}
+
 int RuntimeObject::AddRef() {
 	return ++m_RefCount;
 }

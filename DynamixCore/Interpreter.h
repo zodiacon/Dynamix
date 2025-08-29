@@ -14,7 +14,7 @@ namespace Dynamix {
 	class Runtime;
 	class AstNode;
 
-	class Interpreter : public Visitor {
+	class Interpreter final : public Visitor {
 	public:
 		explicit Interpreter(Parser& p, Runtime* rt = nullptr);
 
@@ -41,6 +41,8 @@ namespace Dynamix {
 		Value VisitExpressionStatement(ExpressionStatement const* expr) override;
 		Value VisitArrayExpression(ArrayExpression const* expr) override;
 		Value VisitRepeat(RepeatStatement const* stmt) override;
+		Value VisitGetMember(GetMemberExpression const* expr) override;
+		Value VisitAccessArray(AccessArrayExpression const* expr) override;
 
 		void PushScope();
 		void PopScope();
@@ -55,5 +57,4 @@ namespace Dynamix {
 		Runtime* m_Runtime;
 		std::stack<std::unique_ptr<Scope>> m_Scopes;
 	};
-
 }

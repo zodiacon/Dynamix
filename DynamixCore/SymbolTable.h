@@ -25,8 +25,6 @@ namespace Dynamix {
 
 	class Interpreter;
 
-	using NativeFunction = Value(*)(Interpreter&, std::vector<Value>&);
-
 	struct Symbol {
 		std::string Name;
 		SymbolType Type;

@@ -11,7 +11,7 @@
 using namespace Dynamix;
 using namespace std;
 
-Dynamix::Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runtime(rt) {
+Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runtime(rt) {
 	m_Scopes.push(make_unique<Scope>());    // global scope
 	for (auto sym : p.GlobalSymbols()) {
 		if (sym->Type == SymbolType::NativeFunction) {
@@ -93,10 +93,28 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	auto f = Eval(expr->Callable());
-	if (f.IsAstNode()) {
-		auto decl = reinterpret_cast<FunctionDeclaration const*>(f.AsAstNode());
+	NativeFunction native = nullptr;
+	AstNode const* node = nullptr;
+	RuntimeObject* instance = nullptr;
+	if (f.IsNativeFunction())
+		native = f.AsNativeCode();
+	else if (f.IsAstNode())
+		node = f.AsAstNode();
+	else if (f.IsCallable()) {
+		auto c = f.AsCallable();
+		instance = c->Instance;
+		native = c->Native;
+		node = c->Node;
+	}
+	else
+		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
+
+	if (node) {
+		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
 
 		PushScope();
+		if(instance)
+			CurrentScope()->AddVariable("this", Variable{ instance });
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
 			Variable v{ expr->Arguments()[i]->Accept(this) };
 			CurrentScope()->AddVariable(decl->Parameters()[i].Name, move(v));
@@ -113,15 +131,17 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		catch (BreakAllStatementException const&) {
 		}
 	}
+	else {
+		assert(native);
 
-	if (!f.IsNativeFunction())
-		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
-
-	std::vector<Value> args;
-	args.reserve(expr->Arguments().size());
-	for (auto& v : expr->Arguments())
-		args.emplace_back(Eval(v.get()));
-	return (*f.AsNativeCode())(*this, args);
+		std::vector<Value> args;
+		args.reserve(expr->Arguments().size() + 1);
+		if (instance)
+			args.push_back(instance);
+		for (auto& v : expr->Arguments())
+			args.emplace_back(Eval(v.get()));
+		return (*native)(*this, args);
+	}
 }
 
 Value Interpreter::VisitWhile(WhileStatement const* stmt) {
@@ -253,4 +273,29 @@ void Interpreter::PopScope() {
 
 std::unique_ptr<AstNode> Interpreter::Parse(std::string_view code) const {
 	return m_Parser.Parse(code);
+}
+
+Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
+	auto value = Eval(expr->Left());
+	if (!value.IsObject())
+		throw RuntimeError(RuntimeErrorType::ObjectExpected, "Object expected", expr->Location());
+	auto obj = value.AsObject();
+	auto member = obj->Type().GetMember(expr->Member());
+	if (!member)
+		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), obj->Type().Name()), expr->Location());
+	
+	auto method = (MethodInfo*)member;
+	auto c = new Callable;
+	c->Instance = obj;
+	if ((method->Flags & MemberFlags::Native) == MemberFlags::Native)
+		c->Native = method->Code.Native;
+	else
+		c->Node = method->Code.Node;
+	return c;
+}
+
+Value Interpreter::VisitAccessArray(AccessArrayExpression const* expr) {
+	auto index = Eval(expr->Index());
+	auto value = Eval(expr->Left());
+	return value.InvokeIndexer(index);
 }

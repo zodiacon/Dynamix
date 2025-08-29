@@ -209,19 +209,44 @@ Value Value::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>
 	return GetObjectType()->Invoke(intr, *this, name, args, flags);
 }
 
-void Value::Free() noexcept {
-	if (m_Type == ValueType::Null)
-		return;
+Value Value::InvokeIndexer(Value const& index) const {
+	switch (m_Type) {
+		case ValueType::String:
+		{
+			auto i = index.ToInteger();
+			if (i < 0 || i >= m_StrLen)
+				throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} is out of range", i));
+			return Int(strValue[i]);
+		}
 
-	if (m_Type == ValueType::Object)
-		oValue->Release();
-	else if (m_Type == ValueType::String)
-		free(strValue);
+		case ValueType::Object:
+			return oValue->InvokeIndexer(index);
+	}
+	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, std::format("Indexer not supported on type {}", GetObjectType()->Name()));
+}
+
+void Value::Free() noexcept {
+	switch (m_Type) {
+		case ValueType::Object:
+			oValue->Release();
+			break;
+
+		case ValueType::String:
+			free(strValue);
+			break;
+
+		case ValueType::Callable:
+			delete cValue;
+			break;
+	}
 	m_Type = ValueType::Null;
 }
 
 Value::Value(RuntimeObject* o) noexcept : oValue(o), m_Type(ValueType::Object) {
 	o->AddRef();
+}
+
+Value::Value(Callable* c) noexcept : cValue(c), m_Type(ValueType::Callable) {
 }
 
 Value::Value(const char* s) noexcept : m_Type(ValueType::String) {
@@ -247,6 +272,9 @@ Value::Value(Value const& other) noexcept : oValue(other.oValue), m_Type(other.m
 		}
 		memcpy(strValue, other.strValue, m_StrLen + 1);
 	}
+	else if (m_Type == ValueType::Callable) {
+		cValue = new Callable(*other.cValue);
+	}
 }
 
 Value& Value::operator=(Value const& other) noexcept {
@@ -255,6 +283,16 @@ Value& Value::operator=(Value const& other) noexcept {
 		m_Type = other.m_Type;
 		m_StrLen = other.m_StrLen;
 		oValue = other.oValue;
+		if (m_Type == ValueType::String) {
+			strValue = (char*)malloc(m_StrLen + 1);
+			memcpy(strValue, other.strValue, m_StrLen + 1);
+		}
+		else if (m_Type == ValueType::Object) {
+			oValue->AddRef();
+		}
+		else if (m_Type == ValueType::Callable) {
+			cValue = new Callable(*other.cValue);
+		}
 	}
 	return *this;
 }
@@ -300,6 +338,11 @@ Value::~Value() {
 ObjectType const* Value::GetObjectType() const {
 	switch (m_Type) {
 		case ValueType::Object: return &oValue->Type();
+		//case ValueType::String: return &StringType::Get();
+		//case ValueType::Integer: return &IntegerType::Get();
+		//case ValueType::Real: return &RealType::Get();
+		//case ValueType::Boolean: return &BooleanType::Get();
+		//case ValueType::AstNode: return &FunctionType::Get();
 	}
 	return nullptr;
 }

@@ -42,14 +42,12 @@ namespace Dynamix {
 		Static = 1,
 		ReadOnly = 2,
 		Const = 4,
+		Native = 8,
 	};
 
-	using NativeCode = Value(*)(RuntimeObject*, std::vector<Value>&);
-
 	union MemberCode {
-		MemberCode() : Node(nullptr) {}
 		AstNode* Node;
-		NativeCode Native;
+		NativeFunction Native;
 	};
 
 	struct MemberInfo {
@@ -62,8 +60,8 @@ namespace Dynamix {
 			return m_Type;
 		}
 
-		MemberVisibility Visibility;
-		MemberFlags Flags;
+		MemberVisibility Visibility{ MemberVisibility::Public };
+		MemberFlags Flags{ MemberFlags::None };
 
 	private:
 		std::string m_Name;
@@ -73,8 +71,8 @@ namespace Dynamix {
 	struct MethodInfo : MemberInfo {
 		explicit MethodInfo(std::string name) : MemberInfo(name, MemberType::Method) {}
 
-		MemberCode Code;
-		int8_t Arity;
+		MemberCode Code{};
+		int8_t Arity{ 0 };
 	};
 
 	struct PropertyInfo : MemberInfo {
