@@ -26,6 +26,8 @@ namespace Dynamix {
 		Statements,
 		FunctionDeclaration,
 		VarValStatement,
+		ArrayAccess,
+		GetMember,
 	};
 
 	class AstNode {
@@ -91,7 +93,9 @@ namespace Dynamix {
 		GetMemberExpression(std::unique_ptr<Expression> left, std::string member) noexcept;
 		Expression const* Left() const noexcept;
 		std::string const& Member() const noexcept;
-
+		AstNodeType Type() const noexcept {
+			return AstNodeType::GetMember;
+		}
 		Value Accept(Visitor* visitor) const override;
 
 	private:
@@ -103,7 +107,9 @@ namespace Dynamix {
 	public:
 		AccessArrayExpression(std::unique_ptr<Expression> left, std::unique_ptr<Expression> index) noexcept;
 		Value Accept(Visitor* visitor) const override;
-
+		AstNodeType Type() const noexcept {
+			return AstNodeType::ArrayAccess;
+		}
 		Expression const* Left() const noexcept;
 		Expression const* Index() const noexcept;
 
@@ -179,31 +185,52 @@ namespace Dynamix {
 
 	class AssignExpression : public Expression {
 	public:
-		AssignExpression(std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs, Token assignType);
+		AssignExpression(std::string lhs, std::unique_ptr<Expression> rhs, Token assignType) noexcept;
 		Value Accept(Visitor* visitor) const override;
-		Expression const* Left() const noexcept;
+		std::string const& Lhs() const noexcept;
 		Expression const* Value() const noexcept;
 		Token const& AssignType() const noexcept;
 		std::string ToString() const override;
 
 	private:
-		std::unique_ptr<Expression> m_Left;
-		std::unique_ptr<Expression> m_Expr;
+		std::string m_Lhs;
+		std::unique_ptr<Expression> m_Value;
 		Token m_AssignType;
 	};
 
-	class PostfixExpression : public Expression {
+	class AssignArrayIndexExpression : public Expression {
 	public:
-		PostfixExpression(std::unique_ptr<Expression> expr, Token token);
+		AssignArrayIndexExpression(std::unique_ptr<Expression> arrayAccess, std::unique_ptr<Expression> rhs, Token assignType) noexcept;
 		Value Accept(Visitor* visitor) const override;
 
-		Token const& Operator() const noexcept;
-		Expression const* Argument() const noexcept;
+		AccessArrayExpression const* ArrayAccess() const noexcept {
+			return reinterpret_cast<AccessArrayExpression const*>(m_ArrayAccess.get());
+		}
+		Expression const* Value() const noexcept {
+			return m_Value.get();
+		}
+		Token const& AssignType() const noexcept {
+			return m_AssignType;
+		}
 
 	private:
-		std::unique_ptr<Expression> m_Expr;
-		Token m_Token;
+		std::unique_ptr<Expression> m_ArrayAccess;
+		std::unique_ptr<Expression> m_Value;
+		Token m_AssignType;
 	};
+
+	//class PostfixExpression : public Expression {
+	//public:
+	//	PostfixExpression(std::unique_ptr<Expression> expr, Token token);
+	//	Value Accept(Visitor* visitor) const override;
+
+	//	Token const& Operator() const noexcept;
+	//	Expression const* Argument() const noexcept;
+
+	//private:
+	//	std::unique_ptr<Expression> m_Expr;
+	//	Token m_Token;
+	//};
 
 	class BinaryExpression : public Expression {
 	public:

@@ -25,7 +25,6 @@ namespace Dynamix {
 		Value VisitBinary(BinaryExpression const* expr) override;
 		Value VisitUnary(UnaryExpression const* expr) override;
 		Value VisitName(NameExpression const* expr) override;
-		Value VisitBlock(BlockExpression const* expr) override;
 		Value VisitVar(VarValStatement const* expr) override;
 		Value VisitAssign(AssignExpression const* expr) override;
 		Value VisitInvokeFunction(InvokeFunctionExpression const* expr) override;
@@ -43,6 +42,7 @@ namespace Dynamix {
 		Value VisitRepeat(RepeatStatement const* stmt) override;
 		Value VisitGetMember(GetMemberExpression const* expr) override;
 		Value VisitAccessArray(AccessArrayExpression const* expr) override;
+		Value VisitAssignArrayIndex(AssignArrayIndexExpression const* expr) override;
 
 		void PushScope();
 		void PopScope();

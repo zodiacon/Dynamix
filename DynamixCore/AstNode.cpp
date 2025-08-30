@@ -121,10 +121,9 @@ bool VarValStatement::IsConst() const noexcept {
 	return m_IsConst;
 }
 
-AssignExpression::AssignExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, Token assignType)
-	: m_Left(move(lhs)), m_Expr(move(rhs)), m_AssignType(assignType) {
-	m_Left->SetParent(this);
-	m_Expr->SetParent(this);
+AssignExpression::AssignExpression(string lhs, unique_ptr<Expression> rhs, Token assignType) noexcept
+	: m_Lhs(move(lhs)), m_Value(move(rhs)), m_AssignType(assignType) {
+	m_Value->SetParent(this);
 }
 
 Value AssignExpression::Accept(Visitor* visitor) const {
@@ -146,12 +145,12 @@ Expression const* AccessArrayExpression::Index() const noexcept {
 	return m_Index.get();
 }
 
-Expression const* AssignExpression::Left() const noexcept {
-	return m_Left.get();
+string const& AssignExpression::Lhs() const noexcept {
+	return m_Lhs;
 }
 
 Expression const* AssignExpression::Value() const noexcept {
-	return m_Expr.get();
+	return m_Value.get();
 }
 
 Token const& AssignExpression::AssignType() const noexcept {
@@ -159,7 +158,7 @@ Token const& AssignExpression::AssignType() const noexcept {
 }
 
 string AssignExpression::ToString() const {
-	return format("{} {} {}", Left()->ToString(), AssignType().Lexeme, Value()->ToString());
+	return format("{} {} {}", Lhs(), AssignType().Lexeme, Value()->ToString());
 }
 
 InvokeFunctionExpression::InvokeFunctionExpression(unique_ptr<Expression> callable, vector<unique_ptr<Expression>> args) :
@@ -240,7 +239,7 @@ Statement const* IfThenElseExpression::Else() const noexcept {
 	return m_Else.get();
 }
 
-FunctionDeclaration::FunctionDeclaration(string name) :	m_Name(move(name)) {
+FunctionDeclaration::FunctionDeclaration(string name) : m_Name(move(name)) {
 }
 
 Value FunctionDeclaration::Accept(Visitor* visitor) const {
@@ -431,4 +430,12 @@ string ExpressionStatement::ToString() const {
 }
 
 ClassDeclaration::ClassDeclaration(std::unique_ptr<ObjectType> type) : m_ObjectType(move(type)) {
+}
+
+AssignArrayIndexExpression::AssignArrayIndexExpression(unique_ptr<Expression> arrayAccess, unique_ptr<Expression> rhs, Token assignType) noexcept 
+: m_ArrayAccess(move(arrayAccess)), m_Value(move(rhs)), m_AssignType(move(assignType)) {
+}
+
+Value AssignArrayIndexExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitAssignArrayIndex(this);
 }

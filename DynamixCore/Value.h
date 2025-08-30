@@ -149,6 +149,7 @@ namespace Dynamix {
 		Value BinaryOperator(TokenType op, Value const& rhs) const;
 		Value UnaryOperator(TokenType op) const;
 		Value& Assign(Value const& right, TokenType assign);
+		Value& AssignArrayIndex(Value const& index, Value const& right, TokenType assign);
 
 		std::string ToString() const noexcept;
 
@@ -193,6 +194,7 @@ namespace Dynamix {
 			ValueErrorType error;
 			char* strValue;
 			NativeFunction fValue;
+			Value* ptrValue;
 		};
 		union {
 			struct {

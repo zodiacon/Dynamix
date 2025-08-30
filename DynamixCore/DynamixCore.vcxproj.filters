@@ -19,7 +19,7 @@
     <Filter Include="Parsing">
       <UniqueIdentifier>{81fd9c63-3895-4185-bebd-d993f7478e8e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Interpret">
+    <Filter Include="Execution">
       <UniqueIdentifier>{a8ff446e-ae01-42a9-9e5a-f64e3df6dbee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -70,10 +70,10 @@
       <Filter>Parsing</Filter>
     </ClInclude>
     <ClInclude Include="Interpreter.h">
-      <Filter>Interpret</Filter>
+      <Filter>Execution</Filter>
     </ClInclude>
     <ClInclude Include="Scope.h">
-      <Filter>Interpret</Filter>
+      <Filter>Execution</Filter>
     </ClInclude>
     <ClInclude Include="ArrayType.h">
       <Filter>StdLib</Filter>
@@ -126,10 +126,10 @@
       <Filter>Parsing</Filter>
     </ClCompile>
     <ClCompile Include="Interpreter.cpp">
-      <Filter>Interpret</Filter>
+      <Filter>Execution</Filter>
     </ClCompile>
     <ClCompile Include="Scope.cpp">
-      <Filter>Interpret</Filter>
+      <Filter>Execution</Filter>
     </ClCompile>
     <ClCompile Include="ArrayType.cpp">
       <Filter>StdLib</Filter>

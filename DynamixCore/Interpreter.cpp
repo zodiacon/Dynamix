@@ -34,14 +34,14 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 	auto left = Eval(expr->Left());
 	switch (expr->Operator().Type) {
-		case TokenType::And:
-			if (!left.ToBoolean())
-				return false;
-			break;
-		case TokenType::Or:
-			if (left.ToBoolean())
-				return true;
-			break;
+	case TokenType::And:
+		if (!left.ToBoolean())
+			return false;
+		break;
+	case TokenType::Or:
+		if (left.ToBoolean())
+			return true;
+		break;
 	}
 
 	return left.BinaryOperator(expr->Operator().Type, Eval(expr->Right()));
@@ -56,15 +56,8 @@ Value Interpreter::VisitName(NameExpression const* expr) {
 	if (v) {
 		return v->VarValue;
 	}
-	auto sym = expr->Symbols()->FindSymbol(expr->Name());
-	if (sym)
-		return sym->Ast;
 	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, "Unknown identifier", expr->Location());
 
-}
-
-Value Interpreter::VisitBlock(BlockExpression const* expr) {
-	return Value();
 }
 
 Value Interpreter::VisitVar(VarValStatement const* expr) {
@@ -80,15 +73,12 @@ Value Interpreter::VisitVar(VarValStatement const* expr) {
 }
 
 Value Interpreter::VisitAssign(AssignExpression const* expr) {
-	// assume a single variable for now
-	assert(expr->Left()->Type() == AstNodeType::Name);
-	auto name = reinterpret_cast<NameExpression const*>(expr->Left());
+	auto lhs = CurrentScope()->FindVariable(expr->Lhs());
+	if (!lhs)
+		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: {}", expr->Lhs()), expr->Location());
 
-	auto v = CurrentScope()->FindVariable(name->Name());
-	if (!v)
-		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: {}", name->Name()), expr->Left()->Location());
-
-	return v->VarValue.Assign(Eval(expr->Value()), expr->AssignType().Type);
+	auto rhs = Eval(expr->Value());
+	return lhs->VarValue.Assign(rhs, expr->AssignType().Type);
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
@@ -113,7 +103,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
 
 		PushScope();
-		if(instance)
+		if (instance)
 			CurrentScope()->AddVariable("this", Variable{ instance });
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
 			Variable v{ expr->Arguments()[i]->Accept(this) };
@@ -283,7 +273,7 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	auto member = obj->Type().GetMember(expr->Member());
 	if (!member)
 		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), obj->Type().Name()), expr->Location());
-	
+
 	auto method = (MethodInfo*)member;
 	auto c = new Callable;
 	c->Instance = obj;
@@ -298,4 +288,11 @@ Value Interpreter::VisitAccessArray(AccessArrayExpression const* expr) {
 	auto index = Eval(expr->Index());
 	auto value = Eval(expr->Left());
 	return value.InvokeIndexer(index);
+}
+
+Value Interpreter::VisitAssignArrayIndex(AssignArrayIndexExpression const* expr) {
+	auto arr = Eval(expr->ArrayAccess()->Left());
+	auto index = Eval(expr->ArrayAccess()->Index());
+
+	return arr.AssignArrayIndex(index, Eval(expr->Value()), expr->AssignType().Type);
 }

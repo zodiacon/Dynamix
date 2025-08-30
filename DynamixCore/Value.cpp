@@ -85,6 +85,19 @@ Value& Value::Assign(Value const& right, TokenType assign) {
 	return *this;
 }
 
+Value& Value::AssignArrayIndex(Value const& index, Value const& right, TokenType assign) {
+	switch (m_Type) {
+	case ValueType::Object:
+		oValue->AssignIndexer(index, right, assign);
+		break;
+
+	case ValueType::String:
+		assert(false);
+		break;
+	}
+	return *this;
+}
+
 std::string Value::ToString() const noexcept {
 	switch (m_Type) {
 		case ValueType::Null:

@@ -1,6 +1,5 @@
 #include "ArrayType.h"
 #include "RuntimeObject.h"
-#include "Value.h"
 #include "Runtime.h"
 
 using namespace Dynamix;
@@ -10,11 +9,11 @@ ArrayType& ArrayType::Get() {
 	return type;
 }
 
-RuntimeArrayObject* ArrayType::CreateArray(std::vector<Value>& args) {
-	return new RuntimeArrayObject(args);
+ArrayObject* ArrayType::CreateArray(std::vector<Value>& args) {
+	return new ArrayObject(args);
 }
 
-Value RuntimeArrayObject::InvokeIndexer(Value const& index) {
+Value ArrayObject::InvokeIndexer(Value const& index) {
 	if (!index.IsInteger())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Array index must be an integer");
 	auto i = index.ToInteger();
@@ -24,6 +23,15 @@ Value RuntimeArrayObject::InvokeIndexer(Value const& index) {
 	return m_Items[i];
 }
 
+void ArrayObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
+	if (!index.IsInteger())
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Array index must be an integer");
+	auto i = index.ToInteger();
+	if(i < 0 || i >= (Int)m_Items.size())
+		throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} is out of range (array size: {})", i, m_Items.size()));
+	m_Items[i].Assign(value, assign);
+}
+
 ArrayType::ArrayType() : ObjectType("Array") {
 	auto size = std::make_unique<MethodInfo>("Size");
 	size->Arity = 0;
@@ -31,7 +39,7 @@ ArrayType::ArrayType() : ObjectType("Array") {
 	size->Code.Native = [](auto, auto& args) -> Value {
 		assert(args.size() == 1);
 		auto obj = args[0].AsObject();
-		return static_cast<Int>(reinterpret_cast<RuntimeArrayObject*>(obj)->Items().size());
+		return static_cast<Int>(reinterpret_cast<ArrayObject*>(obj)->Items().size());
 		};
 	AddMember(std::move(size));
 
@@ -41,17 +49,17 @@ ArrayType::ArrayType() : ObjectType("Array") {
 	add->Code.Native = [](auto, auto& args) -> Value {
 		assert(args.size() == 2);
 		auto obj = args[0].AsObject();
-		reinterpret_cast<RuntimeArrayObject*>(obj)->Items().push_back(args[1]);
+		reinterpret_cast<ArrayObject*>(obj)->Items().push_back(args[1]);
 		return Value(obj);
 		};
 	AddMember(std::move(add));
 }
 
-RuntimeArrayObject::RuntimeArrayObject(std::vector<Value> init) : 
+ArrayObject::ArrayObject(std::vector<Value> init) : 
 	RuntimeObject(ArrayType::Get()), m_Items(std::move(init)) {
 }
 
-std::string RuntimeArrayObject::ToString() const {
+std::string ArrayObject::ToString() const {
 	std::string text("[ ");
 	for (auto& item : m_Items)
 		text += item.ToString() + ", ";

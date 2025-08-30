@@ -23,15 +23,19 @@ Value RuntimeObject::InvokeIndexer(Value const& index) {
 	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, format("Indexer not supported on {}", Type().Name()));
 }
 
+void RuntimeObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
+	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, std::format("indexer not supported on type {}", Type().Name()));
+}
+
 int RuntimeObject::AddRef() {
 	return ++m_RefCount;
 }
 
 int RuntimeObject::Release() {
-	//auto count = --m_RefCount;
-	//if (count == 0)
-	//	m_Type.DestroyObject(this);
-	return 0;
+	auto count = --m_RefCount;
+	if (count == 0)
+		m_Type.DestroyObject(this);
+	return count;
 }
 
 std::string RuntimeObject::ToString() const {
