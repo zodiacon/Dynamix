@@ -12,15 +12,7 @@ using namespace Dynamix;
 using namespace std;
 
 Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runtime(rt) {
-	m_Scopes.push(make_unique<Scope>());    // global scope
-	for (auto sym : p.GlobalSymbols()) {
-		if (sym->Type == SymbolType::NativeFunction) {
-			Variable v;
-			v.Flags = VariableFlags::NativeFunction;
-			v.VarValue = sym->Code;
-			CurrentScope()->AddVariable(sym->Name, move(v));
-		}
-	}
+	m_Scopes.push(make_unique<Scope>(m_Runtime ? m_Runtime->GetGlobalScope() : nullptr));    // global scope
 }
 
 Value Interpreter::Eval(AstNode const* root) {
@@ -34,14 +26,14 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 	auto left = Eval(expr->Left());
 	switch (expr->Operator().Type) {
-	case TokenType::And:
-		if (!left.ToBoolean())
-			return false;
-		break;
-	case TokenType::Or:
-		if (left.ToBoolean())
-			return true;
-		break;
+		case TokenType::And:
+			if (!left.ToBoolean())
+				return false;
+			break;
+		case TokenType::Or:
+			if (left.ToBoolean())
+				return true;
+			break;
 	}
 
 	return left.BinaryOperator(expr->Operator().Type, Eval(expr->Right()));
@@ -56,7 +48,7 @@ Value Interpreter::VisitName(NameExpression const* expr) {
 	if (v) {
 		return v->VarValue;
 	}
-	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, "Unknown identifier", expr->Location());
+	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: '{}'", expr->Name()), expr->Location());
 
 }
 
@@ -86,7 +78,17 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	AstNode const* node = nullptr;
 	RuntimeObject* instance = nullptr;
 	Callable* callable = nullptr;
-	auto f = Eval(expr->Callable());
+	Value f;
+	if (expr->Callable()->Type() == AstNodeType::Name) {
+		auto nameExpr = reinterpret_cast<NameExpression const*>(expr->Callable());
+		auto v = CurrentScope()->FindVariable(format("{}/{}", nameExpr->Name(), expr->Arguments().size()));
+		if (v) {
+			f = v->VarValue;
+		}
+	}
+	if (f.IsNull())
+		f = Eval(expr->Callable());
+
 	if (f.IsNativeFunction())
 		native = f.AsNativeCode();
 	else if (f.IsAstNode())
@@ -188,7 +190,7 @@ Value Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
 Value Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
 	Variable v;
 	v.VarValue = decl;
-	CurrentScope()->AddVariable(decl->Name(), move(v));
+	CurrentScope()->AddVariable(format("{}/{}", decl->Name(), decl->Parameters().size()), move(v));
 
 	return Value();
 }
@@ -341,8 +343,8 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 	auto v = CurrentScope()->FindVariable(expr->ClassName());
 	if (v == nullptr)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Class '{}' not found in scope", expr->ClassName()));
-	
-	if((v->Flags & VariableFlags::Class) != VariableFlags::Class)
+
+	if ((v->Flags & VariableFlags::Class) != VariableFlags::Class)
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, format("'{}' is not a class name in scope", expr->ClassName()));
 
 	auto type = m_Runtime->GetObjectType(v->VarValue.AsAstNode());

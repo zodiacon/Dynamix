@@ -13,5 +13,10 @@ Variable* Scope::FindVariable(std::string const& name, bool localOnly) {
 	if (auto it = m_Variables.find(name); it != m_Variables.end())
 		return &it->second;
 
+	if (auto pos = name.rfind("/"); pos != std::string::npos) {
+		if (auto it = m_Variables.find(name.substr(0, pos)); it != m_Variables.end())
+			return &it->second;
+	}
+
 	return m_Parent && !localOnly ? m_Parent->FindVariable(name) : nullptr;
 }

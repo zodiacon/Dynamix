@@ -9,6 +9,7 @@ using namespace std;
 using namespace Dynamix;
 
 Parser::Parser(Tokenizer& t, bool test) : m_Tokenizer(t), m_Repl(test) {
+	m_Symbols.push(&m_GlobalSymbols);
 }
 
 bool Parser::Init() {
@@ -126,7 +127,6 @@ bool Parser::Init() {
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());
 
-	m_Symbols.push(&m_GlobalSymbols);
 	return true;
 }
 
@@ -313,7 +313,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 	if (parameters.size() > 64)
 		AddError(ParseError{ ParseErrorType::TooManyFunctionArgs, Peek() });
 
-	auto sym = FindSymbol(ident.Lexeme, (int8_t)parameters.size(), true);
+	auto sym = FindSymbol(format("{}/{}", ident.Lexeme, parameters.size()), true);
 	if (sym)
 		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident));
 
@@ -335,11 +335,9 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 
 	if (sym == nullptr) {
 		Symbol sym;
-		sym.Name = decl->Name();
-		sym.Arity = (int8_t)params;
+		sym.Name = format("{}/{}", decl->Name(), decl->Parameters().size());
 		sym.Type = SymbolType::Function;
 		sym.Flags = SymbolFlags::None;
-		sym.Ast = decl.get();
 		AddSymbol(sym);
 	}
 	return decl;
@@ -360,8 +358,8 @@ bool Parser::AddSymbol(Symbol sym) {
 	return m_Symbols.top()->AddSymbol(move(sym));
 }
 
-Symbol const* Parser::FindSymbol(string const& name, int8_t arity, bool localOnly) const {
-	return m_Symbols.top()->FindSymbol(name, arity, localOnly);
+Symbol const* Parser::FindSymbol(string const& name, bool localOnly) const {
+	return m_Symbols.top()->FindSymbol(name, localOnly);
 }
 
 std::vector<Symbol const*> Parser::GlobalSymbols() const {
@@ -496,7 +494,7 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 		SkipTo(TokenType::CloseBrace);
 		return nullptr;
 	}
-	auto sym = FindSymbol(name.Lexeme, -1, true);
+	auto sym = FindSymbol(name.Lexeme, true);
 	if (sym) {
 		AddError(ParseError(ParseErrorType::DuplicateDefinition, name, "Idenitifier already defined in current scope"));
 	}

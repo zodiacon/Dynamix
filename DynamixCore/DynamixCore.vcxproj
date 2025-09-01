@@ -167,7 +167,6 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="SmallString.cpp" />
-    <ClCompile Include="StdLib.cpp" />
     <ClCompile Include="StringType.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="Token.cpp" />

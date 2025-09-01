@@ -28,12 +28,7 @@ namespace Dynamix {
 	struct Symbol {
 		std::string Name;
 		SymbolType Type;
-		int8_t Arity{ -1 };
 		SymbolFlags Flags{ SymbolFlags::None };
-		union {
-			AstNode* Ast;
-			NativeFunction Code;
-		};
 	};
 
 	class SymbolTable {
@@ -41,7 +36,7 @@ namespace Dynamix {
 	public:
 		explicit SymbolTable(SymbolTable* parent = nullptr);
 		bool AddSymbol(Symbol sym);
-		Symbol const* FindSymbol(std::string const& name, int8_t arity = -1, bool localOnly = false) const;
+		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
 		SymbolTable const* Parent() const {
 			return m_Parent;
 		}

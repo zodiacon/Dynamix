@@ -110,9 +110,6 @@
     <ClCompile Include="Print.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
-    <ClCompile Include="StdLib.cpp">
-      <Filter>StdLib</Filter>
-    </ClCompile>
     <ClCompile Include="Parser.cpp">
       <Filter>Parsing</Filter>
     </ClCompile>

@@ -5,6 +5,7 @@
 #include <cassert>
 #include "Interpreter.h"
 #include "RuntimeObject.h"
+#include "print.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -50,20 +51,40 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 }
 
 Runtime::Runtime(Parser& parser) : m_Parser(parser) {
-}
-
-void Runtime::AddNativeFunctions() {
-	extern void InitStdLibrary(Parser&);
-
-	InitStdLibrary(m_Parser);
+	InitStdLibrary();
 }
 
 bool Runtime::Init() {
 	if (!m_Parser.Init())
 		return false;
 
-	AddNativeFunctions();
+	InitStdLibrary();
 	return true;
 }
 
+void Runtime::InitStdLibrary() {
+	struct {
+		const char* Name;
+		NativeFunction Code;
+		SymbolFlags Flags{ SymbolFlags::VarArg };
+		int Arity{ -1 };
+	} functions[] = {
+		{ "print", print },
+		{ "println", println },
+		{ "eval", eval, SymbolFlags::None, 1 },
+	};
+
+	for (auto& f : functions) {
+		Symbol s;
+		s.Type = SymbolType::NativeFunction;
+		s.Name = f.Name;
+		s.Flags = f.Flags;
+		m_Parser.AddSymbol(std::move(s));
+		Variable v{ f.Code };
+		if(f.Arity >= 0)
+			m_GlobalScope.AddVariable(format("{}/{}", f.Name, f.Arity), move(v));
+		else
+			m_GlobalScope.AddVariable(f.Name, move(v));
+	}
+}
 

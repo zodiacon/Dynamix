@@ -51,7 +51,6 @@ namespace Dynamix {
 		void PopScope();
 
 		Scope* CurrentScope();
-		void AddNativeFunctions();
 
 		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 

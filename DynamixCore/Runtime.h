@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include "AstNode.h"
+#include "Scope.h"
 
 namespace Dynamix {
 	struct Allocator;
@@ -64,12 +65,15 @@ namespace Dynamix {
 		Runtime(Parser& parser);
 		ObjectType* GetObjectType(AstNode const* classNode);
 		ObjectType* GetObjectType(std::string const& classNode) const;
+		Scope* GetGlobalScope() {
+			return &m_GlobalScope;
+		}
 
-		void AddNativeFunctions();
 		bool Init();
-
+		void InitStdLibrary();
 	private:
 		Parser& m_Parser;
+		Scope m_GlobalScope;
 		std::unordered_map<std::string, std::unique_ptr<ObjectType>> m_Types;
 	};
 }
