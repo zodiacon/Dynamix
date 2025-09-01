@@ -200,6 +200,26 @@ namespace Dynamix {
 		Token m_AssignType;
 	};
 
+	class AssignFieldExpression : public Expression {
+	public:
+		AssignFieldExpression(std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs, Token assignType) noexcept;
+		Value Accept(Visitor* visitor) const override;
+		Token const& AssignType() const noexcept {
+			return m_AssignType;
+		}
+		GetMemberExpression const* Lhs() const noexcept {
+			return reinterpret_cast<GetMemberExpression const*>(m_Lhs.get());
+		}
+		Expression const* Value() const noexcept {
+			return m_Value.get();
+		}
+
+	private:
+		std::unique_ptr<Expression> m_Lhs;
+		std::unique_ptr<Expression> m_Value;
+		Token m_AssignType;
+	};
+
 	class AssignArrayIndexExpression : public Expression {
 	public:
 		AssignArrayIndexExpression(std::unique_ptr<Expression> arrayAccess, std::unique_ptr<Expression> rhs, Token assignType) noexcept;

@@ -98,7 +98,7 @@ namespace Dynamix {
 		ObjectType(ObjectType&&) = delete;
 		ObjectType& operator=(ObjectType&&) = delete;
 
-		virtual RuntimeObject* CreateObject(std::vector<Value> const& args);
+		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
 		virtual void DestroyObject(RuntimeObject* object);
 
 		// instance 

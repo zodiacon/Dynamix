@@ -147,6 +147,7 @@
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Scope.h" />
     <ClInclude Include="SmallString.h" />
+    <ClInclude Include="StringType.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Tokenizer.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="SmallString.cpp" />
     <ClCompile Include="StdLib.cpp" />
+    <ClCompile Include="StringType.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="Tokenizer.cpp" />

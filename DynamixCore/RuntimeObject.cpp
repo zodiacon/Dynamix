@@ -15,7 +15,21 @@ void RuntimeObject::Construct(std::vector<Value> const& args) {
 void RuntimeObject::Destruct() {
 }
 
+void RuntimeObject::SetField(std::string const& name, Value value) {
+	m_Fields[name] = std::move(value);
+}
+
+Value RuntimeObject::GetField(std::string const& name) const {
+	return m_Fields.at(name);
+}
+
 Value RuntimeObject::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
+	auto member = m_Type.GetMember(name.data());
+	assert(member);
+	switch (member->Type()) {
+		case MemberType::Field:
+			break;
+	}
 	return m_Type.Invoke(intr, this, name, args, flags);
 }
 

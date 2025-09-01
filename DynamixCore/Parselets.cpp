@@ -89,6 +89,9 @@ unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expressio
 	if (left->Type() == AstNodeType::ArrayAccess) {
 		return make_unique<AssignArrayIndexExpression>(move(left), move(right), token);
 	}
+	if (left->Type() == AstNodeType::GetMember) {
+		return make_unique<AssignFieldExpression>(move(left), move(right), token);
+	}
 
 	parser.AddError(ParseError(ParseErrorType::InvalidLhs, left->Location(), "Illegal Left handl side of an assignment"));
 	return nullptr;

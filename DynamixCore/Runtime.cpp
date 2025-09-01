@@ -37,6 +37,13 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 		}
 		type->AddMember(move(mi));
 	}
+
+	for (auto& f : decl->Fields()) {
+		auto fi = make_unique<FieldInfo>(f->Name());
+		fi->Init = f->Init();
+		type->AddMember(move(fi));
+	}
+
 	auto p = type.get();
 	m_Types.insert({ decl->Name(), move(type) });
 	return p;

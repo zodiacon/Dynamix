@@ -447,3 +447,10 @@ Value AssignArrayIndexExpression::Accept(Visitor* visitor) const {
 Value NewObjectExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitNewObjectExpression(this);
 }
+
+AssignFieldExpression::AssignFieldExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, Token assignType) noexcept : m_Lhs(move(lhs)), m_Value(move(rhs)), m_AssignType(assignType) {
+}
+
+Value AssignFieldExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitAssignField(this);
+}

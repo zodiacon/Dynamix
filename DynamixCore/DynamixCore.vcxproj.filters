@@ -78,6 +78,9 @@
     <ClInclude Include="Runtime.h">
       <Filter>Execution</Filter>
     </ClInclude>
+    <ClInclude Include="StringType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp">
@@ -133,6 +136,9 @@
     </ClCompile>
     <ClCompile Include="Runtime.cpp">
       <Filter>Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="StringType.cpp">
+      <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

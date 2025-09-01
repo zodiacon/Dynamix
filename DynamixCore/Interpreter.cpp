@@ -297,15 +297,24 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	if (!member)
 		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), obj->Type().Name()), expr->Location());
 
-	auto method = (MethodInfo*)member;
-	auto c = new Callable;
-	c->Instance = obj;
-	if ((method->Flags & MemberFlags::Native) == MemberFlags::Native)
-		c->Native = method->Code.Native;
-	else
-		c->Node = method->Code.Node;
-	c->Method = method;
-	return c;
+	switch (member->Type()) {
+		case MemberType::Method:
+		{
+			auto method = (MethodInfo*)member;
+			auto c = new Callable;
+			c->Instance = obj;
+			if ((method->Flags & MemberFlags::Native) == MemberFlags::Native)
+				c->Native = method->Code.Native;
+			else
+				c->Node = method->Code.Node;
+			c->Method = method;
+			return c;
+		}
+		case MemberType::Field:
+			return obj->GetField(member->Name());
+	}
+	assert(false);
+	return Value();
 }
 
 Value Interpreter::VisitAccessArray(AccessArrayExpression const* expr) {
@@ -340,5 +349,12 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 	std::vector<Value> args;
 	for (auto& arg : expr->Args())
 		args.push_back(Eval(arg.get()));
-	return type->CreateObject(args);
+	return type->CreateObject(*this, args);
+}
+
+Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {
+	auto obj = Eval(expr->Lhs()->Left());
+	assert(obj.IsObject());
+	obj.AsObject()->SetField(expr->Lhs()->Member(), Eval(expr->Value()));
+	return expr->Lhs();
 }

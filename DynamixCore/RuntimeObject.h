@@ -1,8 +1,8 @@
 #pragma once
 
 #include <atomic>
-#include <string_view>
-#include <vector>
+#include <string>
+#include <unordered_map>
 
 #include "Value.h"
 //#include "NoCopyMove.h"
@@ -23,6 +23,9 @@ namespace Dynamix {
 		virtual void Construct(std::vector<Value> const& args);
 		virtual void Destruct();
 
+		void SetField(std::string const& name, Value value);
+		Value GetField(std::string const& name) const;
+
 		ObjectType& Type() {
 			return m_Type;
 		}
@@ -41,6 +44,7 @@ namespace Dynamix {
 		virtual void AssignIndexer(Value const& index, Value const& value, TokenType assign);
 
 	private:
+		std::unordered_map<std::string_view, Value> m_Fields;
 		std::atomic<int> m_RefCount{ 0 };
 		ObjectType& m_Type;
 	};

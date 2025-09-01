@@ -1,6 +1,7 @@
 #include "ObjectType.h"
 #include "RuntimeObject.h"
 #include "Runtime.h"
+#include "Interpreter.h"
 
 using namespace Dynamix;
 
@@ -34,8 +35,14 @@ void ObjectType::DestroyObject(RuntimeObject* instance) {
 	delete instance;
 }
 
-RuntimeObject* ObjectType::CreateObject(std::vector<Value> const& args) {
+RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {
 	auto obj = new RuntimeObject(*this);
+	for (auto& [name, m] : m_Members) {
+		if (m->Type() == MemberType::Field) {
+			auto fi = reinterpret_cast<FieldInfo*>(m.get());
+			obj->SetField(name, fi->Init ? intr.Eval(fi->Init) : Value());
+		}
+	}
 	obj->Construct(args);
 	return obj;
 }
