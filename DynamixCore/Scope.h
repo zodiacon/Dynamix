@@ -9,6 +9,7 @@ namespace Dynamix {
 		Const = 1,
 		Static = 2,
 		NativeFunction = 4,
+		Class = 8,
 	};
 
 	struct Variable {

@@ -26,6 +26,8 @@ namespace Dynamix {
 	class GetMemberExpression;
 	class AccessArrayExpression;
 	class AssignArrayIndexExpression;
+	class ClassDeclaration;
+	class NewObjectExpression;
 
 	class Visitor {
 	public:
@@ -53,5 +55,7 @@ namespace Dynamix {
 		virtual Value VisitGetMember(GetMemberExpression const* expr) = 0;
 		virtual Value VisitAccessArray(AccessArrayExpression const* expr) = 0;
 		virtual Value VisitAssignArrayIndex(AssignArrayIndexExpression const* expr) = 0;
+		virtual Value VisitClassDeclaration(ClassDeclaration const* decl) = 0;
+		virtual Value VisitNewObjectExpression(NewObjectExpression const* expr) = 0;
 	};
 }

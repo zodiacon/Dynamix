@@ -9,7 +9,7 @@ using namespace Dynamix;
 RuntimeObject::RuntimeObject(ObjectType& type) : m_Type(type) {
 }
 
-void RuntimeObject::Construct(std::vector<Value>& args) {
+void RuntimeObject::Construct(std::vector<Value> const& args) {
 }
 
 void RuntimeObject::Destruct() {

@@ -38,6 +38,12 @@ Real Value::ToReal() const {
 	throw RuntimeError(RuntimeErrorType::CannotConvertToReal, std::format("Cannot convert {} to Real", ToString()));
 }
 
+RuntimeObject* Dynamix::Value::ToObject() const {
+	if (m_Type != ValueType::Object)
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Value is not an object");
+	return oValue;
+}
+
 Value Value::BinaryOperator(TokenType op, Value const& rhs) const {
 	switch (op) {
 		case TokenType::Plus: return Add(rhs);

@@ -34,7 +34,7 @@ void ObjectType::DestroyObject(RuntimeObject* instance) {
 	delete instance;
 }
 
-RuntimeObject* ObjectType::CreateObject(std::vector<Value>& args) {
+RuntimeObject* ObjectType::CreateObject(std::vector<Value> const& args) {
 	auto obj = new RuntimeObject(*this);
 	obj->Construct(args);
 	return obj;

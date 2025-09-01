@@ -3,6 +3,7 @@
 #include <format>
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
 
 using namespace std;
 using namespace Dynamix;
@@ -42,6 +43,8 @@ bool Parser::Init() {
 		{ "or", TokenType::Or },
 		{ "breakout", TokenType::BreakOut },
 		{ "match", TokenType::Match },
+		{ "this", TokenType::This },
+
 		{ "(", TokenType::OpenParen },
 		{ ")", TokenType::CloseParen },
 		{ "{", TokenType::OpenBrace },
@@ -94,6 +97,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::False, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Real, make_unique<LiteralParslet>());
 	AddParslet(TokenType::Identifier, make_unique<NameParslet>());
+	AddParslet(TokenType::This, make_unique<NameParslet>(true));
 	AddParslet(TokenType::OpenParen, make_unique<GroupParslet>());
 	AddParslet(TokenType::Power, make_unique<BinaryOperatorParslet>(350, true));
 	AddParslet(TokenType::Assign, make_unique<AssignParslet>());
@@ -120,6 +124,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayExpressionParslet>());
 	AddParslet(TokenType::Dot, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
+	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());
 
 	m_Symbols.push(&m_GlobalSymbols);
 	return true;
@@ -212,6 +217,7 @@ unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 		return left;
 	}
 	AddError(ParseError(ParseErrorType::UnknownOperator, token, format("Unexpected token: {}", token.Lexeme)));
+	Next();
 	return nullptr;
 }
 
@@ -243,7 +249,7 @@ bool Parser::AddParslet(TokenType type, unique_ptr<PrefixParslet> parslet) {
 }
 
 unique_ptr<VarValStatement> Parser::ParseVarConstStatement(bool constant) {
-	auto next = Next();		// eat var or val
+	auto next = Next();		// eat var/val
 	auto name = Next();		// variable name
 	if (name.Type != TokenType::Identifier)
 		AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Identifier expected"));
@@ -274,11 +280,14 @@ unique_ptr<VarValStatement> Parser::ParseVarConstStatement(bool constant) {
 	return make_unique<VarValStatement>(name.Lexeme, constant, move(init));
 }
 
-unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
-	Next();		// eat fn keyword
-	auto ident = Next();
-	if (ident.Type != TokenType::Identifier)
-		AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
+unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
+	bool ctor = method && Peek().Type == TokenType::New;
+	Token ident = Next();
+	if (!ctor) {
+		ident = Next();
+		if (ident.Type != TokenType::Identifier)
+			AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
+	}
 
 	Match(TokenType::OpenParen, true, true);
 
@@ -288,8 +297,14 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	vector<Parameter> parameters;
 	while (Peek().Type != TokenType::CloseParen) {
 		auto param = Next();
-		if (param.Type != TokenType::Identifier)
-			AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
+		if (param.Type == TokenType::This) {
+			if(!method)
+				AddError(ParseError(ParseErrorType::IllegalThis, CodeLocation::FromToken(param), "'this' can only be used in method parameters"));
+			else if(!parameters.empty())
+				AddError(ParseError(ParseErrorType::IllegalThis, CodeLocation::FromToken(param), "'this' can be first parameter only"));
+		}
+		else if (param.Type != TokenType::Identifier)
+			AddError(ParseError{ ParseErrorType::IdentifierExpected, param });
 		parameters.push_back(Parameter{ param.Lexeme });
 		Match(TokenType::Comma);
 	}
@@ -305,11 +320,14 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration() {
 	auto decl = make_unique<FunctionDeclaration>(move(ident.Lexeme));
 
 	unique_ptr<Expression> body;
-	if (Match(TokenType::GoesTo))
+	if (Match(TokenType::GoesTo)) {
 		body = ParseExpression();
-	else
+		Match(TokenType::Semicolon, true, true);
+	}
+	else {
 		body = ParseBlock(parameters);
-	
+	}
+
 	body->SetParent(decl.get());
 	auto params = parameters.size();
 	decl->Parameters(move(parameters));
@@ -398,7 +416,7 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 	switch (peek.Type) {
 		case TokenType::Var: return ParseVarConstStatement(false);
 		case TokenType::Val: return ParseVarConstStatement(true);
-		case TokenType::Repeat: 
+		case TokenType::Repeat:
 			if (!topLevel)
 				return ParseRepeatStatement();
 			break;
@@ -418,8 +436,9 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 				return ParseBreakContinueStatement(peek.Type == TokenType::Continue);
 			break;
 
-		case TokenType::For: 
-			if(!topLevel)
+		case TokenType::Class: return ParseClassDeclaration();
+		case TokenType::For:
+			if (!topLevel)
 				return ParseForStatement();
 			break;
 		case TokenType::Enum: return ParseEnumDeclaration();
@@ -550,6 +569,52 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	auto body = ParseBlock();
 	m_LoopCount--;
 	return make_unique<ForStatement>(move(init), move(whileExpr), move(inc), move(body));
+}
+
+unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
+	Next();		// eat class keyword
+	auto name = Next();
+	if (name.Type != TokenType::Identifier)
+		AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(name), "Expected: identifier"));
+
+	Match(TokenType::OpenBrace, true, true);
+	auto decl = make_unique<ClassDeclaration>(move(name.Lexeme));
+	PushScope(decl.get());
+	vector<unique_ptr<FunctionDeclaration>> methods;
+	vector<unique_ptr<VarValStatement>> fields;
+	while (Peek().Type != TokenType::CloseBrace) {
+		bool val = false;
+		switch (Peek().Type) {
+			case TokenType::New:	// ctor
+			case TokenType::Fn:
+			{
+				auto method = ParseFunctionDeclaration(true);
+				if (method) {
+					methods.push_back(move(method));
+				}
+				break;
+			}
+
+			case TokenType::Val:
+				val = true;
+				[[fallthrough]];
+			case TokenType::Var:
+			{
+				auto stmt = ParseVarConstStatement(val);
+				fields.push_back(move(stmt));
+			}
+			break;
+
+			default:
+				AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(Peek()), format("Unexpected token: '{}'", Peek().Lexeme)));
+				break;
+		}
+	}
+	Next();		// eat close brance
+	PopScope();
+	decl->SetMethods(move(methods));
+	decl->SetFields(move(fields));
+	return move(decl);
 }
 
 unique_ptr<ReturnStatement> Parser::ParseReturnStatement() {

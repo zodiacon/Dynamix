@@ -28,6 +28,7 @@ namespace Dynamix {
 		VarValStatement,
 		ArrayAccess,
 		GetMember,
+		Class,
 	};
 
 	class AstNode {
@@ -76,16 +77,17 @@ namespace Dynamix {
 		Out = 3,
 	};
 
-	struct Parameter {
-		std::string Name;
-		ParameterFlags Flags;
-	};
-
 	class Expression : public AstNode {
 	public:
 		AstNodeType Type() const noexcept override {
 			return AstNodeType::Expression;
 		}
+	};
+
+	struct Parameter {
+		std::string Name;
+		ParameterFlags Flags{ ParameterFlags::None };
+		std::unique_ptr<Expression> DefaultValue;
 	};
 
 	class GetMemberExpression : public Expression {
@@ -323,7 +325,7 @@ namespace Dynamix {
 
 	class FunctionDeclaration : public Statement {
 	public:
-		explicit FunctionDeclaration(std::string name);
+		explicit FunctionDeclaration(std::string name, bool method = false);
 		Value Accept(Visitor* visitor) const override;
 
 		std::string const& Name() const noexcept;
@@ -332,7 +334,9 @@ namespace Dynamix {
 		std::string ToString() const override;
 		void Parameters(std::vector<Parameter> parameters) noexcept;
 		void Body(std::unique_ptr<Expression> body) noexcept;
-
+		bool IsMethod() const noexcept {
+			return m_Method;
+		}
 		AstNodeType Type() const noexcept {
 			return AstNodeType::FunctionDeclaration;
 		}
@@ -341,16 +345,37 @@ namespace Dynamix {
 		std::string m_Name;
 		std::vector<Parameter> m_Parameters;
 		std::unique_ptr<Expression> m_Body;
+		bool m_Method;
 	};
 
-	class ClassDeclaration : Statement {
+	class ClassDeclaration : public Statement {
 	public:
-		explicit ClassDeclaration(std::unique_ptr<ObjectType> type);
+		explicit ClassDeclaration(std::string name) noexcept;
+		AstNodeType Type() const noexcept override {
+			return AstNodeType::Class;
+		}
+		Value Accept(Visitor* visitor) const override;
+		void SetMethods(std::vector<std::unique_ptr<FunctionDeclaration>> methods) noexcept {
+			m_Methods = std::move(methods);
+		}
+		void SetFields(std::vector<std::unique_ptr<VarValStatement>> fields) noexcept {
+			m_Fields = std::move(fields);
+		}
 
-		ObjectType const* GetObjectType() const;
+		std::vector<std::unique_ptr<FunctionDeclaration>> const& Methods() const noexcept {
+			return m_Methods;
+		}
+		std::vector<std::unique_ptr<VarValStatement>> const& Fields() const noexcept {
+			return m_Fields;
+		}
+		std::string const& Name() const {
+			return m_Name;
+		}
 
 	private:
-		std::unique_ptr<ObjectType> m_ObjectType;
+		std::string m_Name;
+		std::vector<std::unique_ptr<FunctionDeclaration>> m_Methods;
+		std::vector<std::unique_ptr<VarValStatement>> m_Fields;
 	};
 
 	class EnumDeclaration : public Statement {
@@ -376,6 +401,22 @@ namespace Dynamix {
 	private:
 		std::vector<Parameter> m_Args;
 		std::unique_ptr<Expression> m_Body;
+	};
+
+	class NewObjectExpression : public Expression {
+	public:
+		NewObjectExpression(std::string className, std::vector<std::unique_ptr<Expression>> args) : m_ClassName(std::move(className)), m_Args(std::move(args)) {}
+		Value Accept(Visitor* visitor) const override;
+		std::string const& ClassName() const {
+			return m_ClassName;
+		}
+		std::vector<std::unique_ptr<Expression>> const& Args() const noexcept {
+			return m_Args;
+		}
+
+	private:
+		std::string m_ClassName;
+		std::vector<std::unique_ptr<Expression>> m_Args;
 	};
 
 	class BreakOrContinueStatement : public Statement {

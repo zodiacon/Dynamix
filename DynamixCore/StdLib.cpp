@@ -29,7 +29,5 @@ void InitStdLibrary(Parser& parser) {
 		parser.AddSymbol(std::move(s));
 	}
 
-	auto type = std::make_unique<ObjectType>("String");
-	auto prop = std::make_unique<PropertyInfo>("Length");
 	
 }

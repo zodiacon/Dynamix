@@ -24,10 +24,34 @@ namespace Dynamix {
 			return m_Items;
 		}
 
+		//ArrayEnumerator GetEnumerator() const;
+
+		Int Count() const {
+			return Int(m_Items.size());
+		}
+
+		Int Add(Value item);
+		Int RemoveAt(Int index);
+		Int Insert(Int index, Value item);
+		void Clear() {
+			m_Items.clear();
+		}
+		Bool IsEmpty() const {
+			return Bool(m_Items.empty());
+		}
+		Int Append(Value list);
+
 		std::string ToString() const override;
 
 		Value InvokeIndexer(Value const& index) override;
 		void AssignIndexer(Value const& index, Value const& value, TokenType assign) override;
+
+		ArrayObject* Clone() const;
+		void Reverse();
+		void ForEach(AstNode const* code);
+
+	protected:
+		Int ValidateIndex(Int index) const;
 
 	private:
 		std::vector<Value> m_Items;

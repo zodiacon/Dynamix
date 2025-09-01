@@ -42,7 +42,7 @@ namespace Dynamix {
 
 		std::unique_ptr<Expression> ParseExpression(int precedence = 0);
 		std::unique_ptr<VarValStatement> ParseVarConstStatement(bool constant);
-		std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration();
+		std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration(bool method = false);
 		std::unique_ptr<RepeatStatement> ParseRepeatStatement();
 		std::unique_ptr<WhileStatement> ParseWhileStatement();
 		std::unique_ptr<Statements> ParseBlock(std::vector<Parameter> const& args = {});
@@ -51,6 +51,7 @@ namespace Dynamix {
 		std::unique_ptr<BreakOrContinueStatement> ParseBreakContinueStatement(bool cont);
 		std::unique_ptr<EnumDeclaration> ParseEnumDeclaration();
 		std::unique_ptr<ForStatement> ParseForStatement();
+		std::unique_ptr<ClassDeclaration> ParseClassDeclaration();
 
 		Token Next();
 		Token const& Peek() const;

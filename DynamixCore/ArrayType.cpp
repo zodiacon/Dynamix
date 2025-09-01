@@ -16,47 +16,102 @@ ArrayObject* ArrayType::CreateArray(std::vector<Value>& args) {
 Value ArrayObject::InvokeIndexer(Value const& index) {
 	if (!index.IsInteger())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Array index must be an integer");
-	auto i = index.ToInteger();
-	if (i < 0 || i >= (Int)m_Items.size())
-		throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} is out of range (array size: {})", i, m_Items.size()));
-
+	auto i = ValidateIndex(index.ToInteger());
 	return m_Items[i];
 }
 
 void ArrayObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
 	if (!index.IsInteger())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Array index must be an integer");
-	auto i = index.ToInteger();
-	if(i < 0 || i >= (Int)m_Items.size())
-		throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} is out of range (array size: {})", i, m_Items.size()));
+	auto i = ValidateIndex(index.ToInteger());
 	m_Items[i].Assign(value, assign);
 }
 
-ArrayType::ArrayType() : ObjectType("Array") {
-	auto size = std::make_unique<MethodInfo>("Size");
-	size->Arity = 0;
-	size->Flags = MemberFlags::Native;
-	size->Code.Native = [](auto, auto& args) -> Value {
-		assert(args.size() == 1);
-		auto obj = args[0].AsObject();
-		return static_cast<Int>(reinterpret_cast<ArrayObject*>(obj)->Items().size());
-		};
-	AddMember(std::move(size));
+Int ArrayObject::ValidateIndex(Int i) const {
+	if (i < 0 || i >= (Int)m_Items.size())
+		throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} is out of range (array size: {})", i, m_Items.size()));
+	return i;
+}
 
-	auto add = std::make_unique<MethodInfo>("Add");
-	add->Arity = 1;
-	add->Flags = MemberFlags::Native;
-	add->Code.Native = [](auto, auto& args) -> Value {
-		assert(args.size() == 2);
-		auto obj = args[0].AsObject();
-		reinterpret_cast<ArrayObject*>(obj)->Items().push_back(args[1]);
-		return Value(obj);
-		};
-	AddMember(std::move(add));
+ArrayType::ArrayType() : ObjectType("Array") {
+	struct {
+		const char* Name;
+		int Arity;
+		NativeFunction Code;
+		MemberFlags Flags{ MemberFlags::Native };
+	} methods[] = {
+		{ "Count", 0, 
+			[](auto, auto& args) -> Value {
+				assert(args.size() == 1);
+				return GetInstance<ArrayObject>(args[0])->Count();
+				} },
+		{ "IsEmpty", 0,
+			[](auto, auto& args) -> Value {
+				assert(args.size() == 1);
+				return GetInstance<ArrayObject>(args[0])->IsEmpty();
+				} },
+		{ "Clear", 0,
+			[](auto, auto& args) -> Value {
+				assert(args.size() == 1);
+				GetInstance<ArrayObject>(args[0])->Clear();
+				return Value();
+				} },
+		{ "Add", 1,
+			[](auto, auto& args) -> Value {
+				assert(args.size() == 2);
+				return GetInstance<ArrayObject>(args[0])->Add(args[1]);
+			} },
+
+		{ "Append", 1,
+			[](auto, auto& args) -> Value {
+				assert(args.size() == 2);
+				return GetInstance<ArrayObject>(args[0])->Append(args[1]);
+			} },
+
+		{ "RemoveAt", 1,
+			[](auto, auto& args) -> Value {
+			assert(args.size() == 2);
+			return GetInstance<ArrayObject>(args[0])->RemoveAt(args[1].ToInteger());
+			} },
+	};
+
+	for (auto& m : methods) {
+		auto mi = std::make_unique<MethodInfo>(m.Name);
+		mi->Arity = m.Arity;
+		mi->Code.Native = m.Code;
+		mi->Flags = m.Flags;
+		AddMember(move(mi));
+	}
 }
 
 ArrayObject::ArrayObject(std::vector<Value> init) : 
 	RuntimeObject(ArrayType::Get()), m_Items(std::move(init)) {
+}
+
+Int Dynamix::ArrayObject::Add(Value item) {
+	m_Items.push_back(std::move(item));
+	return Int(m_Items.size());
+}
+
+Int ArrayObject::RemoveAt(Int index) {
+	ValidateIndex(index);
+	m_Items.erase(m_Items.begin() + index);
+	return Int(m_Items.size());
+}
+
+Int Dynamix::ArrayObject::Insert(Int index, Value item) {
+	ValidateIndex(index);
+	m_Items.insert(m_Items.begin() + index, std::move(item));
+	return Int(m_Items.size());
+}
+
+Int ArrayObject::Append(Value list) {
+	auto obj = list.ToObject();
+	if (obj->Type().Name() != Type().Name())
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Cannot append non-array to array");
+	auto other = ObjectType::GetInstance<ArrayObject>(obj);
+	m_Items.insert(m_Items.end(), other->m_Items.begin(), other->m_Items.end());
+	return Int(m_Items.size());
 }
 
 std::string ArrayObject::ToString() const {

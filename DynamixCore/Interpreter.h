@@ -43,6 +43,8 @@ namespace Dynamix {
 		Value VisitGetMember(GetMemberExpression const* expr) override;
 		Value VisitAccessArray(AccessArrayExpression const* expr) override;
 		Value VisitAssignArrayIndex(AssignArrayIndexExpression const* expr) override;
+		Value VisitClassDeclaration(ClassDeclaration const* decl) override;
+		Value VisitNewObjectExpression(NewObjectExpression const* expr) override;
 
 		void PushScope();
 		void PopScope();

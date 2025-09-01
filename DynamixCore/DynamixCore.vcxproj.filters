@@ -48,9 +48,6 @@
     <ClInclude Include="ObjectType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Runtime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EnumClassBitwise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,6 +75,9 @@
     <ClInclude Include="ArrayType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="Runtime.h">
+      <Filter>Execution</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp">
@@ -102,9 +102,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ObjectType.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Runtime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Print.cpp">
@@ -133,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="ArrayType.cpp">
       <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="Runtime.cpp">
+      <Filter>Execution</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

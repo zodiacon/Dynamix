@@ -180,3 +180,25 @@ unique_ptr<Expression> ArrayAccessParslet::Parse(Parser& parser, std::unique_ptr
 	parser.Match(TokenType::CloseBracket, true, true);
 	return make_unique<AccessArrayExpression>(move(left), move(expr));
 }
+
+unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& token) {
+	assert(token.Type == TokenType::New);
+	auto ident = parser.Next();
+	if (ident.Type != TokenType::Identifier) {
+		parser.AddError(ParseError(ParseErrorType::IllegalExpression, CodeLocation::FromToken(ident), "Class name expected after 'new'"));
+		return nullptr;
+	}
+	parser.Match(TokenType::OpenParen, true, true);
+
+	vector<unique_ptr<Expression>> args;
+	auto next = parser.Peek();
+	while (next.Type != TokenType::CloseParen) {
+		auto param = parser.ParseExpression();
+		args.push_back(move(param));
+		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false))
+			parser.AddError(ParseError(ParseErrorType::CommaExpected, next, "Expected , or )"));
+		next = parser.Peek();
+	}
+	parser.Match(TokenType::CloseParen, true, true);
+	return make_unique<NewObjectExpression>(move(ident.Lexeme), move(args));
+}

@@ -24,6 +24,14 @@ namespace Dynamix {
 	};
 
 	struct NameParslet : PrefixParslet {
+		explicit NameParslet(bool isthis = false) : m_IsThis(isthis) {}
+		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
+
+	private:
+		bool m_IsThis;
+	};
+
+	struct NewOperatorParslet : PrefixParslet {
 		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
 	};
 

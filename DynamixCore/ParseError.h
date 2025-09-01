@@ -37,6 +37,8 @@ namespace Dynamix {
 		IllegalExpression,
 		TooManyFunctionArgs,
 		InvalidLhs,
+		UnexpectedToken,
+		IllegalThis,
 	};
 
 	struct ParseError {

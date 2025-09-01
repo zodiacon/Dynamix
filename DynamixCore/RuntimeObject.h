@@ -20,7 +20,7 @@ namespace Dynamix {
 		RuntimeObject(RuntimeObject&& other) = default;
 		RuntimeObject& operator=(RuntimeObject&& other) = default;
 
-		virtual void Construct(std::vector<Value>& args);
+		virtual void Construct(std::vector<Value> const& args);
 		virtual void Destruct();
 
 		ObjectType& Type() {

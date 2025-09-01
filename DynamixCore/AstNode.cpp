@@ -239,7 +239,7 @@ Statement const* IfThenElseExpression::Else() const noexcept {
 	return m_Else.get();
 }
 
-FunctionDeclaration::FunctionDeclaration(string name) : m_Name(move(name)) {
+FunctionDeclaration::FunctionDeclaration(string name, bool method) : m_Name(move(name)), m_Method(method) {
 }
 
 Value FunctionDeclaration::Accept(Visitor* visitor) const {
@@ -345,7 +345,7 @@ Expression const* AnonymousFunctionExpression::Body() const noexcept {
 EnumDeclaration::EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values) : m_Name(move(name)), m_Values(move(values)) {
 }
 
-std::unordered_map<std::string, long long> const& EnumDeclaration::Values() const noexcept {
+unordered_map<std::string, long long> const& EnumDeclaration::Values() const noexcept {
 	return m_Values;
 }
 
@@ -353,11 +353,11 @@ Value EnumDeclaration::Accept(Visitor* visitor) const {
 	return visitor->VisitEnumDeclaration(this);
 }
 
-std::string const& EnumDeclaration::Name() const noexcept {
+string const& EnumDeclaration::Name() const noexcept {
 	return m_Name;
 }
 
-vector<std::unique_ptr<Expression>> const& Dynamix::InvokeFunctionExpression::Arguments() const {
+vector<unique_ptr<Expression>> const& Dynamix::InvokeFunctionExpression::Arguments() const {
 	return m_Arguments;
 }
 
@@ -429,7 +429,11 @@ string ExpressionStatement::ToString() const {
 	return Expr()->ToString();
 }
 
-ClassDeclaration::ClassDeclaration(std::unique_ptr<ObjectType> type) : m_ObjectType(move(type)) {
+ClassDeclaration::ClassDeclaration(std::string name) noexcept : m_Name(move(name)) {
+}
+
+Value ClassDeclaration::Accept(Visitor* visitor) const {
+	return visitor->VisitClassDeclaration(this);
 }
 
 AssignArrayIndexExpression::AssignArrayIndexExpression(unique_ptr<Expression> arrayAccess, unique_ptr<Expression> rhs, Token assignType) noexcept 
@@ -438,4 +442,8 @@ AssignArrayIndexExpression::AssignArrayIndexExpression(unique_ptr<Expression> ar
 
 Value AssignArrayIndexExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAssignArrayIndex(this);
+}
+
+Value NewObjectExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitNewObjectExpression(this);
 }

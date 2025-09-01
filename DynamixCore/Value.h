@@ -48,19 +48,22 @@ namespace Dynamix {
 	};
 
 	class Value;
+	struct MethodInfo;
 
 	using NativeFunction = Value(*)(Interpreter&, std::vector<Value>&);
 
 	struct Callable {
 		RuntimeObject* Instance{ nullptr };
-		AstNode* Node{ nullptr };
+		AstNode const* Node{ nullptr };
 		NativeFunction Native{ nullptr };
+		MethodInfo* Method{ nullptr };
 	};
 
 	class Value final {
 	public:
 		constexpr Value() noexcept : m_Type(ValueType::Null) {}
 		constexpr Value(Int v) noexcept : iValue(v), m_Type(ValueType::Integer) {}
+		constexpr Value(int v) noexcept : iValue(v), m_Type(ValueType::Integer) {}
 		constexpr Value(Real d) noexcept : dValue(d), m_Type(ValueType::Real) {}
 		constexpr Value(Bool b) noexcept : bValue(b), m_Type(ValueType::Boolean) {}
 		constexpr Value(ValueType t) noexcept : m_Type(t) {}
@@ -126,12 +129,19 @@ namespace Dynamix {
 		Int ToInteger() const;
 		Bool ToBoolean() const;
 		Real ToReal() const;
+		RuntimeObject* ToObject() const;
+
 		AstNode const* AsAstNode() const noexcept {
 			assert(IsAstNode());
 			return nValue;
 		}
 
 		RuntimeObject* AsObject() noexcept {
+			assert(IsObject());
+			return oValue;
+		}
+
+		RuntimeObject const* AsObject() const noexcept {
 			assert(IsObject());
 			return oValue;
 		}

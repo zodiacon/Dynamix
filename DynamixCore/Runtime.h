@@ -1,7 +1,8 @@
 #pragma once
 
-#include <stacktrace>
-#include <vector>
+#include <unordered_map>
+#include <string>
+#include <memory>
 #include "AstNode.h"
 
 namespace Dynamix {
@@ -61,13 +62,15 @@ namespace Dynamix {
 	class Runtime {
 	public:
 		Runtime(Parser& parser);
+		ObjectType* GetObjectType(AstNode const* classNode);
+		ObjectType* GetObjectType(std::string const& classNode) const;
 
 		void AddNativeFunctions();
 		bool Init();
 
 	private:
-		Allocator* m_Allocator;
 		Parser& m_Parser;
+		std::unordered_map<std::string, std::unique_ptr<ObjectType>> m_Types;
 	};
 }
 

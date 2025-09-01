@@ -82,31 +82,52 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
-	auto f = Eval(expr->Callable());
 	NativeFunction native = nullptr;
 	AstNode const* node = nullptr;
 	RuntimeObject* instance = nullptr;
+	Callable* callable = nullptr;
+	auto f = Eval(expr->Callable());
 	if (f.IsNativeFunction())
 		native = f.AsNativeCode();
 	else if (f.IsAstNode())
 		node = f.AsAstNode();
 	else if (f.IsCallable()) {
-		auto c = f.AsCallable();
-		instance = c->Instance;
-		native = c->Native;
-		node = c->Node;
+		callable = f.AsCallable();
+		instance = callable->Instance;
+		native = callable->Native;
+		node = callable->Node;
+
+		if (callable->Method) {
+			PushScope();
+			if (instance && (callable->Method->Flags & MemberFlags::Static) == MemberFlags::None)
+				CurrentScope()->AddVariable("this", Variable{ instance });
+			for (size_t i = 0; i < expr->Arguments().size(); i++) {
+				Variable v{ Eval(expr->Arguments()[i].get()) };
+				CurrentScope()->AddVariable(callable->Method->Parameters[i].Name, move(v));
+			}
+			try {
+				auto result = Eval(node);
+				PopScope();
+				return result;
+			}
+			catch (ReturnStatementException const& ret) {
+				PopScope();
+				return ret.ReturnValue;
+			}
+			catch (BreakAllStatementException const&) {
+				PopScope();
+			}
+		}
 	}
 	else
 		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
 
 	if (node) {
 		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
-
+		assert(!instance);
 		PushScope();
-		if (instance)
-			CurrentScope()->AddVariable("this", Variable{ instance });
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
-			Variable v{ expr->Arguments()[i]->Accept(this) };
+			Variable v{ Eval(expr->Arguments()[i].get()) };
 			CurrentScope()->AddVariable(decl->Parameters()[i].Name, move(v));
 		}
 		try {
@@ -119,6 +140,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			return ret.ReturnValue;
 		}
 		catch (BreakAllStatementException const&) {
+			PopScope();
 		}
 	}
 	else {
@@ -128,8 +150,9 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		args.reserve(expr->Arguments().size() + 1);
 		if (instance)
 			args.push_back(instance);
-		for (auto& v : expr->Arguments())
-			args.emplace_back(Eval(v.get()));
+		for (auto& arg : expr->Arguments()) {
+			args.emplace_back(Eval(arg.get()));
+		}
 		return (*native)(*this, args);
 	}
 }
@@ -281,6 +304,7 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 		c->Native = method->Code.Native;
 	else
 		c->Node = method->Code.Node;
+	c->Method = method;
 	return c;
 }
 
@@ -295,4 +319,26 @@ Value Interpreter::VisitAssignArrayIndex(AssignArrayIndexExpression const* expr)
 	auto index = Eval(expr->ArrayAccess()->Index());
 
 	return arr.AssignArrayIndex(index, Eval(expr->Value()), expr->AssignType().Type);
+}
+
+Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
+	Variable v{ decl, VariableFlags::Class };
+	CurrentScope()->AddVariable(decl->Name(), move(v));
+
+	return Value();
+}
+
+Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
+	auto v = CurrentScope()->FindVariable(expr->ClassName());
+	if (v == nullptr)
+		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Class '{}' not found in scope", expr->ClassName()));
+	
+	if((v->Flags & VariableFlags::Class) != VariableFlags::Class)
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, format("'{}' is not a class name in scope", expr->ClassName()));
+
+	auto type = m_Runtime->GetObjectType(v->VarValue.AsAstNode());
+	std::vector<Value> args;
+	for (auto& arg : expr->Args())
+		args.push_back(Eval(arg.get()));
+	return type->CreateObject(args);
 }

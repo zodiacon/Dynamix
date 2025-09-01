@@ -9,6 +9,8 @@
 namespace Dynamix {
 	class Interpreter;
 	class Runtime;
+	class Expression;
+	struct Parameter;
 
 	enum class InvokeFlags {
 		None,
@@ -43,10 +45,11 @@ namespace Dynamix {
 		ReadOnly = 2,
 		Const = 4,
 		Native = 8,
+		Ctor = 0x10,
 	};
 
 	union MemberCode {
-		AstNode* Node;
+		AstNode const* Node;
 		NativeFunction Native;
 	};
 
@@ -68,17 +71,22 @@ namespace Dynamix {
 		MemberType m_Type;
 	};
 
+	struct MethodParameter {
+		std::string Name;
+		Expression* DefaultValue;
+	};
+
 	struct MethodInfo : MemberInfo {
 		explicit MethodInfo(std::string name) : MemberInfo(name, MemberType::Method) {}
 
 		MemberCode Code{};
 		int8_t Arity{ 0 };
+		std::vector<MethodParameter> Parameters;
 	};
 
-	struct PropertyInfo : MemberInfo {
-		explicit PropertyInfo(std::string name) : MemberInfo(name, MemberType::Property) {}
-		MemberCode Set;
-		MemberCode Get;
+	struct FieldInfo : MemberInfo {
+		explicit FieldInfo(std::string name) : MemberInfo(name, MemberType::Field) {}
+		Expression const* Init;
 	};
 
 	class ObjectType : public MemberInfo {
@@ -90,7 +98,7 @@ namespace Dynamix {
 		ObjectType(ObjectType&&) = delete;
 		ObjectType& operator=(ObjectType&&) = delete;
 
-		virtual RuntimeObject* CreateObject(std::vector<Value>& args);
+		virtual RuntimeObject* CreateObject(std::vector<Value> const& args);
 		virtual void DestroyObject(RuntimeObject* object);
 
 		// instance 
@@ -103,6 +111,21 @@ namespace Dynamix {
 
 		bool AddMember(std::unique_ptr<MemberInfo> member);
 		MemberInfo const* GetMember(std::string const& name) const;
+
+		template<typename T>
+		static T* GetInstance(RuntimeObject* obj) {
+			return reinterpret_cast<T*>(obj);
+		}
+
+		template<typename T>
+		static T const* GetInstance(Value const& v) {
+			return reinterpret_cast<T const*>(v.AsObject());
+		}
+
+		template<typename T>
+		static T* GetInstance(Value& v) {
+			return reinterpret_cast<T*>(v.AsObject());
+		}
 
 	private:
 		std::atomic<unsigned> m_ObjectCount{ 0 };
