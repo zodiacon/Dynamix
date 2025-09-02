@@ -157,6 +157,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		}
 		return (*native)(*this, args);
 	}
+	return Value();
 }
 
 Value Interpreter::VisitWhile(WhileStatement const* stmt) {
@@ -212,15 +213,15 @@ Value Interpreter::VisitFor(ForStatement const* stmt) {
 	PushScope();
 	Eval(stmt->Init());
 	while (Eval(stmt->While()).ToBoolean()) {
-		try {
-			if (stmt->Body()) {
+		if (stmt->Body()) {
+			try {
 				Eval(stmt->Body());
 			}
-		}
-		catch (BreakStatementException) {
-			break;
-		}
-		catch (ContinueStatementException) {
+			catch (BreakStatementException) {
+				break;
+			}
+			catch (ContinueStatementException) {
+			}
 		}
 		Eval(stmt->Inc());
 	}
