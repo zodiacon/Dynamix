@@ -58,7 +58,6 @@ bool Runtime::Init() {
 	if (!m_Parser.Init())
 		return false;
 
-	InitStdLibrary();
 	return true;
 }
 
@@ -80,11 +79,9 @@ void Runtime::InitStdLibrary() {
 		s.Name = f.Name;
 		s.Flags = f.Flags;
 		m_Parser.AddSymbol(std::move(s));
-		Variable v{ f.Code };
-		if(f.Arity >= 0)
-			m_GlobalScope.AddVariable(format("{}/{}", f.Name, f.Arity), move(v));
-		else
-			m_GlobalScope.AddVariable(f.Name, move(v));
+		Element v{ f.Code };
+		v.Arity = f.Arity;
+		m_GlobalScope.AddElement(f.Name, move(v));
 	}
 }
 

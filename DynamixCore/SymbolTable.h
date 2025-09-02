@@ -8,7 +8,7 @@ namespace Dynamix {
 	class AstNode;
 
 	enum class SymbolType : uint8_t {
-		Variable,
+		Element,
 		Function,
 		NativeFunction,
 		Argument,

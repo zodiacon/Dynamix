@@ -44,28 +44,30 @@ Value Interpreter::VisitUnary(UnaryExpression const* expr) {
 }
 
 Value Interpreter::VisitName(NameExpression const* expr) {
-	auto v = CurrentScope()->FindVariable(expr->Name());
-	if (v) {
-		return v->VarValue;
+	auto elements = CurrentScope()->FindElements(expr->Name());
+	if (elements.size() == 1) {
+		return elements[0]->VarValue;
 	}
+	if (elements.size() > 1)
+		throw RuntimeError(RuntimeErrorType::MultipleSymbols, format("Multiple symbols referring to: '{}'", expr->Name()), expr->Location());
 	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: '{}'", expr->Name()), expr->Location());
 
 }
 
 Value Interpreter::VisitVar(VarValStatement const* expr) {
-	if (CurrentScope()->FindVariable(expr->Name(), true))
+	if (CurrentScope()->FindElement(expr->Name(), true))
 		return Value::Error(ValueErrorType::DuplicateName);
 
-	Variable v;
+	Element v;
 	if (expr->Init())
 		v.VarValue = Eval(expr->Init());
 
-	CurrentScope()->AddVariable(expr->Name(), move(v));
+	CurrentScope()->AddElement(expr->Name(), move(v));
 	return Value();
 }
 
 Value Interpreter::VisitAssign(AssignExpression const* expr) {
-	auto lhs = CurrentScope()->FindVariable(expr->Lhs());
+	auto lhs = CurrentScope()->FindElement(expr->Lhs());
 	if (!lhs)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: {}", expr->Lhs()), expr->Location());
 
@@ -81,11 +83,20 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	Value f;
 	if (expr->Callable()->Type() == AstNodeType::Name) {
 		auto nameExpr = reinterpret_cast<NameExpression const*>(expr->Callable());
-		auto v = CurrentScope()->FindVariable(format("{}/{}", nameExpr->Name(), expr->Arguments().size()));
-		if (v) {
-			f = v->VarValue;
+		auto func = CurrentScope()->FindElement(nameExpr->Name(), (int8_t)expr->Arguments().size());
+		if (func == nullptr) {
+			auto funcs = CurrentScope()->FindElements(nameExpr->Name());
+			string expected;
+			for (auto& v : funcs)
+				expected += format("{},", v->Arity);
+			throw RuntimeError(RuntimeErrorType::WrongNumberArguments, format("Wrong number of arguments to '{}' (Expected: {})",
+				nameExpr->Name(), expected.substr(0, expected.length() - 1)));
+		}
+		else {
+			f = func->VarValue;
 		}
 	}
+
 	if (f.IsNull())
 		f = Eval(expr->Callable());
 
@@ -102,10 +113,10 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		if (callable->Method) {
 			PushScope();
 			if (instance && (callable->Method->Flags & MemberFlags::Static) == MemberFlags::None)
-				CurrentScope()->AddVariable("this", Variable{ instance });
+				CurrentScope()->AddElement("this", Element{ instance });
 			for (size_t i = 0; i < expr->Arguments().size(); i++) {
-				Variable v{ Eval(expr->Arguments()[i].get()) };
-				CurrentScope()->AddVariable(callable->Method->Parameters[i].Name, move(v));
+				Element v{ Eval(expr->Arguments()[i].get()) };
+				CurrentScope()->AddElement(callable->Method->Parameters[i].Name, move(v));
 			}
 			try {
 				auto result = Eval(node);
@@ -116,7 +127,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 				PopScope();
 				return ret.ReturnValue;
 			}
-			catch (BreakAllStatementException const&) {
+			catch (BreakoutStatementException const&) {
 				PopScope();
 			}
 		}
@@ -129,8 +140,8 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		assert(!instance);
 		PushScope();
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
-			Variable v{ Eval(expr->Arguments()[i].get()) };
-			CurrentScope()->AddVariable(decl->Parameters()[i].Name, move(v));
+			Element v{ Eval(expr->Arguments()[i].get()) };
+			CurrentScope()->AddElement(decl->Parameters()[i].Name, move(v));
 		}
 		try {
 			auto result = Eval(decl->Body());
@@ -141,7 +152,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			PopScope();
 			return ret.ReturnValue;
 		}
-		catch (BreakAllStatementException const&) {
+		catch (BreakoutStatementException const&) {
 			PopScope();
 		}
 	}
@@ -189,9 +200,10 @@ Value Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
 }
 
 Value Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
-	Variable v;
+	Element v;
 	v.VarValue = decl;
-	CurrentScope()->AddVariable(format("{}/{}", decl->Name(), decl->Parameters().size()), move(v));
+	v.Arity = (int8_t)decl->Parameters().size();
+	CurrentScope()->AddElement(decl->Name(), move(v));
 
 	return Value();
 }
@@ -202,11 +214,16 @@ Value Interpreter::VisitReturn(ReturnStatement const* decl) {
 }
 
 Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
-	if (stmt->IsContinue())
-		throw ContinueStatementException();
-	else
-		throw BreakStatementException();
-
+	switch (stmt->BreakType()) {
+		case TokenType::Continue:
+			throw ContinueStatementException();
+		case TokenType::Break:
+			throw BreakStatementException();
+		case TokenType::BreakOut:
+			throw BreakoutStatementException();
+	}
+	assert(false);
+	return Value();
 }
 
 Value Interpreter::VisitFor(ForStatement const* stmt) {
@@ -334,18 +351,18 @@ Value Interpreter::VisitAssignArrayIndex(AssignArrayIndexExpression const* expr)
 }
 
 Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
-	Variable v{ decl, VariableFlags::Class };
-	CurrentScope()->AddVariable(decl->Name(), move(v));
+	Element v{ decl, ElementFlags::Class };
+	CurrentScope()->AddElement(decl->Name(), move(v));
 
 	return Value();
 }
 
 Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
-	auto v = CurrentScope()->FindVariable(expr->ClassName());
+	auto v = CurrentScope()->FindElement(expr->ClassName());
 	if (v == nullptr)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Class '{}' not found in scope", expr->ClassName()));
 
-	if ((v->Flags & VariableFlags::Class) != VariableFlags::Class)
+	if ((v->Flags & ElementFlags::Class) != ElementFlags::Class)
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, format("'{}' is not a class name in scope", expr->ClassName()));
 
 	auto type = m_Runtime->GetObjectType(v->VarValue.AsAstNode());

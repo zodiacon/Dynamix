@@ -21,6 +21,7 @@ namespace Dynamix {
 		Literal,
 		IfThenElse,
 		Name,
+		InvokeFunction,
 
 		Statement = 0x400,
 		Statements,
@@ -320,7 +321,9 @@ namespace Dynamix {
 		Expression const* Callable() const;
 		std::vector<std::unique_ptr<Expression>> const& Arguments() const;
 		std::string ToString() const override;
-
+		AstNodeType Type() const noexcept {
+			return AstNodeType::InvokeFunction;
+		}
 	private:
 		std::unique_ptr<Expression> m_Callable;
 		std::vector<std::unique_ptr<Expression>> m_Arguments;
@@ -441,12 +444,12 @@ namespace Dynamix {
 
 	class BreakOrContinueStatement : public Statement {
 	public:
-		explicit BreakOrContinueStatement(bool cont);
+		explicit BreakOrContinueStatement(TokenType type);
 		Value Accept(Visitor* visitor) const override;
-		bool IsContinue() const noexcept;
+		TokenType BreakType() const noexcept;
 
 	private:
-		bool m_IsContinue;
+		TokenType m_Type;
 	};
 
 	class WhileStatement : public Statement {

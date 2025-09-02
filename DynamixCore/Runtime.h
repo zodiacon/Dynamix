@@ -27,6 +27,8 @@ namespace Dynamix {
 		IndexerNotSupported,
 		IndexerTypeMismatch,
 		IndexOutOfRange,
+		WrongNumberArguments,
+		MultipleSymbols,
 	};
 
 	struct ReturnStatementException {
@@ -36,10 +38,10 @@ namespace Dynamix {
 	struct BreakStatementException {
 	};
 
-	struct ContinueStatementException {
+	struct BreakoutStatementException {
 	};
 
-	struct BreakAllStatementException {
+	struct ContinueStatementException {
 	};
 
 	struct RuntimeError {

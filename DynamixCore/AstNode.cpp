@@ -291,15 +291,15 @@ std::string ReturnStatement::ToString() const {
 	return format("return {};", ReturnValue() ? ReturnValue()->ToString() : "");
 }
 
-BreakOrContinueStatement::BreakOrContinueStatement(bool cont) : m_IsContinue(cont) {
+BreakOrContinueStatement::BreakOrContinueStatement(TokenType type) : m_Type(type) {
 }
 
 Value BreakOrContinueStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitBreakContinue(this);
 }
 
-bool BreakOrContinueStatement::IsContinue() const noexcept {
-	return m_IsContinue;
+TokenType BreakOrContinueStatement::BreakType() const noexcept {
+	return m_Type;
 }
 
 ForStatement::ForStatement(unique_ptr<Statement> init, unique_ptr<Expression> whileExpr, unique_ptr<Expression> incExpr, unique_ptr<Statements> body) :

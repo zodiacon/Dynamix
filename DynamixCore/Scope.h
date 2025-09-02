@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 namespace Dynamix {
-	enum class VariableFlags {
+	enum class ElementFlags : uint8_t {
 		None = 0,
 		Const = 1,
 		Static = 2,
@@ -12,19 +12,21 @@ namespace Dynamix {
 		Class = 8,
 	};
 
-	struct Variable {
+	struct Element {
 		Value VarValue;
-		VariableFlags Flags{ VariableFlags::None };
+		ElementFlags Flags{ ElementFlags::None };
+		int8_t Arity{ -1 };
 	};
 
 	class Scope {
 	public:
 		explicit Scope(Scope* parent = nullptr);
-		bool AddVariable(std::string name, Variable var);
-		Variable* FindVariable(std::string const& name, bool localOnly = false);
+		bool AddElement(std::string name, Element var);
+		Element* FindElement(std::string const& name, int arity = -1, bool localOnly = false);
+		std::vector<Element*> FindElements(std::string const& name, bool localOnly = false);
 
 	private:
-		std::unordered_map<std::string, Variable> m_Variables;
+		std::unordered_map<std::string, std::vector<Element>> m_Elements;
 		Scope* m_Parent;
 	};
 }

@@ -273,7 +273,7 @@ unique_ptr<VarValStatement> Parser::ParseVarConstStatement(bool constant) {
 	if (!dup) {
 		Symbol sym;
 		sym.Name = name.Lexeme;
-		sym.Type = SymbolType::Variable;
+		sym.Type = SymbolType::Element;
 		sym.Flags = constant ? SymbolFlags::Const : SymbolFlags::None;
 		AddSymbol(sym);
 	}
@@ -430,8 +430,9 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 			break;
 		case TokenType::Break:
 		case TokenType::Continue:
+		case TokenType::BreakOut:
 			if (!topLevel)
-				return ParseBreakContinueStatement(peek.Type == TokenType::Continue);
+				return ParseBreakContinueStatement();
 			break;
 
 		case TokenType::Class: return ParseClassDeclaration();
@@ -463,14 +464,14 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 	return nullptr;
 }
 
-unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement(bool cont) {
-	Next();		// eat keyword
-	if (!Match(TokenType::Semicolon))
-		AddError(ParseError(ParseErrorType::SemicolonExpected, Peek()));
-	if (m_LoopCount == 0)
-		AddError(ParseError(ParseErrorType::BreakContinueNoLoop, Peek()));
+unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement() {
+	auto token = Next();		// eat keyword
+	Match(TokenType::Semicolon, true, true);
 
-	return make_unique<BreakOrContinueStatement>(cont);
+	if (m_LoopCount == 0)
+		AddError(ParseError(ParseErrorType::BreakContinueNoLoop, token));
+
+	return make_unique<BreakOrContinueStatement>(token.Type);
 }
 
 unique_ptr<WhileStatement> Parser::ParseWhileStatement() {
