@@ -112,8 +112,14 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 
 		if (callable->Method) {
 			PushScope();
-			if (instance && (callable->Method->Flags & MemberFlags::Static) == MemberFlags::None)
+			bool instMethod = false;
+			if (instance && (callable->Method->Flags & MemberFlags::Static) == MemberFlags::None) {
 				CurrentScope()->AddElement("this", Element{ instance });
+				instMethod = (callable->Method->Flags & MemberFlags::Native) == MemberFlags::Native ? 0 : 1;
+			}
+			if (callable->Method->Parameters.size() != expr->Arguments().size() + (instMethod ? 1 : 0))
+				throw RuntimeError(RuntimeErrorType::WrongNumberArguments,
+					format("Wrong number of arguments to '{}' (Expected: {})", callable->Method->Name(), callable->Method->Parameters.size() -(instMethod ? 1 : 0)));
 			for (size_t i = 0; i < expr->Arguments().size(); i++) {
 				Element v{ Eval(expr->Arguments()[i].get()) };
 				CurrentScope()->AddElement(callable->Method->Parameters[i].Name, move(v));

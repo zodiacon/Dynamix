@@ -26,7 +26,7 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 	//
 	auto type = make_unique<ObjectType>(decl->Name());
 	for (auto& m : decl->Methods()) {
-		auto mi = std::make_unique<MethodInfo>(format("{}/{}", m->Name(), m->Parameters().size()));
+		auto mi = std::make_unique<MethodInfo>(m->Name());
 		mi->Arity = (int8_t)m->Parameters().size();
 		if (!m->Parameters().empty() && m->Parameters()[0].Name != "this")
 			mi->Flags = MemberFlags::Static;
