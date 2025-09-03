@@ -25,8 +25,6 @@ namespace Dynamix {
 		Field,
 		Method,
 		Property,
-		Constructor,
-		Destructor,
 		Operator,
 		Class,
 		Struct,

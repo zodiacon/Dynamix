@@ -45,7 +45,7 @@ namespace Dynamix {
 
 	private:
 		std::unordered_map<std::string_view, Value> m_Fields;
-		std::atomic<int> m_RefCount{ 0 };
+		std::atomic<int> m_RefCount{ 1 };
 		ObjectType& m_Type;
 	};
 }

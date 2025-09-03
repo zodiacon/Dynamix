@@ -19,6 +19,21 @@ Value Interpreter::Eval(AstNode const* root) {
 	return root ? root->Accept(this) : Value();
 }
 
+void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor, std::vector<Value> const& args) {
+	assert(ctor->Code.Node->Type() == AstNodeType::Statements);
+	//auto stmts = reinterpret_cast<Statements const*>(ctor);
+	PushScope();
+	Element pThis{ instance };
+	CurrentScope()->AddElement("this", move(pThis));
+	int i = 1;
+	for (auto& arg : args) {
+		Element varg{ arg };
+		CurrentScope()->AddElement(ctor->Parameters[i++].Name, move(varg));
+	}
+	Eval(ctor->Code.Node);
+	PopScope();
+}
+
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 	return Value::FromToken(expr->Literal());
 }
@@ -112,14 +127,14 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 
 		if (callable->Method) {
 			PushScope();
-			bool instMethod = false;
+			bool instNative = false;
 			if (instance && (callable->Method->Flags & MemberFlags::Static) == MemberFlags::None) {
 				CurrentScope()->AddElement("this", Element{ instance });
-				instMethod = (callable->Method->Flags & MemberFlags::Native) == MemberFlags::Native ? 0 : 1;
+				instNative = (callable->Method->Flags & MemberFlags::Native) == MemberFlags::Native ? 0 : 1;
 			}
-			if (callable->Method->Parameters.size() != expr->Arguments().size() + (instMethod ? 1 : 0))
+			if (callable->Method->Parameters.size() != expr->Arguments().size() + (instNative ? 1 : 0))
 				throw RuntimeError(RuntimeErrorType::WrongNumberArguments,
-					format("Wrong number of arguments to '{}' (Expected: {})", callable->Method->Name(), callable->Method->Parameters.size() -(instMethod ? 1 : 0)));
+					format("Wrong number of arguments to '{}' (Expected: {})", callable->Method->Name(), callable->Method->Parameters.size() -(instNative ? 1 : 0)));
 			for (size_t i = 0; i < expr->Arguments().size(); i++) {
 				Element v{ Eval(expr->Arguments()[i].get()) };
 				CurrentScope()->AddElement(callable->Method->Parameters[i].Name, move(v));

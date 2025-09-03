@@ -37,12 +37,24 @@ void ObjectType::DestroyObject(RuntimeObject* instance) {
 
 RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {
 	auto obj = new RuntimeObject(*this);
+
+	// init fields
+	MethodInfo* ctor = nullptr;
 	for (auto& [name, m] : m_Members) {
 		if (m->Type() == MemberType::Field) {
 			auto fi = reinterpret_cast<FieldInfo*>(m.get());
 			obj->SetField(name, fi->Init ? intr.Eval(fi->Init) : Value());
 		}
+		else if (!ctor && (m->Flags & MemberFlags::Ctor) == MemberFlags::Ctor) {
+			if(((MethodInfo*)m.get())->Parameters.size() == args.size() + 1)
+				ctor = (MethodInfo*)m.get();
+		}
 	}
-	obj->Construct(args);
+
+	// run ctor
+	if (ctor) {
+		intr.RunConstructor(obj, ctor, args);
+	}
+
 	return obj;
 }

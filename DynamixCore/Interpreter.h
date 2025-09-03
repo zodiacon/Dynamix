@@ -20,6 +20,8 @@ namespace Dynamix {
 
 		Value Eval(AstNode const* root);
 
+		void RunConstructor(RuntimeObject* instance, MethodInfo const* ctor, std::vector<Value> const& args);
+
 		// Inherited via Visitor
 		Value VisitLiteral(LiteralExpression const* expr) override;
 		Value VisitBinary(BinaryExpression const* expr) override;

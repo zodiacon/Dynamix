@@ -51,12 +51,13 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 }
 
 Runtime::Runtime(Parser& parser) : m_Parser(parser) {
-	InitStdLibrary();
 }
 
 bool Runtime::Init() {
 	if (!m_Parser.Init())
 		return false;
+
+	InitStdLibrary();
 
 	return true;
 }
