@@ -81,6 +81,12 @@
     <ClInclude Include="StringType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="CoreInterfaces.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VectorEnumerator.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp">
@@ -135,6 +141,9 @@
       <Filter>Execution</Filter>
     </ClCompile>
     <ClCompile Include="StringType.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="VectorEnumerator.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>

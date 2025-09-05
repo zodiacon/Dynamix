@@ -21,8 +21,7 @@ Value Interpreter::Eval(AstNode const* root) {
 
 void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor, std::vector<Value> const& args) {
 	assert(ctor->Code.Node->Type() == AstNodeType::Statements);
-	//auto stmts = reinterpret_cast<Statements const*>(ctor);
-	PushScope();
+	Scoper scoper(this);
 	Element pThis{ instance };
 	CurrentScope()->AddElement("this", move(pThis));
 	int i = 1;
@@ -31,7 +30,6 @@ void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor
 		CurrentScope()->AddElement(ctor->Parameters[i++].Name, move(varg));
 	}
 	Eval(ctor->Code.Node);
-	PopScope();
 }
 
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
@@ -128,7 +126,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		node = callable->Node;
 
 		if (callable->Method) {
-			PushScope();
+			Scoper scoper(this);
 			bool instNative = false;
 			if (instance && (callable->Method->Flags & MemberFlags::Static) == MemberFlags::None) {
 				CurrentScope()->AddElement("this", Element{ instance });
@@ -143,15 +141,12 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			}
 			try {
 				auto result = Eval(node);
-				PopScope();
 				return result;
 			}
 			catch (ReturnStatementException const& ret) {
-				PopScope();
 				return ret.ReturnValue;
 			}
 			catch (BreakoutStatementException const&) {
-				PopScope();
 			}
 		}
 	}
@@ -161,22 +156,19 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	if (node) {
 		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
 		assert(!instance);
-		PushScope();
+		Scoper scoper(this);
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
 			Element v{ Eval(expr->Arguments()[i].get()) };
 			CurrentScope()->AddElement(decl->Parameters()[i].Name, move(v));
 		}
 		try {
 			auto result = Eval(decl->Body());
-			PopScope();
 			return result;
 		}
 		catch (ReturnStatementException const& ret) {
-			PopScope();
 			return ret.ReturnValue;
 		}
 		catch (BreakoutStatementException const&) {
-			PopScope();
 		}
 	}
 	else {
@@ -195,7 +187,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 }
 
 Value Interpreter::VisitWhile(WhileStatement const* stmt) {
-	PushScope();
+	Scoper scoper(this);
 	while (Eval(stmt->Condition()).ToBoolean()) {
 		try {
 			Eval(stmt->Body());
@@ -206,7 +198,6 @@ Value Interpreter::VisitWhile(WhileStatement const* stmt) {
 		catch (ContinueStatementException const&) {
 		}
 	}
-	PopScope();
 	return Value();
 }
 
@@ -250,7 +241,7 @@ Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
 }
 
 Value Interpreter::VisitFor(ForStatement const* stmt) {
-	PushScope();
+	Scoper scoper(this);
 	Eval(stmt->Init());
 	while (Eval(stmt->While()).ToBoolean()) {
 		if (stmt->Body()) {
@@ -265,7 +256,6 @@ Value Interpreter::VisitFor(ForStatement const* stmt) {
 		}
 		Eval(stmt->Inc());
 	}
-	PopScope();
 	return Value();
 }
 

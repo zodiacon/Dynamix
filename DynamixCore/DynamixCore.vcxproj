@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="ArrayType.h" />
     <ClInclude Include="AstNode.h" />
+    <ClInclude Include="CoreInterfaces.h" />
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="Interpreter.h" />
     <ClInclude Include="print.h" />
@@ -152,6 +153,7 @@
     <ClInclude Include="Token.h" />
     <ClInclude Include="Tokenizer.h" />
     <ClInclude Include="Value.h" />
+    <ClInclude Include="VectorEnumerator.h" />
     <ClInclude Include="Visitor.h" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +174,7 @@
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="Tokenizer.cpp" />
     <ClCompile Include="Value.cpp" />
+    <ClCompile Include="VectorEnumerator.cpp" />
     <ClCompile Include="Visitor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

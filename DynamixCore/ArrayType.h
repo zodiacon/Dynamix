@@ -3,6 +3,7 @@
 #include "ObjectType.h"
 #include "RuntimeObject.h"
 #include "Value.h"
+#include "CoreInterfaces.h"
 
 namespace Dynamix {
 	class ArrayObject;
@@ -17,14 +18,14 @@ namespace Dynamix {
 		ArrayType();
 	};
 
-	class ArrayObject : public RuntimeObject {
+	class ArrayObject : public RuntimeObject, public IEnumerable {
 	public:
 		ArrayObject(std::vector<Value> init);
 		std::vector<Value>& Items() noexcept {
 			return m_Items;
 		}
 
-		//ArrayEnumerator GetEnumerator() const;
+		std::unique_ptr<IEnumerator> GetEnumerator() const override;
 
 		Int Count() const {
 			return Int(m_Items.size());

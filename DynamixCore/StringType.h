@@ -1,5 +1,11 @@
 #pragma once
 
-class StringType {
-};
+#include "ObjectType.h"
+
+namespace Dynamix {
+	class StringType : public ObjectType {
+	public:
+
+	};
+}
 

@@ -1,6 +1,7 @@
 #include "ArrayType.h"
 #include "RuntimeObject.h"
 #include "Runtime.h"
+#include "VectorEnumerator.h"
 
 using namespace Dynamix;
 
@@ -86,6 +87,10 @@ ArrayType::ArrayType() : ObjectType("Array") {
 
 ArrayObject::ArrayObject(std::vector<Value> init) : 
 	RuntimeObject(ArrayType::Get()), m_Items(std::move(init)) {
+}
+
+std::unique_ptr<IEnumerator> ArrayObject::GetEnumerator() const {
+	return std::make_unique<VectorEnumerator>(m_Items);
 }
 
 Int Dynamix::ArrayObject::Add(Value item) {

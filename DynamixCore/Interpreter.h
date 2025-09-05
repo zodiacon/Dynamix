@@ -56,6 +56,19 @@ namespace Dynamix {
 
 		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 
+	protected:
+		struct Scoper {
+			Scoper(Interpreter* intr) : m_Intr(intr) {
+				intr->PushScope();
+			}
+			~Scoper() {
+				m_Intr->PopScope();
+			}
+
+		private:
+			Interpreter* m_Intr;
+		};
+
 	private:
 		Parser& m_Parser;
 		Runtime* m_Runtime;

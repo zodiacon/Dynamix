@@ -332,10 +332,22 @@ namespace Dynamix {
 
 	class ForStatement : public Statement {
 	public:
+		ForStatement() = default;
 		ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, 
 			std::unique_ptr<Expression> incExpr, std::unique_ptr<Statements> body);
 		Value Accept(Visitor* visitor) const override;
-
+		void SetBody(std::unique_ptr<Statements> body) noexcept {
+			m_Body = move(body);
+		}
+		void SetInit(std::unique_ptr<Statement> init) noexcept {
+			m_Init = move(init);
+		}
+		void SetWhile(std::unique_ptr<Expression> expr) noexcept {
+			m_While = move(expr);
+		}
+		void SetInc(std::unique_ptr<Expression> expr) noexcept {
+			m_Inc = move(expr);
+		}
 		Statement const* Init() const noexcept;
 		Expression const* While() const noexcept;
 		Expression const* Inc() const noexcept;

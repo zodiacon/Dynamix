@@ -395,11 +395,12 @@ void Parser::PopScope() {
 	m_Symbols.pop();
 }
 
-unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
+unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
 	Match(TokenType::OpenBrace, true, true);
 
 	auto block = make_unique<Statements>();
-	PushScope(block.get());
+	if(newscope)
+		PushScope(block.get());
 
 	for (auto& arg : args) {
 		Symbol sym;
@@ -412,14 +413,17 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
 	while (Peek().Type != TokenType::CloseBrace) {
 		auto peek = Peek();
 		auto stmt = ParseStatement();
-		if (!stmt)
+		if (m_Errors.size() > 10)
 			break;
+		if (!stmt)
+			continue;
 		stmt->SetLocation(CodeLocation{ m_CurrentFile, peek.Line, peek.Col });
 		stmt->SetParent(block.get());
 		block->Add(move(stmt));
 	}
 	Match(TokenType::CloseBrace, true, true);
-	PopScope();
+	if (newscope)
+		PopScope();
 	return block;
 }
 
@@ -575,19 +579,27 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 
 unique_ptr<ForStatement> Parser::ParseForStatement() {
 	Next();		// eat for
-	Match(TokenType::OpenParen, true, true);
+	bool open = Match(TokenType::OpenParen);
 
+	auto stmt = make_unique<ForStatement>();
+	PushScope(stmt.get());
 	auto init = ParseStatement();
 	auto whileExpr = ParseExpression();
 	Match(TokenType::Semicolon, true, true);
 
 	auto inc = ParseExpression();
-	Match(TokenType::CloseParen, true, true);
+	if(open)
+		Match(TokenType::CloseParen, true, true);
 
 	m_LoopCount++;
-	auto body = ParseBlock();
+	auto body = ParseBlock({}, false);
 	m_LoopCount--;
-	return make_unique<ForStatement>(move(init), move(whileExpr), move(inc), move(body));
+	PopScope();
+	stmt->SetInit(move(init));
+	stmt->SetWhile(move(whileExpr));
+	stmt->SetBody(move(body));
+	stmt->SetInc(move(inc));
+	return stmt;
 }
 
 unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
