@@ -40,9 +40,12 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 	}
 
 	for (auto& f : decl->Fields()) {
-		auto fi = make_unique<FieldInfo>(f->Name());
-		fi->Init = f->Init();
-		type->AddMember(move(fi));
+		for (auto& s : f->Get()) {
+			auto vv = reinterpret_cast<VarValStatement const*>(s.get());
+			auto fi = make_unique<FieldInfo>(vv->Name());
+			fi->Init = vv->Init();
+			type->AddMember(move(fi));
+		}
 	}
 
 	auto p = type.get();

@@ -29,6 +29,7 @@ namespace Dynamix {
 		IndexOutOfRange,
 		WrongNumberArguments,
 		MultipleSymbols,
+		NoMatchingConstructor,
 	};
 
 	struct ReturnStatementException {

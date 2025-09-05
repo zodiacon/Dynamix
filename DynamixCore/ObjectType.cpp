@@ -40,14 +40,18 @@ RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> co
 
 	// init fields
 	MethodInfo* ctor = nullptr;
+	bool defCtor = true;
 	for (auto& [name, m] : m_Members) {
 		if (m->Type() == MemberType::Field) {
 			auto fi = reinterpret_cast<FieldInfo*>(m.get());
 			obj->SetField(name, fi->Init ? intr.Eval(fi->Init) : Value());
 		}
 		else if (!ctor && (m->Flags & MemberFlags::Ctor) == MemberFlags::Ctor) {
-			if(((MethodInfo*)m.get())->Parameters.size() == args.size() + 1)
+			if (((MethodInfo*)m.get())->Parameters.size() == args.size() + 1)
 				ctor = (MethodInfo*)m.get();
+			else
+				defCtor = false;
+
 		}
 	}
 
@@ -55,6 +59,8 @@ RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> co
 	if (ctor) {
 		intr.RunConstructor(obj, ctor, args);
 	}
+	else if (!defCtor)
+		throw RuntimeError(RuntimeErrorType::NoMatchingConstructor, "No matching constructor");
 
 	return obj;
 }

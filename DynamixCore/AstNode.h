@@ -161,6 +161,7 @@ namespace Dynamix {
 
 		Value Accept(Visitor* visitor) const override;
 		void Add(std::unique_ptr<Statement> stmt);
+		void Append(std::unique_ptr<Statements> stmts);
 		std::vector<std::unique_ptr<Statement>> const& Get() const;
 		Statement const* GetAt(int i) const;
 		int Count() const;
@@ -381,14 +382,14 @@ namespace Dynamix {
 		void SetMethods(std::vector<std::unique_ptr<FunctionDeclaration>> methods) noexcept {
 			m_Methods = std::move(methods);
 		}
-		void SetFields(std::vector<std::unique_ptr<VarValStatement>> fields) noexcept {
+		void SetFields(std::vector<std::unique_ptr<Statements>> fields) noexcept {
 			m_Fields = std::move(fields);
 		}
 
 		std::vector<std::unique_ptr<FunctionDeclaration>> const& Methods() const noexcept {
 			return m_Methods;
 		}
-		std::vector<std::unique_ptr<VarValStatement>> const& Fields() const noexcept {
+		std::vector<std::unique_ptr<Statements>> const& Fields() const noexcept {
 			return m_Fields;
 		}
 		std::string const& Name() const {
@@ -398,7 +399,7 @@ namespace Dynamix {
 	private:
 		std::string m_Name;
 		std::vector<std::unique_ptr<FunctionDeclaration>> m_Methods;
-		std::vector<std::unique_ptr<VarValStatement>> m_Fields;
+		std::vector<std::unique_ptr<Statements>> m_Fields;
 	};
 
 	class EnumDeclaration : public Statement {

@@ -46,6 +46,9 @@ bool Parser::Init() {
 		{ "match", TokenType::Match },
 		{ "this", TokenType::This },
 
+		{ "$include", TokenType::MetaInclude },
+		{ "$default", TokenType::MetaDefault },
+
 		{ "(", TokenType::OpenParen },
 		{ ")", TokenType::CloseParen },
 		{ "{", TokenType::OpenBrace },
@@ -157,6 +160,16 @@ std::unique_ptr<Statements> Parser::ParseFile(std::string_view filename) {
 	return node;
 }
 
+unique_ptr<Statements> Parser::ParseFiles(std::initializer_list<std::string_view> filenames) {
+	auto stmts = make_unique<Statements>();
+	for (auto& file : filenames) {
+		auto ast = ParseFile(file);
+		if (ast)
+			stmts->Append(move(ast));
+	}
+	return stmts;
+}
+
 unique_ptr<Statements> Parser::DoParse() {
 	auto block = make_unique<Statements>();
 	block->SetParentSymbols(m_Symbols.top());
@@ -248,36 +261,44 @@ bool Parser::AddParslet(TokenType type, unique_ptr<PrefixParslet> parslet) {
 	return m_PrefixParslets.insert({ type, move(parslet) }).second;
 }
 
-unique_ptr<VarValStatement> Parser::ParseVarConstStatement(bool constant) {
+unique_ptr<Statements> Parser::ParseVarConstStatement(bool constant) {
 	auto next = Next();		// eat var/val
-	auto name = Next();		// variable name
-	if (name.Type != TokenType::Identifier)
-		AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Identifier expected"));
 
-	bool dup = false;
-	{
-		auto sym = FindSymbol(name.Lexeme, true);
-		if (sym)
-			AddError(ParseError{ ParseErrorType::DuplicateDefinition, name, format("Symbol {} already defined in scope", name.Lexeme) });
-		dup = true;
-	}
-	unique_ptr<Expression> init;
-	if (Match(TokenType::Assign)) {
-		init = ParseExpression();
-	}
-	else if (constant) {
-		AddError(ParseError(ParseErrorType::MissingInitExpression, Peek()));
-	}
+	auto stmts = make_unique<Statements>();
+	do {
+		auto name = Next();		// variable name
+		if (name.Type != TokenType::Identifier)
+			AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Identifier expected"));
 
-	Match(TokenType::Semicolon);
-	if (!dup) {
-		Symbol sym;
-		sym.Name = name.Lexeme;
-		sym.Type = SymbolType::Element;
-		sym.Flags = constant ? SymbolFlags::Const : SymbolFlags::None;
-		AddSymbol(sym);
-	}
-	return make_unique<VarValStatement>(name.Lexeme, constant, move(init));
+		bool dup = false;
+		{
+			auto sym = FindSymbol(name.Lexeme, true);
+			if (sym) {
+				AddError(ParseError{ ParseErrorType::DuplicateDefinition, name, format("Symbol {} already defined in scope", name.Lexeme) });
+				dup = true;
+			}
+		}
+		unique_ptr<Expression> init;
+		if (Match(TokenType::Assign)) {
+			init = ParseExpression();
+		}
+		else if (constant) {
+			AddError(ParseError(ParseErrorType::MissingInitExpression, Peek()));
+		}
+
+		if (!dup) {
+			Symbol sym;
+			sym.Name = name.Lexeme;
+			sym.Type = SymbolType::Element;
+			sym.Flags = constant ? SymbolFlags::Const : SymbolFlags::None;
+			AddSymbol(sym);
+			stmts->Add(make_unique<VarValStatement>(name.Lexeme, constant, move(init)));
+		}
+		if (Match(TokenType::Semicolon))
+			break;
+	} while (Match(TokenType::Comma, true, true));
+
+	return stmts->Count() == 0 ? nullptr : move(stmts);
 }
 
 unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
@@ -343,7 +364,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 	return decl;
 }
 
-std::unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
+unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
 	Next();		// eat repeat keyword
 	auto times = ParseExpression();
 	if (!times)
@@ -362,7 +383,7 @@ Symbol const* Parser::FindSymbol(string const& name, bool localOnly) const {
 	return m_Symbols.top()->FindSymbol(name, localOnly);
 }
 
-std::vector<Symbol const*> Parser::GlobalSymbols() const {
+vector<Symbol const*> Parser::GlobalSymbols() const {
 	return m_GlobalSymbols.EnumSymbols();
 }
 
@@ -389,7 +410,7 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args) {
 	}
 
 	while (Peek().Type != TokenType::CloseBrace) {
-		auto peek = m_Tokenizer.Peek();
+		auto peek = Peek();
 		auto stmt = ParseStatement();
 		if (!stmt)
 			break;
@@ -557,7 +578,6 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	Match(TokenType::OpenParen, true, true);
 
 	auto init = ParseStatement();
-
 	auto whileExpr = ParseExpression();
 	Match(TokenType::Semicolon, true, true);
 
@@ -580,7 +600,7 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	auto decl = make_unique<ClassDeclaration>(move(name.Lexeme));
 	PushScope(decl.get());
 	vector<unique_ptr<FunctionDeclaration>> methods;
-	vector<unique_ptr<VarValStatement>> fields;
+	vector<unique_ptr<Statements>> fields;
 	while (Peek().Type != TokenType::CloseBrace) {
 		bool val = false;
 		switch (Peek().Type) {

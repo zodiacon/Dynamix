@@ -24,6 +24,7 @@ namespace Dynamix {
 
 		std::unique_ptr<Statements> Parse(std::string_view text, int line = 1);
 		std::unique_ptr<Statements> ParseFile(std::string_view filename);
+		std::unique_ptr<Statements> ParseFiles(std::initializer_list<std::string_view> filenames);
 
 		bool AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet);
 		bool AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet);
@@ -41,7 +42,7 @@ namespace Dynamix {
 		int GetPrecedence() const;
 
 		std::unique_ptr<Expression> ParseExpression(int precedence = 0);
-		std::unique_ptr<VarValStatement> ParseVarConstStatement(bool constant);
+		std::unique_ptr<Statements> ParseVarConstStatement(bool constant);
 		std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration(bool method = false);
 		std::unique_ptr<RepeatStatement> ParseRepeatStatement();
 		std::unique_ptr<WhileStatement> ParseWhileStatement();

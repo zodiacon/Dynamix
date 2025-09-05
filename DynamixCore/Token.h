@@ -16,6 +16,7 @@ namespace Dynamix {
 
 		Keyword		= 0x0100,
 		Operator	= 0x1000,
+		Meta		= 0x1200,
 
 		If = Keyword,
 		Else,
@@ -90,6 +91,8 @@ namespace Dynamix {
 		GreaterThanOrEqual,
 		LessThanOrEqual,
 
+		MetaInclude,
+		MetaDefault,
 	};
 
 	struct Token final {

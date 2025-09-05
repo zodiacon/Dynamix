@@ -379,6 +379,10 @@ void Statements::Add(unique_ptr<Statement> stmt) {
 	m_Stmts.push_back(move(stmt));
 }
 
+void Statements::Append(std::unique_ptr<Statements> stmts) {
+	std::move(stmts->m_Stmts.begin(), stmts->m_Stmts.end(), m_Stmts.end());
+}
+
 Statement const* Statements::GetAt(int i) const {
 	return i < 0 || i >= m_Stmts.size() ? nullptr : m_Stmts[i].get();
 }

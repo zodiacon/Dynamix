@@ -101,6 +101,8 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		auto func = CurrentScope()->FindElement(nameExpr->Name(), (int8_t)expr->Arguments().size());
 		if (func == nullptr) {
 			auto funcs = CurrentScope()->FindElements(nameExpr->Name());
+			if (funcs.empty())
+				throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown function: '{}'", nameExpr->Name()), expr->Location());
 			string expected;
 			for (auto& v : funcs)
 				expected += format("{},", v->Arity);
