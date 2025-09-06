@@ -129,6 +129,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::Dot, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());
+	AddParslet(TokenType::Colon, make_unique<EnumValueParslet>());
 
 	return true;
 }

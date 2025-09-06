@@ -475,3 +475,10 @@ ForEachStatement::ForEachStatement(string name, unique_ptr<Expression> collectio
 Value ForEachStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitForEach(this);
 }
+
+EnumValueExpression::EnumValueExpression(unique_ptr<Expression> left, Token value) noexcept : m_Left(move(left)), m_Value(move(value)) {
+}
+
+Value EnumValueExpression::Accept(Visitor* visitor) const {
+	return visitor->VisitEnumValue(this);
+}

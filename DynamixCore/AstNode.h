@@ -30,6 +30,7 @@ namespace Dynamix {
 		ArrayAccess,
 		GetMember,
 		Class,
+		EnumDeclararion,
 	};
 
 	class AstNode {
@@ -316,6 +317,22 @@ namespace Dynamix {
 		Token m_Token;
 	};
 
+	class EnumValueExpression : public Expression {
+	public:
+		EnumValueExpression(std::unique_ptr<Expression> left, Token value) noexcept;
+		Value Accept(Visitor* visitor) const override;
+		Token const& Value() const noexcept {
+			return m_Value;
+		}
+		Expression const* Left() const noexcept {
+			return m_Left.get();
+		}
+
+	private:
+		std::unique_ptr<Expression> m_Left;
+		Token m_Value;
+	};
+
 	class InvokeFunctionExpression : public Expression {
 	public:
 		InvokeFunctionExpression(std::unique_ptr<Expression> callable, std::vector<std::unique_ptr<Expression>> args);
@@ -443,7 +460,9 @@ namespace Dynamix {
 	public:
 		EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values);
 		Value Accept(Visitor* visitor) const override;
-
+		AstNodeType Type() const noexcept {
+			return AstNodeType::EnumDeclararion;
+		}
 		std::string const& Name() const noexcept;
 		std::unordered_map<std::string, long long> const& Values() const noexcept;
 

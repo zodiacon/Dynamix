@@ -52,8 +52,6 @@ namespace Dynamix {
 
 	struct PostfixOperatorParslet : InfixParslet {
 		explicit PostfixOperatorParslet(int precedence);
-
-		//std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
 		int Precedence() const override;
 
 	private:
@@ -65,6 +63,10 @@ namespace Dynamix {
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
 	};
 
+	struct EnumValueParslet : PostfixOperatorParslet {
+		EnumValueParslet() : PostfixOperatorParslet(1300) {}
+		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
+	};
 	struct GetMemberParslet : PostfixOperatorParslet {
 		GetMemberParslet() : PostfixOperatorParslet(1200) {}
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
