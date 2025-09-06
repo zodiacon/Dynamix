@@ -395,6 +395,12 @@ vector<unique_ptr<Statement>> const& Statements::Get() const {
 	return m_Stmts;
 }
 
+unique_ptr<Statement> Statements::RemoveAt(int index) {
+	auto stmt = move(m_Stmts[index]);
+	m_Stmts.erase(m_Stmts.begin() + index);
+	return stmt;
+}
+
 string Statements::ToString() const {
 	std::string result;
 	for (auto& s : m_Stmts) {

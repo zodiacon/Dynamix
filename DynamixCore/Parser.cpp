@@ -261,7 +261,7 @@ bool Parser::AddParslet(TokenType type, unique_ptr<PrefixParslet> parslet) {
 	return m_PrefixParslets.insert({ type, move(parslet) }).second;
 }
 
-unique_ptr<Statements> Parser::ParseVarConstStatement(bool constant) {
+unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant) {
 	auto next = Next();		// eat var/val
 
 	auto stmts = make_unique<Statements>();
@@ -298,7 +298,7 @@ unique_ptr<Statements> Parser::ParseVarConstStatement(bool constant) {
 			break;
 	} while (Match(TokenType::Comma, true, true));
 
-	return stmts->Count() == 0 ? nullptr : move(stmts);
+	return stmts->Count() == 0 ? nullptr : (stmts->Count() == 1 ? move(stmts->RemoveAt(0)) : move(stmts));
 }
 
 unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
@@ -618,7 +618,7 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	auto decl = make_unique<ClassDeclaration>(move(name.Lexeme));
 	PushScope(decl.get());
 	vector<unique_ptr<FunctionDeclaration>> methods;
-	vector<unique_ptr<Statements>> fields;
+	vector<unique_ptr<Statement>> fields;
 	while (Peek().Type != TokenType::CloseBrace) {
 		bool val = false;
 		switch (Peek().Type) {
