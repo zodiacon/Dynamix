@@ -47,14 +47,6 @@ unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
 	//}
 	//
 	string name = token.Lexeme;
-	//while (parser.Peek().Type == TokenType::Dot) {
-	//	parser.Next();
-	//	if (parser.Peek().Type != TokenType::Identifier) {
-	//		parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
-	//		break;
-	//	}
-	//	name += "." + parser.Next().Lexeme;
-	//}
 	return make_unique<NameExpression>(move(name), move(ns));
 }
 
@@ -204,4 +196,15 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 	}
 	parser.Match(TokenType::CloseParen, true, true);
 	return make_unique<NewObjectExpression>(move(ident.Lexeme), move(args));
+}
+
+unique_ptr<Expression> EnumValueParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
+	assert(token.Type == TokenType::Colon);
+	auto ident = parser.Next();
+	if (ident.Type != TokenType::Identifier) {
+		parser.AddError(ParseError(ParseErrorType::IllegalExpression, CodeLocation::FromToken(ident), "Enum or Class member expected"));
+		return nullptr;
+	}
+
+	return make_unique<EnumValueExpression>(move(left), move(ident));
 }

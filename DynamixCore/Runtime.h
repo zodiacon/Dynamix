@@ -30,6 +30,7 @@ namespace Dynamix {
 		WrongNumberArguments,
 		MultipleSymbols,
 		NoMatchingConstructor,
+		Syntax,
 	};
 
 	struct ReturnStatementException {

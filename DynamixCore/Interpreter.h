@@ -49,6 +49,7 @@ namespace Dynamix {
 		Value VisitNewObjectExpression(NewObjectExpression const* expr) override;
 		Value VisitAssignField(AssignFieldExpression const* expr) override;
 		Value VisitForEach(ForEachStatement const* stmt) override;
+		Value VisitEnumValue(EnumValueExpression const* expr) override;
 
 		Scope* CurrentScope();
 

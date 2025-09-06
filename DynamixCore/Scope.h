@@ -10,6 +10,7 @@ namespace Dynamix {
 		Static = 2,
 		NativeFunction = 4,
 		Class = 8,
+		Enum = 0x10,
 	};
 
 	struct Element {

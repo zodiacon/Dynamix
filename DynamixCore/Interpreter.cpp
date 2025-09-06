@@ -272,6 +272,9 @@ Value Interpreter::VisitAnonymousFunction(AnonymousFunctionExpression const* fun
 }
 
 Value Interpreter::VisitEnumDeclaration(EnumDeclaration const* decl) {
+	Element e{ decl, ElementFlags::Enum };
+	CurrentScope()->AddElement(decl->Name(), move(e));
+
 	return Value();
 }
 
@@ -415,4 +418,19 @@ Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
 		Eval(stmt->Body());
 	}
 	return Value();
+}
+
+Value Interpreter::VisitEnumValue(EnumValueExpression const* expr) {
+	auto left = Eval(expr->Left());
+	if (!left.IsAstNode())
+		throw RuntimeError(RuntimeErrorType::Syntax, "Syntax error", expr->Location());
+
+	auto node = left.AsAstNode();
+	if (node->Type() == AstNodeType::EnumDeclararion) {
+		auto decl = reinterpret_cast<EnumDeclaration const*>(node);
+		if (auto it = decl->Values().find(expr->Value().Lexeme); it != decl->Values().end())
+			return it->second;
+		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Undefined enum element '{}'", expr->Value().Lexeme), expr->Location());
+	}
+	throw RuntimeError(RuntimeErrorType::Syntax, "Unknown element", expr->Location());
 }
