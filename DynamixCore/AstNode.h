@@ -39,6 +39,9 @@ namespace Dynamix {
 		virtual std::string ToString() const {
 			return "";
 		}
+		void* operator new(size_t size);
+		void operator delete(void* p, size_t);
+
 		virtual Value Accept(Visitor* visitor) const = 0;
 		virtual AstNodeType Type() const noexcept {
 			return AstNodeType::None;

@@ -100,7 +100,7 @@ void* ArrayObject::QueryService(ServiceId id) {
 	return nullptr;
 }
 
-Int Dynamix::ArrayObject::Add(Value item) {
+Int ArrayObject::Add(Value item) {
 	m_Items.push_back(std::move(item));
 	return Int(m_Items.size());
 }
@@ -111,7 +111,7 @@ Int ArrayObject::RemoveAt(Int index) {
 	return Int(m_Items.size());
 }
 
-Int Dynamix::ArrayObject::Insert(Int index, Value item) {
+Int ArrayObject::Insert(Int index, Value item) {
 	ValidateIndex(index);
 	m_Items.insert(m_Items.begin() + index, std::move(item));
 	return Int(m_Items.size());

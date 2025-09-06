@@ -4,6 +4,21 @@
 using namespace Dynamix;
 using namespace std;
 
+static size_t g_AstNodeCount;
+static size_t g_TotalMemory;
+
+void* AstNode::operator new(size_t size) {
+	++g_AstNodeCount;
+	g_TotalMemory += size;
+	return ::operator new(size);
+}
+
+void AstNode::operator delete(void* p, size_t size) {
+	--g_AstNodeCount;
+	g_TotalMemory -= size;
+	return ::operator delete(p);
+}
+
 BinaryExpression::BinaryExpression(unique_ptr<Expression> left, Token op, unique_ptr<Expression> right)
 	: m_Left(move(left)), m_Right(move(right)), m_Operator(move(op)) {
 	m_Left->SetParent(this);

@@ -132,21 +132,33 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 				CurrentScope()->AddElement("this", Element{ instance });
 				instNative = (callable->Method->Flags & MemberFlags::Native) == MemberFlags::Native ? 0 : 1;
 			}
-			if (callable->Method->Parameters.size() != expr->Arguments().size() + (instNative ? 1 : 0))
+			if (callable->Method->Arity != expr->Arguments().size() + (instNative ? 1 : 0))
 				throw RuntimeError(RuntimeErrorType::WrongNumberArguments,
 					format("Wrong number of arguments to '{}' (Expected: {})", callable->Method->Name(), callable->Method->Parameters.size() -(instNative ? 1 : 0)));
-			for (size_t i = 0; i < expr->Arguments().size(); i++) {
-				Element v{ Eval(expr->Arguments()[i].get()) };
-				CurrentScope()->AddElement(callable->Method->Parameters[i].Name, move(v));
+			if (node) {
+				for (size_t i = 0; i < expr->Arguments().size(); i++) {
+					Element v{ Eval(expr->Arguments()[i].get()) };
+					CurrentScope()->AddElement(callable->Method->Parameters[i].Name, move(v));
+				}
+				try {
+					auto result = Eval(node);
+					return result;
+				}
+				catch (ReturnStatementException const& ret) {
+					return ret.ReturnValue;
+				}
+				catch (BreakoutStatementException const&) {
+				}
 			}
-			try {
-				auto result = Eval(node);
-				return result;
-			}
-			catch (ReturnStatementException const& ret) {
-				return ret.ReturnValue;
-			}
-			catch (BreakoutStatementException const&) {
+			else {
+				std::vector<Value> args;
+				args.reserve(expr->Arguments().size() + 1);
+				if (instance)
+					args.push_back(instance);
+				for (auto& arg : expr->Arguments()) {
+					args.emplace_back(Eval(arg.get()));
+				}
+				return (*native)(*this, args);
 			}
 		}
 	}
