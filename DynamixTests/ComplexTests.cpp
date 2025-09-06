@@ -22,7 +22,7 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
         }
     )";
 
-    auto stmts = parser.Parse(code, 1);
+    auto stmts = parser.Parse(code, true);
     REQUIRE(stmts != nullptr);
     auto& stmtsVec = stmts->Get();
     REQUIRE(stmtsVec.size() == 1);

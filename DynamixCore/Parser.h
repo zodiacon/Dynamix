@@ -18,11 +18,11 @@ namespace Dynamix {
 
 	class Parser {
 	public:
-		explicit Parser(Tokenizer& t, bool repl = false);
+		explicit Parser(Tokenizer& t);
 		virtual ~Parser() noexcept = default;
 		virtual bool Init();
 
-		std::unique_ptr<Statements> Parse(std::string_view text, int line = 1);
+		std::unique_ptr<Statements> Parse(std::string_view text, bool repl = false, int line = 1);
 		std::unique_ptr<Statements> ParseFile(std::string_view filename);
 		std::unique_ptr<Statements> ParseFiles(std::initializer_list<std::string_view> filenames);
 
@@ -75,7 +75,7 @@ namespace Dynamix {
 		std::stack<std::string> m_Namespaces;
 		std::string m_CurrentFile;
 		int m_LoopCount{ 0 };
-		bool m_Repl;
+		bool m_Repl{ false };
 	};
 }
 

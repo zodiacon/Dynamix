@@ -12,11 +12,11 @@ using namespace Dynamix;
 
 TEST_CASE("Parser and Tokenizer integration with AST validation") {
     Tokenizer tokenizer;
-    Parser parser(tokenizer, true);
+    Parser parser(tokenizer);
     REQUIRE(parser.Init());
 
     SECTION("Parse simple var statement and check AST") {
-        auto stmts = parser.Parse("var x = 1;", 1);
+        auto stmts = parser.Parse("var x = 1;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -31,7 +31,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
     }
 
     SECTION("Parse const val statement and check AST") {
-        auto stmts = parser.Parse("val y = 42;", 1);
+        auto stmts = parser.Parse("val y = 42;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -46,7 +46,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
     }
 
     SECTION("Parse function declaration and check AST") {
-        auto stmts = parser.Parse("fn foo(a, b) { return a; }", 1);
+        auto stmts = parser.Parse("fn foo(a, b) { return a; }", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -69,7 +69,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
     }
 
     SECTION("Parse while statement and check AST") {
-        auto stmts = parser.Parse("while (true) { var z = 5; }", 1);
+        auto stmts = parser.Parse("while (true) { var z = 5; }", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -87,7 +87,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
     }
 
     SECTION("Parse enum declaration and check AST") {
-        auto stmts = parser.Parse("enum Color { Red, Green = 2, Blue }", 1);
+        auto stmts = parser.Parse("enum Color { Red, Green = 2, Blue }", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -102,7 +102,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
     }
 
     SECTION("Parse return statement and check AST") {
-        auto stmts = parser.Parse("return 123;", 1);
+        auto stmts = parser.Parse("return 123;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -114,7 +114,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
     }
 
     SECTION("Parse binary expression and check AST") {
-        auto stmts = parser.Parse("var sum = 1 + 2;", 1);
+        auto stmts = parser.Parse("var sum = 1 + 2;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);

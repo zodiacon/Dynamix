@@ -8,7 +8,7 @@
 using namespace std;
 using namespace Dynamix;
 
-Parser::Parser(Tokenizer& t, bool test) : m_Tokenizer(t), m_Repl(test) {
+Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
 	m_Symbols.push(&m_GlobalSymbols);
 }
 
@@ -134,7 +134,8 @@ bool Parser::Init() {
 	return true;
 }
 
-std::unique_ptr<Statements> Parser::Parse(string_view text, int line) {
+std::unique_ptr<Statements> Parser::Parse(string_view text, bool repl, int line) {
+	m_Repl = repl;
 	if (!m_Tokenizer.Tokenize(text, line))
 		return nullptr;
 

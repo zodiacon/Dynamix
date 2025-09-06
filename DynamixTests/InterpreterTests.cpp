@@ -9,12 +9,12 @@ using namespace Dynamix;
 
 TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
     Tokenizer tokenizer;
-    Parser parser(tokenizer, true);
+    Parser parser(tokenizer);
     REQUIRE(parser.Init());
     Interpreter interpreter(parser);
 
     SECTION("Integer literal") {
-        auto stmts = parser.Parse("1;", 1);
+        auto stmts = parser.Parse("1;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -26,7 +26,7 @@ TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
     }
 
     SECTION("Simple addition") {
-        auto stmts = parser.Parse("2 + 3;", 1);
+        auto stmts = parser.Parse("2 + 3;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -38,7 +38,7 @@ TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
     }
 
     SECTION("Parenthesized expression") {
-        auto stmts = parser.Parse("(2 + 3) * 4;", 1);
+        auto stmts = parser.Parse("(2 + 3) * 4;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 1);
@@ -52,12 +52,12 @@ TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
 
 TEST_CASE("Interpreter evaluates variable declaration and assignment") {
     Tokenizer tokenizer;
-    Parser parser(tokenizer, true);
+    Parser parser(tokenizer);
     REQUIRE(parser.Init());
     Interpreter interpreter(parser);
 
     SECTION("Variable declaration and use") {
-        auto stmts = parser.Parse("var x = 10; x + 5;", 1);
+        auto stmts = parser.Parse("var x = 10; x + 5;", true);
         REQUIRE(stmts != nullptr);
         auto& stmtsVec = stmts->Get();
         REQUIRE(stmtsVec.size() == 2);
@@ -76,7 +76,7 @@ TEST_CASE("Interpreter evaluates variable declaration and assignment") {
 
 TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
     Tokenizer tokenizer;
-    Parser parser(tokenizer, true);
+    Parser parser(tokenizer);
     REQUIRE(parser.Init());
     Interpreter interpreter(parser);
 
@@ -90,7 +90,7 @@ TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
         fact(5);
     )";
 
-    auto stmts = parser.Parse(code, 1);
+    auto stmts = parser.Parse(code, true);
     REQUIRE(stmts != nullptr);
     auto& stmtsVec = stmts->Get();
     REQUIRE(stmtsVec.size() == 2);
