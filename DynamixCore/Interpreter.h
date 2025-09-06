@@ -48,15 +48,17 @@ namespace Dynamix {
 		Value VisitClassDeclaration(ClassDeclaration const* decl) override;
 		Value VisitNewObjectExpression(NewObjectExpression const* expr) override;
 		Value VisitAssignField(AssignFieldExpression const* expr) override;
-
-		void PushScope();
-		void PopScope();
+		Value VisitForEach(ForEachStatement const* stmt) override;
 
 		Scope* CurrentScope();
 
 		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 
+		friend class Scoper;
+
 	protected:
+		void PushScope();
+		void PopScope();
 		struct Scoper {
 			Scoper(Interpreter* intr) : m_Intr(intr) {
 				intr->PushScope();

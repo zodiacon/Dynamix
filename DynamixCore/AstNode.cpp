@@ -452,9 +452,20 @@ Value NewObjectExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitNewObjectExpression(this);
 }
 
-AssignFieldExpression::AssignFieldExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, Token assignType) noexcept : m_Lhs(move(lhs)), m_Value(move(rhs)), m_AssignType(assignType) {
+AssignFieldExpression::AssignFieldExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, Token assignType) noexcept 
+	: m_Lhs(move(lhs)), m_Value(move(rhs)), m_AssignType(assignType) {
 }
 
 Value AssignFieldExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAssignField(this);
+}
+
+ForEachStatement::ForEachStatement(string name, unique_ptr<Expression> collection, unique_ptr<Statements> body) noexcept 
+	: m_Name(move(name)), m_Collection(move(collection)), m_Body(move(body)) {
+	m_Body->SetParent(this);
+	m_Collection->SetParent(this);
+}
+
+Value ForEachStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitForEach(this);
 }

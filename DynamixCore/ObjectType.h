@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Value.h"
-
+#include "NoCopyMove.h"
 #include <atomic>
 #include <unordered_map>
 #include <string>
@@ -84,17 +84,12 @@ namespace Dynamix {
 
 	struct FieldInfo : MemberInfo {
 		explicit FieldInfo(std::string name) : MemberInfo(name, MemberType::Field) {}
-		Expression const* Init;
+		Expression const* Init{};
 	};
 
-	class ObjectType : public MemberInfo {
+	class ObjectType : public MemberInfo, NoCopy, NoMove {
 	public:
 		explicit ObjectType(std::string name) : MemberInfo(name, MemberType::Class) {}
-
-		ObjectType(ObjectType const&) = delete;
-		ObjectType& operator=(ObjectType const&) = delete;
-		ObjectType(ObjectType&&) = delete;
-		ObjectType& operator=(ObjectType&&) = delete;
 
 		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
 		virtual void DestroyObject(RuntimeObject* object);

@@ -6,5 +6,5 @@ VectorEnumerator::VectorEnumerator(std::vector<Value> const& v) : m_Vec(v), m_It
 }
 
 Value Dynamix::VectorEnumerator::GetNextValue() {
-	return m_Iter == m_Vec.end() ? Value() : *m_Iter++;
+	return m_Iter == m_Vec.end() ? Value::Error(ValueErrorType::CollectionEnd) : *m_Iter++;
 }

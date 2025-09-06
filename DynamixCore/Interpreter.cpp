@@ -391,3 +391,28 @@ Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {
 	obj.AsObject()->SetField(expr->Lhs()->Member(), Eval(expr->Value()));
 	return expr->Lhs();
 }
+
+Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
+	auto collection = Eval(stmt->Collection());
+	// String to be deal with later
+	if (!collection.IsObject())
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Expected collection in 'foreach' statement", stmt->Collection()->Location());
+
+	auto enumerable = static_cast<IEnumerable*>(collection.AsObject()->QueryService(ServiceId::Enumerable));
+	if(!enumerable)
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Object does not implement the Enumerable interface", stmt->Collection()->Location());
+
+	Scoper scoper(this);
+	Element e{};
+	CurrentScope()->AddElement(stmt->Name(), e);
+	auto enumerator = enumerable->GetEnumerator();
+	Value next;
+	auto index = CurrentScope()->FindElement(stmt->Name());
+	assert(index);
+
+	while (!(next = enumerator->GetNextValue()).IsError()) {
+		index->VarValue = move(next);
+		Eval(stmt->Body());
+	}
+	return Value();
+}

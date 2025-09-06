@@ -27,6 +27,8 @@ namespace Dynamix {
 
 		std::unique_ptr<IEnumerator> GetEnumerator() const override;
 
+		void* QueryService(ServiceId id) override;
+
 		Int Count() const {
 			return Int(m_Items.size());
 		}

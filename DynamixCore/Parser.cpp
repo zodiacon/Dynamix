@@ -443,6 +443,11 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 			if (!topLevel)
 				return ParseRepeatStatement();
 			break;
+		case TokenType::ForEach:
+			if (!topLevel)
+				return ParseForEachStatement();
+			break;
+
 		case TokenType::While:
 			if (!topLevel)
 				return ParseWhileStatement();
@@ -595,6 +600,7 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	auto body = ParseBlock({}, false);
 	m_LoopCount--;
 	PopScope();
+
 	stmt->SetInit(move(init));
 	stmt->SetWhile(move(whileExpr));
 	stmt->SetBody(move(body));
@@ -646,6 +652,17 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	decl->SetMethods(move(methods));
 	decl->SetFields(move(fields));
 	return move(decl);
+}
+
+unique_ptr<ForEachStatement> Parser::ParseForEachStatement() {
+	Next();		// eat foreach
+	auto ident = Next();
+	if (ident.Type != TokenType::Identifier)
+		AddError(ParseError(ParseErrorType::IdentifierExpected, CodeLocation::FromToken(ident), "Expected identifier after 'foreach'"));
+
+	Match(TokenType::In, true, true);
+	auto collection = ParseExpression();
+	return make_unique<ForEachStatement>(ident.Lexeme, move(collection), ParseBlock());
 }
 
 unique_ptr<ReturnStatement> Parser::ParseReturnStatement() {

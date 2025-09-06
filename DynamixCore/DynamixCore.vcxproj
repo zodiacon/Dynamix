@@ -139,6 +139,7 @@
     <ClInclude Include="CoreInterfaces.h" />
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="Interpreter.h" />
+    <ClInclude Include="NoCopyMove.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="RuntimeObject.h" />

@@ -45,6 +45,7 @@ namespace Dynamix {
 		DuplicateName,
 		UndefinedSymbol,
 		Parse,
+		CollectionEnd,
 	};
 
 	class Value;

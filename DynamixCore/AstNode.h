@@ -330,6 +330,27 @@ namespace Dynamix {
 		std::vector<std::unique_ptr<Expression>> m_Arguments;
 	};
 
+	class ForEachStatement : public Statement {
+	public:
+		ForEachStatement(std::string name, std::unique_ptr<Expression> collection, std::unique_ptr<Statements> body) noexcept;
+		Value Accept(Visitor* visitor) const override;
+
+		std::string const& Name() const noexcept {
+			return m_Name;
+		}
+		Statements const* Body() const {
+			return m_Body.get();
+		}
+		Expression const* Collection() const {
+			return m_Collection.get();
+		}
+
+	private:
+		std::string m_Name;
+		std::unique_ptr<Expression> m_Collection;
+		std::unique_ptr<Statements> m_Body;
+	};
+
 	class ForStatement : public Statement {
 	public:
 		ForStatement() = default;
@@ -338,15 +359,18 @@ namespace Dynamix {
 		Value Accept(Visitor* visitor) const override;
 		void SetBody(std::unique_ptr<Statements> body) noexcept {
 			m_Body = move(body);
+			m_Body->SetParent(this);
 		}
 		void SetInit(std::unique_ptr<Statement> init) noexcept {
 			m_Init = move(init);
 		}
 		void SetWhile(std::unique_ptr<Expression> expr) noexcept {
 			m_While = move(expr);
+			m_While->SetParent(this);
 		}
 		void SetInc(std::unique_ptr<Expression> expr) noexcept {
 			m_Inc = move(expr);
+			m_Inc->SetParent(this);
 		}
 		Statement const* Init() const noexcept;
 		Expression const* While() const noexcept;

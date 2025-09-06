@@ -29,6 +29,7 @@ namespace Dynamix {
 	class ClassDeclaration;
 	class NewObjectExpression;
 	class AssignFieldExpression;
+	class ForEachStatement;
 
 	class Visitor {
 	public:
@@ -59,5 +60,6 @@ namespace Dynamix {
 		virtual Value VisitClassDeclaration(ClassDeclaration const* decl) = 0;
 		virtual Value VisitNewObjectExpression(NewObjectExpression const* expr) = 0;
 		virtual Value VisitAssignField(AssignFieldExpression const* expr) = 0;
+		virtual Value VisitForEach(ForEachStatement const* stmt) = 0;
 	};
 }

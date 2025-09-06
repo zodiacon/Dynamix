@@ -42,12 +42,6 @@
     <ClInclude Include="SymbolTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RuntimeObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EnumClassBitwise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -87,6 +81,15 @@
     <ClInclude Include="VectorEnumerator.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="NoCopyMove.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeObject.h">
+      <Filter>Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectType.h">
+      <Filter>Execution</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp">
@@ -105,12 +108,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SymbolTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RuntimeObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Print.cpp">
@@ -145,6 +142,12 @@
     </ClCompile>
     <ClCompile Include="VectorEnumerator.cpp">
       <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="RuntimeObject.cpp">
+      <Filter>Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectType.cpp">
+      <Filter>Execution</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

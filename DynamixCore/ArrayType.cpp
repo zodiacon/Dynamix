@@ -93,6 +93,13 @@ std::unique_ptr<IEnumerator> ArrayObject::GetEnumerator() const {
 	return std::make_unique<VectorEnumerator>(m_Items);
 }
 
+void* ArrayObject::QueryService(ServiceId id) {
+	switch (id) {
+		case ServiceId::Enumerable: return static_cast<IEnumerable*>(this);
+	}
+	return nullptr;
+}
+
 Int Dynamix::ArrayObject::Add(Value item) {
 	m_Items.push_back(std::move(item));
 	return Int(m_Items.size());

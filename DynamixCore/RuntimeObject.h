@@ -1,22 +1,20 @@
 #pragma once
 
-#include <atomic>
 #include <string>
 #include <unordered_map>
 
 #include "Value.h"
-//#include "NoCopyMove.h"
+#include "CoreInterfaces.h"
+#include "NoCopyMove.h"
 
 namespace Dynamix {
 	class ObjectType;
 	class Interpreter;
 	enum class InvokeFlags;
 
-	class RuntimeObject /*: NotCopyable*/ {
+	class RuntimeObject : NoCopy, public IServices {
 	public:
 		explicit RuntimeObject(ObjectType& type);
-		RuntimeObject(RuntimeObject const& other) = delete;
-		RuntimeObject& operator=(RuntimeObject const& other) = delete;
 		RuntimeObject(RuntimeObject&& other) = default;
 		RuntimeObject& operator=(RuntimeObject&& other) = default;
 
@@ -45,7 +43,7 @@ namespace Dynamix {
 
 	private:
 		std::unordered_map<std::string_view, Value> m_Fields;
-		std::atomic<int> m_RefCount{ 1 };
+		int m_RefCount{ 1 };
 		ObjectType& m_Type;
 	};
 }
