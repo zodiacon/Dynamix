@@ -15,6 +15,7 @@ namespace Dynamix {
 		Enum,
 		Class,
 		Struct,
+		Method,
 	};
 
 	enum class SymbolFlags : uint8_t {

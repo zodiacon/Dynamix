@@ -28,10 +28,8 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 	for (auto& m : decl->Methods()) {
 		auto mi = std::make_unique<MethodInfo>(m->Name());
 		mi->Arity = (int8_t)m->Parameters().size();
-		if (!m->Parameters().empty() && m->Parameters()[0].Name != "this")
-			mi->Flags = MemberFlags::Static;
 		if (m->Name() == "new")
-			mi->Flags = mi->Flags | MemberFlags::Ctor;
+			mi->Flags = MemberFlags::Ctor;
 		mi->Code.Node = m->Body();
 		for (auto& p : m->Parameters()) {
 			mi->Parameters.emplace_back(MethodParameter{ p.Name, p.DefaultValue.get() });

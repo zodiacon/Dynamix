@@ -15,8 +15,8 @@ void RuntimeObject::Construct(std::vector<Value> const& args) {
 void RuntimeObject::Destruct() {
 }
 
-void RuntimeObject::SetField(std::string const& name, Value value) {
-	m_Fields[name] = std::move(value);
+void RuntimeObject::AssignField(std::string const& name, Value value, TokenType assignType) {
+	m_Fields[name] = m_Fields[name].Assign(std::move(value), assignType);
 }
 
 Value RuntimeObject::GetField(std::string const& name) const {

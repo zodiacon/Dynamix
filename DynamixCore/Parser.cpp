@@ -303,34 +303,24 @@ unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant, SymbolFlags 
 	return stmts->Count() == 0 ? nullptr : (stmts->Count() == 1 ? move(stmts->RemoveAt(0)) : move(stmts));
 }
 
-unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
+unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, SymbolFlags extraFlags) {
 	bool ctor = method && Peek().Type == TokenType::New;
 	Token ident = Next();
 	if (!ctor) {
 		ident = Next();
 		if (ident.Type != TokenType::Identifier)
-			AddError(ParseError{ ParseErrorType::IdentifierExpected, ident });
+			AddError(ParseError(ParseErrorType::IdentifierExpected, CodeLocation::FromToken(ident), "Expected: identifier"));
 	}
 
 	Match(TokenType::OpenParen, true, true);
 
-	bool staticCtor = false;
+	bool staticCtor = ctor && ((extraFlags & SymbolFlags::Static) == SymbolFlags::Static);
 
 	// get list of arguments
 	vector<Parameter> parameters;
 	while (Peek().Type != TokenType::CloseParen) {
 		auto param = Next();
-		if (param.Type == TokenType::This) {
-			if(!method)
-				AddError(ParseError(ParseErrorType::IllegalThis, CodeLocation::FromToken(param), "'this' can only be used in method parameters"));
-			else if(!parameters.empty())
-				AddError(ParseError(ParseErrorType::IllegalThis, CodeLocation::FromToken(param), "'this' can be first parameter only"));
-		}
-		else if (ctor && parameters.empty()) {
-			// static ctor
-			staticCtor = true;
-		}
-		else if (param.Type != TokenType::Identifier)
+		if (param.Type != TokenType::Identifier)
 			AddError(ParseError{ ParseErrorType::IdentifierExpected, param });
 		parameters.push_back(Parameter{ param.Lexeme });
 		Match(TokenType::Comma);
@@ -364,8 +354,8 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 	if (sym == nullptr) {
 		Symbol sym;
 		sym.Name = format("{}/{}", decl->Name(), decl->Parameters().size());
-		sym.Type = SymbolType::Function;
-		sym.Flags = staticCtor ? SymbolFlags::Static : SymbolFlags::None;
+		sym.Type = method ? SymbolType::Method : SymbolType::Function;
+		sym.Flags = extraFlags;
 		AddSymbol(sym);
 	}
 	return decl;
@@ -373,7 +363,8 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 
 unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
 	Next();		// eat repeat keyword
-	auto times = ParseExpression();
+	bool empty = Match(TokenType::OpenBrace, false);
+	auto times = empty ? make_unique<LiteralExpression>(Token { TokenType::True }) : ParseExpression();
 	if (!times)
 		return nullptr;
 	auto body = ParseBlock();
@@ -627,16 +618,18 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	vector<unique_ptr<FunctionDeclaration>> methods;
 	vector<unique_ptr<Statement>> fields;
 	auto extraFlags = SymbolFlags::None;
+
 	while (Peek().Type != TokenType::CloseBrace) {
 		bool val = false;
 		switch (Peek().Type) {
 			case TokenType::New:	// ctor
 			case TokenType::Fn:
 			{
-				auto method = ParseFunctionDeclaration(true);
+				auto method = ParseFunctionDeclaration(true, extraFlags);
 				if (method) {
 					methods.push_back(move(method));
 				}
+				extraFlags = SymbolFlags::None;
 				break;
 			}
 

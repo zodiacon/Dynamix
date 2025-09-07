@@ -21,7 +21,7 @@ namespace Dynamix {
 		virtual void Construct(std::vector<Value> const& args);
 		virtual void Destruct();
 
-		void SetField(std::string const& name, Value value);
+		void AssignField(std::string const& name, Value value, TokenType assignType = TokenType::Assign);
 		Value GetField(std::string const& name) const;
 
 		ObjectType& Type() {

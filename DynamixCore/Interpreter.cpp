@@ -24,7 +24,7 @@ void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor
 	Scoper scoper(this);
 	Element pThis{ instance };
 	CurrentScope()->AddElement("this", move(pThis));
-	int i = 1;
+	int i = 0;
 	for (auto& arg : args) {
 		Element varg{ arg };
 		CurrentScope()->AddElement(ctor->Parameters[i++].Name, move(varg));
@@ -132,7 +132,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 				CurrentScope()->AddElement("this", Element{ instance });
 				instNative = (callable->Method->Flags & MemberFlags::Native) == MemberFlags::Native ? 0 : 1;
 			}
-			if (callable->Method->Arity != expr->Arguments().size() + (instNative ? 1 : 0))
+			if (callable->Method->Arity != expr->Arguments().size())
 				throw RuntimeError(RuntimeErrorType::WrongNumberArguments,
 					format("Wrong number of arguments to '{}' (Expected: {})", callable->Method->Name(), callable->Method->Parameters.size() -(instNative ? 1 : 0)));
 			if (node) {
@@ -403,7 +403,7 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {
 	auto obj = Eval(expr->Lhs()->Left());
 	assert(obj.IsObject());
-	obj.AsObject()->SetField(expr->Lhs()->Member(), Eval(expr->Value()));
+	obj.AsObject()->AssignField(expr->Lhs()->Member(), Eval(expr->Value()), expr->AssignType().Type);
 	return expr->Lhs();
 }
 

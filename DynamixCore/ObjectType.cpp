@@ -44,10 +44,10 @@ RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> co
 	for (auto& [name, m] : m_Members) {
 		if (m->Type() == MemberType::Field) {
 			auto fi = reinterpret_cast<FieldInfo*>(m.get());
-			obj->SetField(name, fi->Init ? intr.Eval(fi->Init) : Value());
+			obj->AssignField(name, fi->Init ? intr.Eval(fi->Init) : Value());
 		}
 		else if (!ctor && (m->Flags & MemberFlags::Ctor) == MemberFlags::Ctor) {
-			if (((MethodInfo*)m.get())->Parameters.size() == args.size() + 1)
+			if (((MethodInfo*)m.get())->Parameters.size() == args.size())
 				ctor = (MethodInfo*)m.get();
 			else
 				defCtor = false;
