@@ -10,7 +10,15 @@
 namespace Dynamix {
 	class ObjectType;
 	class Interpreter;
-	enum class InvokeFlags;
+
+	enum class InvokeFlags {
+		Method,
+		GetProperty,
+		SetProperty,
+		GetField,
+		SetField,
+		Constructor,
+	};
 
 	class RuntimeObject : NoCopy, public IServices {
 	public:
@@ -37,12 +45,12 @@ namespace Dynamix {
 		int AddRef();
 		int Release();
 
-		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
+		Value Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags = InvokeFlags::Method);
 		virtual Value InvokeIndexer(Value const& index);
 		virtual void AssignIndexer(Value const& index, Value const& value, TokenType assign);
 
 	private:
-		std::unordered_map<std::string_view, Value> m_Fields;
+		std::unordered_map<std::string, Value> m_Fields;
 		int m_RefCount{ 1 };
 		ObjectType& m_Type;
 	};

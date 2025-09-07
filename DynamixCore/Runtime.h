@@ -31,6 +31,7 @@ namespace Dynamix {
 		MultipleSymbols,
 		NoMatchingConstructor,
 		Syntax,
+		MethodNotFound,
 	};
 
 	struct ReturnStatementException {

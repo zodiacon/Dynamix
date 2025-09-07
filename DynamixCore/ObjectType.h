@@ -12,15 +12,6 @@ namespace Dynamix {
 	class Expression;
 	struct Parameter;
 
-	enum class InvokeFlags {
-		None,
-		GetProperty,
-		SetProperty,
-		GetField,
-		SetField,
-		Constructor,
-	};
-
 	enum class MemberType : uint8_t {
 		Field,
 		Method,
@@ -100,10 +91,14 @@ namespace Dynamix {
 		// static
 		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;
 
+		void RunClassConstructor(Interpreter& intr);
+
 		unsigned GetObjectCount() const;
 
-		bool AddMember(std::unique_ptr<MemberInfo> member);
-		MemberInfo const* GetMember(std::string const& name) const;
+		bool AddField(std::unique_ptr<FieldInfo> field);
+		bool AddMethod(std::unique_ptr<MethodInfo> method);
+		FieldInfo const* GetField(std::string const& name) const;
+		MethodInfo const* GetMethod(std::string const& name, int8_t arity = -1) const;
 
 		template<typename T>
 		static T* GetInstance(RuntimeObject* obj) {
@@ -121,8 +116,10 @@ namespace Dynamix {
 		}
 
 	private:
-		std::atomic<unsigned> m_ObjectCount{ 0 };
-		std::unordered_map<std::string, std::unique_ptr<MemberInfo>> m_Members;
+		unsigned m_ObjectCount{ 0 };
+		std::unordered_map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
+		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
 		std::string m_Name;
+		bool m_ClassCtorRun{ false };
 	};
 }

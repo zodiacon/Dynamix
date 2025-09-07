@@ -57,7 +57,7 @@ namespace Dynamix {
 		RuntimeObject* Instance{ nullptr };
 		AstNode const* Node{ nullptr };
 		NativeFunction Native{ nullptr };
-		MethodInfo* Method{ nullptr };
+		std::string Method;
 	};
 
 	class Value final {

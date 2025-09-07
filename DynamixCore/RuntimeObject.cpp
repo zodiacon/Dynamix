@@ -23,14 +23,22 @@ Value RuntimeObject::GetField(std::string const& name) const {
 	return m_Fields.at(name);
 }
 
-Value RuntimeObject::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
-	auto member = m_Type.GetMember(name.data());
-	assert(member);
-	switch (member->Type()) {
-		case MemberType::Field:
-			break;
+Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags) {
+	auto method = m_Type.GetMethod(name, (int8_t)args.size());
+	if (!method)
+		throw RuntimeError(RuntimeErrorType::MethodNotFound,
+			std::format("Method {} with {} args not found in type {}", name, args.size(), Type().Name()));
+
+	bool instance = (method->Flags & MemberFlags::Static) == MemberFlags::None;
+	if ((method->Flags & MemberFlags::Native) == MemberFlags::Native) {
+		args.insert(args.begin(), this);
+		return (*method->Code.Native)(intr, args);
 	}
-	return m_Type.Invoke(intr, this, name, args, flags);
+	if (instance)
+		intr.CurrentScope()->AddElement("this", { this });
+	for(size_t i = 0; i < method->Parameters.size(); i++)
+		intr.CurrentScope()->AddElement(method->Parameters[i].Name, { args[i] });
+	return intr.Eval(method->Code.Node);
 }
 
 Value RuntimeObject::InvokeIndexer(Value const& index) {

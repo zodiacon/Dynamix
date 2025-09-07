@@ -34,7 +34,7 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 		for (auto& p : m->Parameters()) {
 			mi->Parameters.emplace_back(MethodParameter{ p.Name, p.DefaultValue.get() });
 		}
-		type->AddMember(move(mi));
+		type->AddMethod(move(mi));
 	}
 
 	for (auto& f : decl->Fields()) {
@@ -42,7 +42,7 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 			auto vv = reinterpret_cast<VarValStatement const*>(f.get());
 			auto fi = make_unique<FieldInfo>(vv->Name());
 			fi->Init = vv->Init();
-			type->AddMember(move(fi));
+			type->AddField(move(fi));
 		}
 		else {
 			assert(f->Type() == AstNodeType::Statements);
@@ -51,13 +51,14 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 				auto vv = reinterpret_cast<VarValStatement const*>(s.get());
 				auto fi = make_unique<FieldInfo>(vv->Name());
 				fi->Init = vv->Init();
-				type->AddMember(move(fi));
+				type->AddField(move(fi));
 			}
 		}
 	}
 
 	auto p = type.get();
 	m_Types.insert({ decl->Name(), move(type) });
+
 	return p;
 }
 

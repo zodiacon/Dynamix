@@ -39,14 +39,14 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 	auto left = Eval(expr->Left());
 	switch (expr->Operator().Type) {
-		case TokenType::And:
-			if (!left.ToBoolean())
-				return false;
-			break;
-		case TokenType::Or:
-			if (left.ToBoolean())
-				return true;
-			break;
+	case TokenType::And:
+		if (!left.ToBoolean())
+			return false;
+		break;
+	case TokenType::Or:
+		if (left.ToBoolean())
+			return true;
+		break;
 	}
 
 	return left.BinaryOperator(expr->Operator().Type, Eval(expr->Right()));
@@ -125,40 +125,19 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		native = callable->Native;
 		node = callable->Node;
 
-		if (callable->Method) {
+		if (!callable->Method.empty()) {
 			Scoper scoper(this);
-			bool instNative = false;
-			if (instance && (callable->Method->Flags & MemberFlags::Static) == MemberFlags::None) {
-				CurrentScope()->AddElement("this", Element{ instance });
-				instNative = (callable->Method->Flags & MemberFlags::Native) == MemberFlags::Native ? 0 : 1;
+			vector<Value> args;
+			for (auto& arg : expr->Arguments())
+				args.push_back(Eval(arg.get()));
+
+			try {
+				return instance->Invoke(*this, callable->Method, args);
 			}
-			if (callable->Method->Arity != expr->Arguments().size())
-				throw RuntimeError(RuntimeErrorType::WrongNumberArguments,
-					format("Wrong number of arguments to '{}' (Expected: {})", callable->Method->Name(), callable->Method->Parameters.size() -(instNative ? 1 : 0)));
-			if (node) {
-				for (size_t i = 0; i < expr->Arguments().size(); i++) {
-					Element v{ Eval(expr->Arguments()[i].get()) };
-					CurrentScope()->AddElement(callable->Method->Parameters[i].Name, move(v));
-				}
-				try {
-					auto result = Eval(node);
-					return result;
-				}
-				catch (ReturnStatementException const& ret) {
-					return ret.ReturnValue;
-				}
-				catch (BreakoutStatementException const&) {
-				}
+			catch (ReturnStatementException const& ret) {
+				return ret.ReturnValue;
 			}
-			else {
-				std::vector<Value> args;
-				args.reserve(expr->Arguments().size() + 1);
-				if (instance)
-					args.push_back(instance);
-				for (auto& arg : expr->Arguments()) {
-					args.emplace_back(Eval(arg.get()));
-				}
-				return (*native)(*this, args);
+			catch (BreakoutStatementException const&) {
 			}
 		}
 	}
@@ -241,12 +220,12 @@ Value Interpreter::VisitReturn(ReturnStatement const* decl) {
 
 Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
 	switch (stmt->BreakType()) {
-		case TokenType::Continue:
-			throw ContinueStatementException();
-		case TokenType::Break:
-			throw BreakStatementException();
-		case TokenType::BreakOut:
-			throw BreakoutStatementException();
+	case TokenType::Continue:
+		throw ContinueStatementException();
+	case TokenType::Break:
+		throw BreakStatementException();
+	case TokenType::BreakOut:
+		throw BreakoutStatementException();
 	}
 	assert(false);
 	return Value();
@@ -341,28 +320,18 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	if (!value.IsObject())
 		throw RuntimeError(RuntimeErrorType::ObjectExpected, "Object expected", expr->Location());
 	auto obj = value.AsObject();
-	auto member = obj->Type().GetMember(expr->Member());
-	if (!member)
+	auto field = obj->Type().GetField(expr->Member());
+	if (field)
+		return obj->GetField(field->Name());
+
+	auto method = obj->Type().GetMethod(expr->Member());
+	if (!method)
 		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), obj->Type().Name()), expr->Location());
 
-	switch (member->Type()) {
-		case MemberType::Method:
-		{
-			auto method = (MethodInfo*)member;
-			auto c = new Callable;
-			c->Instance = obj;
-			if ((method->Flags & MemberFlags::Native) == MemberFlags::Native)
-				c->Native = method->Code.Native;
-			else
-				c->Node = method->Code.Node;
-			c->Method = method;
-			return c;
-		}
-		case MemberType::Field:
-			return obj->GetField(member->Name());
-	}
-	assert(false);
-	return Value();
+	auto c = new Callable;
+	c->Instance = obj;
+	c->Method = method->Name();
+	return c;
 }
 
 Value Interpreter::VisitAccessArray(AccessArrayExpression const* expr) {
@@ -409,12 +378,12 @@ Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {
 
 Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
 	auto collection = Eval(stmt->Collection());
-	// String to be deal with later
+	// String to be dealt with later
 	if (!collection.IsObject())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Expected collection in 'foreach' statement", stmt->Collection()->Location());
 
 	auto enumerable = static_cast<IEnumerable*>(collection.AsObject()->QueryService(ServiceId::Enumerable));
-	if(!enumerable)
+	if (!enumerable)
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Object does not implement the Enumerable interface", stmt->Collection()->Location());
 
 	Scoper scoper(this);

@@ -81,7 +81,7 @@ ArrayType::ArrayType() : ObjectType("Array") {
 		mi->Arity = m.Arity;
 		mi->Code.Native = m.Code;
 		mi->Flags = m.Flags;
-		AddMember(move(mi));
+		AddMethod(move(mi));
 	}
 }
 
