@@ -11,12 +11,17 @@
 using namespace Dynamix;
 using namespace std;
 
-Interpreter::Interpreter(Parser& p, Runtime* rt) : m_Parser(p), m_Runtime(rt) {
-	m_Scopes.push(make_unique<Scope>(m_Runtime ? m_Runtime->GetGlobalScope() : nullptr));    // global scope
+Interpreter::Interpreter(Parser& p, Runtime& rt) : m_Parser(p), m_Runtime(rt) {
+	m_Scopes.push(make_unique<Scope>(m_Runtime.GetGlobalScope()));    // global scope
 }
 
 Value Interpreter::Eval(AstNode const* root) {
-	return root ? root->Accept(this) : Value();
+	try {
+		return root ? root->Accept(this) : Value();
+	}
+	catch (ReturnStatement const& ret) {
+		return ret.ReturnValue();
+	}
 }
 
 void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor, std::vector<Value> const& args) {
@@ -68,7 +73,7 @@ Value Interpreter::VisitName(NameExpression const* expr) {
 }
 
 Value Interpreter::VisitVar(VarValStatement const* expr) {
-	if (CurrentScope()->FindElement(expr->Name(), true))
+	if (CurrentScope()->FindElement(expr->Name(), -1, true))
 		return Value::Error(ValueErrorType::DuplicateName);
 
 	Element v;
@@ -362,7 +367,7 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 	if ((v->Flags & ElementFlags::Class) != ElementFlags::Class)
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, format("'{}' is not a class name in scope", expr->ClassName()));
 
-	auto type = m_Runtime->GetObjectType(v->VarValue.AsAstNode());
+	auto type = m_Runtime.GetObjectType(v->VarValue.AsAstNode());
 	std::vector<Value> args;
 	for (auto& arg : expr->Args())
 		args.push_back(Eval(arg.get()));

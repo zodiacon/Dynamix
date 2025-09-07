@@ -181,6 +181,7 @@ unique_ptr<Statements> Parser::DoParse() {
 			break;
 		block->Add(move(stmt));
 	}
+
 	return HasErrors() ? nullptr : move(block);
 }
 
@@ -612,6 +613,10 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	if (name.Type != TokenType::Identifier)
 		AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(name), "Expected: identifier"));
 
+	if (Match(TokenType::Colon)) {
+		auto baseType = Next();
+	}
+
 	Match(TokenType::OpenBrace, true, true);
 	auto decl = make_unique<ClassDeclaration>(move(name.Lexeme));
 	PushScope(decl.get());
@@ -650,6 +655,7 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 
 			default:
 				AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(Peek()), format("Unexpected token: '{}'", Peek().Lexeme)));
+				Next();
 				break;
 		}
 	}
@@ -662,12 +668,16 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 
 unique_ptr<ForEachStatement> Parser::ParseForEachStatement() {
 	Next();		// eat foreach
+	bool openParen = Match(TokenType::OpenParen);	// optional
 	auto ident = Next();
 	if (ident.Type != TokenType::Identifier)
 		AddError(ParseError(ParseErrorType::IdentifierExpected, CodeLocation::FromToken(ident), "Expected identifier after 'foreach'"));
 
 	Match(TokenType::In, true, true);
 	auto collection = ParseExpression();
+	if (openParen)
+		Match(TokenType::CloseParen, true, true);
+
 	return make_unique<ForEachStatement>(ident.Lexeme, move(collection), ParseBlock());
 }
 

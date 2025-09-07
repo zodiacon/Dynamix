@@ -10,8 +10,9 @@ using namespace Dynamix;
 TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
-    REQUIRE(parser.Init());
-    Interpreter interpreter(parser);
+    Runtime rt(parser);
+    REQUIRE(rt.Init());
+    Interpreter interpreter(parser, rt);
 
     SECTION("Integer literal") {
         auto stmts = parser.Parse("1;", true);
@@ -53,8 +54,9 @@ TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
 TEST_CASE("Interpreter evaluates variable declaration and assignment") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
-    REQUIRE(parser.Init());
-    Interpreter interpreter(parser);
+    Runtime rt(parser);
+    REQUIRE(rt.Init());
+    Interpreter interpreter(parser, rt);
 
     SECTION("Variable declaration and use") {
         auto stmts = parser.Parse("var x = 10; x + 5;", true);
@@ -77,8 +79,9 @@ TEST_CASE("Interpreter evaluates variable declaration and assignment") {
 TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
-    REQUIRE(parser.Init());
-    Interpreter interpreter(parser);
+    Runtime rt(parser);
+    REQUIRE(rt.Init());
+    Interpreter interpreter(parser, rt);
 
     const char* code = R"(
         fn fact(n) {

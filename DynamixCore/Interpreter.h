@@ -16,7 +16,7 @@ namespace Dynamix {
 
 	class Interpreter final : public Visitor {
 	public:
-		explicit Interpreter(Parser& p, Runtime* rt = nullptr);
+		Interpreter(Parser& p, Runtime& rt);
 
 		Value Eval(AstNode const* root);
 
@@ -74,7 +74,7 @@ namespace Dynamix {
 
 	private:
 		Parser& m_Parser;
-		Runtime* m_Runtime;
+		Runtime& m_Runtime;
 		std::stack<std::unique_ptr<Scope>> m_Scopes;
 	};
 }

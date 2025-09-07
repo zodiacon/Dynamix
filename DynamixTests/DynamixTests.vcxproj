@@ -132,7 +132,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ArrayTests.cpp" />
+    <ClCompile Include="ClassDeclTests.cpp" />
     <ClCompile Include="ComplexTests.cpp" />
+    <ClCompile Include="ForEachTests.cpp" />
     <ClCompile Include="InterpreterTests.cpp" />
     <ClCompile Include="SimpleTests.cpp" />
   </ItemGroup>
