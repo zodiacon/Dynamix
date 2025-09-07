@@ -110,7 +110,7 @@ Expression* UnaryExpression::Arg() const noexcept {
 	return m_Arg.get();
 }
 
-VarValStatement::VarValStatement(string name, bool isConst, unique_ptr<Expression> init)
+VarValStatement::VarValStatement(string name, bool isConst, unique_ptr<Expression> init) noexcept
 	: m_Name(move(name)), m_Init(move(init)), m_IsConst(isConst) {
 	if (m_Init)
 		m_Init->SetParent(this);
@@ -269,7 +269,7 @@ vector<Parameter> const& FunctionDeclaration::Parameters() const noexcept {
 	return m_Parameters;
 }
 
-void FunctionDeclaration::Parameters(vector<Parameter> params) noexcept {
+void FunctionDeclaration::SetParameters(vector<Parameter> params) noexcept {
 	m_Parameters = move(params);
 }
 
@@ -277,8 +277,9 @@ Expression const* FunctionDeclaration::Body() const noexcept {
 	return m_Body.get();
 }
 
-void FunctionDeclaration::Body(std::unique_ptr<Expression> body) noexcept {
+void FunctionDeclaration::SetBody(std::unique_ptr<Expression> body) noexcept {
 	m_Body = move(body);
+	m_Body->SetParent(this);
 }
 
 std::string FunctionDeclaration::ToString() const {

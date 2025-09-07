@@ -178,7 +178,11 @@ namespace Dynamix {
 
 	class VarValStatement : public Statement {
 	public:
-		VarValStatement(std::string name, bool isConst, std::unique_ptr<Expression> init);
+		VarValStatement(std::string name, bool isConst, std::unique_ptr<Expression> init) noexcept;
+		AstNodeType Type() const noexcept {
+			return AstNodeType::VarValStatement;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
 
@@ -413,8 +417,8 @@ namespace Dynamix {
 		std::vector<Parameter> const& Parameters() const noexcept;
 		Expression const* Body() const noexcept;
 		std::string ToString() const override;
-		void Parameters(std::vector<Parameter> parameters) noexcept;
-		void Body(std::unique_ptr<Expression> body) noexcept;
+		void SetParameters(std::vector<Parameter> parameters) noexcept;
+		void SetBody(std::unique_ptr<Expression> body) noexcept;
 		bool IsMethod() const noexcept {
 			return m_Method;
 		}

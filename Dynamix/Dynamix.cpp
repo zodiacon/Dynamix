@@ -12,7 +12,7 @@ using namespace std;
 void ShowErrors(Parser const& p) {
 	println("{} Errors:", p.Errors().size());
 	for (auto& e : p.Errors()) {
-		println("{},{}: {}", e.Location().Line, e.Location().Col, e.Description());
+		println("({},{}): {}", e.Location().Line, e.Location().Col, e.Description());
 	}
 }
 
@@ -63,6 +63,7 @@ int main(int argc, const char* argv[]) {
 		}
 		else {
 			ShowErrors(p);
+			return 1;
 		}
 	}
 

@@ -17,10 +17,11 @@ namespace Dynamix {
 		Struct,
 	};
 
-	enum class SymbolFlags : uint16_t {
+	enum class SymbolFlags : uint8_t {
 		None = 0,
 		Const = 1,
 		VarArg = 2,
+		Static = 4,
 	};
 
 	class Interpreter;

@@ -263,7 +263,7 @@ bool Parser::AddParslet(TokenType type, unique_ptr<PrefixParslet> parslet) {
 	return m_PrefixParslets.insert({ type, move(parslet) }).second;
 }
 
-unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant) {
+unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant, SymbolFlags extraFlags) {
 	auto next = Next();		// eat var/val
 
 	auto stmts = make_unique<Statements>();
@@ -292,7 +292,7 @@ unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant) {
 			Symbol sym;
 			sym.Name = name.Lexeme;
 			sym.Type = SymbolType::Element;
-			sym.Flags = constant ? SymbolFlags::Const : SymbolFlags::None;
+			sym.Flags = extraFlags | (constant ? SymbolFlags::Const : SymbolFlags::None);
 			AddSymbol(sym);
 			stmts->Add(make_unique<VarValStatement>(name.Lexeme, constant, move(init)));
 		}
@@ -314,9 +314,9 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 
 	Match(TokenType::OpenParen, true, true);
 
-	//
+	bool staticCtor = false;
+
 	// get list of arguments
-	//
 	vector<Parameter> parameters;
 	while (Peek().Type != TokenType::CloseParen) {
 		auto param = Next();
@@ -326,6 +326,10 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 			else if(!parameters.empty())
 				AddError(ParseError(ParseErrorType::IllegalThis, CodeLocation::FromToken(param), "'this' can be first parameter only"));
 		}
+		else if (ctor && parameters.empty()) {
+			// static ctor
+			staticCtor = true;
+		}
 		else if (param.Type != TokenType::Identifier)
 			AddError(ParseError{ ParseErrorType::IdentifierExpected, param });
 		parameters.push_back(Parameter{ param.Lexeme });
@@ -333,8 +337,10 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 	}
 
 	Next();		// eat close paren
-	if (parameters.size() > 64)
-		AddError(ParseError{ ParseErrorType::TooManyFunctionArgs, Peek() });
+	if(staticCtor && !parameters.empty())
+		AddError(ParseError(ParseErrorType::TooManyFunctionArgs, Peek(), "Class constructor cannot have any parameters"));
+	if (parameters.size() > 63)
+		AddError(ParseError(ParseErrorType::TooManyFunctionArgs, Peek(), "Too many parameters to function/method"));
 
 	auto sym = FindSymbol(format("{}/{}", ident.Lexeme, parameters.size()), true);
 	if (sym)
@@ -351,16 +357,15 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method) {
 		body = ParseBlock(parameters);
 	}
 
-	body->SetParent(decl.get());
 	auto params = parameters.size();
-	decl->Parameters(move(parameters));
-	decl->Body(move(body));
+	decl->SetParameters(move(parameters));
+	decl->SetBody(move(body));
 
 	if (sym == nullptr) {
 		Symbol sym;
 		sym.Name = format("{}/{}", decl->Name(), decl->Parameters().size());
 		sym.Type = SymbolType::Function;
-		sym.Flags = SymbolFlags::None;
+		sym.Flags = staticCtor ? SymbolFlags::Static : SymbolFlags::None;
 		AddSymbol(sym);
 	}
 	return decl;
@@ -621,6 +626,7 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	PushScope(decl.get());
 	vector<unique_ptr<FunctionDeclaration>> methods;
 	vector<unique_ptr<Statement>> fields;
+	auto extraFlags = SymbolFlags::None;
 	while (Peek().Type != TokenType::CloseBrace) {
 		bool val = false;
 		switch (Peek().Type) {
@@ -639,10 +645,15 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 				[[fallthrough]];
 			case TokenType::Var:
 			{
-				auto stmt = ParseVarConstStatement(val);
+				auto stmt = ParseVarConstStatement(val, extraFlags);
 				fields.push_back(move(stmt));
+				extraFlags = SymbolFlags::None;
+				break;
 			}
-			break;
+			case TokenType::Class:
+				Next();		// eat class keyword
+				extraFlags = SymbolFlags::Static;
+				break;
 
 			default:
 				AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(Peek()), format("Unexpected token: '{}'", Peek().Lexeme)));
