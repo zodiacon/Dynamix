@@ -80,7 +80,7 @@ namespace Dynamix {
 
 	class ObjectType : public MemberInfo, NoCopy, NoMove {
 	public:
-		explicit ObjectType(std::string name) : MemberInfo(name, MemberType::Class) {}
+		explicit ObjectType(std::string name, ObjectType* base = nullptr) : MemberInfo(name, MemberType::Class), m_Base(base) {}
 
 		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
 		virtual void DestroyObject(RuntimeObject* object);
@@ -99,6 +99,7 @@ namespace Dynamix {
 		bool AddMethod(std::unique_ptr<MethodInfo> method);
 		FieldInfo const* GetField(std::string const& name) const;
 		MethodInfo const* GetMethod(std::string const& name, int8_t arity = -1) const;
+		MethodInfo const* GetClassConstructor() const;
 
 		template<typename T>
 		static T* GetInstance(RuntimeObject* obj) {
@@ -119,7 +120,9 @@ namespace Dynamix {
 		unsigned m_ObjectCount{ 0 };
 		std::unordered_map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
+		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;
 		std::string m_Name;
+		ObjectType* m_Base;
 		bool m_ClassCtorRun{ false };
 	};
 }

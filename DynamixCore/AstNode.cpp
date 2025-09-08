@@ -254,7 +254,7 @@ Statement const* IfThenElseExpression::Else() const noexcept {
 	return m_Else.get();
 }
 
-FunctionDeclaration::FunctionDeclaration(string name, bool method) : m_Name(move(name)), m_Method(method) {
+FunctionDeclaration::FunctionDeclaration(string name, bool method, bool isStatic) : m_Name(move(name)), m_Method(method), m_Static(isStatic) {
 }
 
 Value FunctionDeclaration::Accept(Visitor* visitor) const {

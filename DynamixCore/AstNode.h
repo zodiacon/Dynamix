@@ -410,7 +410,7 @@ namespace Dynamix {
 
 	class FunctionDeclaration : public Statement {
 	public:
-		explicit FunctionDeclaration(std::string name, bool method = false);
+		explicit FunctionDeclaration(std::string name, bool method = false, bool isStatic = false);
 		Value Accept(Visitor* visitor) const override;
 
 		std::string const& Name() const noexcept;
@@ -422,6 +422,9 @@ namespace Dynamix {
 		bool IsMethod() const noexcept {
 			return m_Method;
 		}
+		bool IsStatic() const noexcept {
+			return m_Static;
+		}
 		AstNodeType Type() const noexcept {
 			return AstNodeType::FunctionDeclaration;
 		}
@@ -430,7 +433,7 @@ namespace Dynamix {
 		std::string m_Name;
 		std::vector<Parameter> m_Parameters;
 		std::unique_ptr<Expression> m_Body;
-		bool m_Method;
+		bool m_Method, m_Static;
 	};
 
 	class ClassDeclaration : public Statement {

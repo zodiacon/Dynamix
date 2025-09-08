@@ -18,6 +18,16 @@ Value ObjectType::Invoke(Interpreter& intr, std::string_view name, std::vector<V
 	return Invoke(intr, nullptr, name, args, flags);
 }
 
+void ObjectType::RunClassConstructor(Interpreter& intr) {
+	if (!m_ClassCtorRun) {
+		m_ClassCtorRun = true;
+		if (auto it = m_Constructors.find(std::format("0/{}", int(MemberFlags::Ctor | MemberFlags::Static))); it != m_Constructors.end()) {
+			auto m = it->second.get();
+			intr.Eval(m->Code.Node);
+		}
+	}
+}
+
 unsigned ObjectType::GetObjectCount() const {
 	return m_ObjectCount;
 }
@@ -27,6 +37,9 @@ bool ObjectType::AddField(std::unique_ptr<FieldInfo> field) {
 }
 
 bool ObjectType::AddMethod(std::unique_ptr<MethodInfo> method) {
+	if ((method->Flags & MemberFlags::Ctor) == MemberFlags::Ctor) {
+		return m_Constructors.insert({ std::format("{}/{}", method->Arity, (int)method->Flags), move(method) }).second;
+	}
 	m_Methods.insert({ method->Name(), std::make_unique<MethodInfo>(method->Name()) });
 
 	if(method->Arity >= 0)
@@ -49,37 +62,36 @@ MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) c
 	return nullptr;
 }
 
+MethodInfo const* Dynamix::ObjectType::GetClassConstructor() const {
+	if (auto it = m_Constructors.find(std::format("0/{}", (int)MemberFlags::Static)); it != m_Constructors.end())
+		return it->second.get();
+	return nullptr;
+}
+
 void ObjectType::DestroyObject(RuntimeObject* instance) {
 	instance->Destruct();
 	delete instance;
 }
 
 RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {
+	RunClassConstructor(intr);
 	auto obj = new RuntimeObject(*this);
 
 	// init fields
 	MethodInfo* ctor = nullptr;
-	bool defCtor = true;
 	for (auto& [name, fi] : m_Fields) {
 		obj->AssignField(name, fi->Init ? intr.Eval(fi->Init) : Value());
 	}
 
-	for (auto& [pair, m] : m_Methods) {
-		if (!ctor && (m->Flags & MemberFlags::Ctor) == MemberFlags::Ctor) {
-			if (m.get()->Parameters.size() == args.size())
-				ctor = m.get();
-			else
-				defCtor = false;
-
-		}
-	}
+	if(auto it = m_Constructors.find(std::format("{}/{}", args.size(), (int)MemberFlags::Ctor)); it != m_Constructors.end())
+		ctor = it->second.get();
+	else if(!args.empty())
+		throw RuntimeError(RuntimeErrorType::NoMatchingConstructor, "No matching constructor");
 
 	// run ctor
 	if (ctor) {
 		intr.RunConstructor(obj, ctor, args);
 	}
-	else if (!defCtor)
-		throw RuntimeError(RuntimeErrorType::NoMatchingConstructor, "No matching constructor");
 
 	return obj;
 }

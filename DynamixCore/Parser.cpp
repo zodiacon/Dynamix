@@ -316,6 +316,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 	Match(TokenType::OpenParen, true, true);
 
 	bool staticCtor = ctor && ((extraFlags & SymbolFlags::Static) == SymbolFlags::Static);
+	int isInst = method && (extraFlags & SymbolFlags::Static) == SymbolFlags::None ? 1 : 0;
 
 	// get list of arguments
 	vector<Parameter> parameters;
@@ -333,11 +334,11 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 	if (parameters.size() > 63)
 		AddError(ParseError(ParseErrorType::TooManyFunctionArgs, Peek(), "Too many parameters to function/method"));
 
-	auto sym = FindSymbol(format("{}/{}", ident.Lexeme, parameters.size()), true);
+	auto sym = FindSymbol(format("{}/{}", ident.Lexeme, parameters.size() + isInst), true);
 	if (sym)
-		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident));
+		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident, format("Duplicate definition of '{}'", sym->Name) ));
 
-	auto decl = make_unique<FunctionDeclaration>(move(ident.Lexeme));
+	auto decl = make_unique<FunctionDeclaration>(move(ident.Lexeme), method, (extraFlags & SymbolFlags::Static) == SymbolFlags::Static);
 
 	unique_ptr<Expression> body;
 	if (Match(TokenType::GoesTo)) {
@@ -354,7 +355,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 
 	if (sym == nullptr) {
 		Symbol sym;
-		sym.Name = format("{}/{}", decl->Name(), decl->Parameters().size());
+		sym.Name = format("{}/{}", decl->Name(), decl->Parameters().size() + isInst);
 		sym.Type = method ? SymbolType::Method : SymbolType::Function;
 		sym.Flags = extraFlags;
 		AddSymbol(sym);
