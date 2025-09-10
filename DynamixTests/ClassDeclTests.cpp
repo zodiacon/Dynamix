@@ -14,7 +14,6 @@ TEST_CASE("Parser parses class with fields and methods", "[class]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt(parser);
-    REQUIRE(rt.Init());
     Interpreter interpreter(parser, rt);
 
     auto stmts = parser.Parse(R"(
@@ -48,7 +47,6 @@ TEST_CASE("Interpreter instantiates class and calls method", "[class]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt(parser);
-    REQUIRE(rt.Init());
     Interpreter interpreter(parser, rt);
 
     const char* code = R"(
@@ -74,7 +72,6 @@ TEST_CASE("Interpreter supports constructor and field initialization", "[class]"
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt(parser);
-    REQUIRE(rt.Init());
     Interpreter interpreter(parser, rt);
 
     const char* code = R"(
@@ -104,7 +101,6 @@ TEST_CASE("Interpreter supports inheritance", "[class][inheritance]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt(parser);
-    REQUIRE(rt.Init());
     Interpreter interpreter(parser, rt);
 
     const char* code = R"(

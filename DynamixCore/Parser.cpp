@@ -10,6 +10,7 @@ using namespace Dynamix;
 
 Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
 	m_Symbols.push(&m_GlobalSymbols);
+	Init();
 }
 
 bool Parser::Init() {
@@ -214,7 +215,19 @@ bool Parser::Match(TokenType type, bool consume, bool errorIfNotFound) {
 		return true;
 	}
 	if (errorIfNotFound)
-		AddError(ParseError{ ParseErrorType::Expected, next, format("'{}' expected", m_Tokenizer.TokenTypeToString(type)) });
+		AddError(ParseError(ParseErrorType::Expected, next, format("'{}' expected", m_Tokenizer.TokenTypeToString(type))));
+	return found;
+}
+
+bool Parser::Match(string_view lexeme, bool consume, bool errorIfNotFound) {
+	auto next = Peek();
+	auto found = next.Lexeme == lexeme;
+	if (consume && found) {
+		Next();
+		return true;
+	}
+	if (errorIfNotFound)
+		AddError(ParseError(ParseErrorType::Expected, next, format("'{}' expected", lexeme)));
 	return found;
 }
 
@@ -294,8 +307,8 @@ unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant, SymbolFlags 
 			sym.Name = name.Lexeme;
 			sym.Type = SymbolType::Element;
 			sym.Flags = extraFlags | (constant ? SymbolFlags::Const : SymbolFlags::None);
+			stmts->Add(make_unique<VarValStatement>(name.Lexeme, sym.Flags, move(init)));
 			AddSymbol(sym);
-			stmts->Add(make_unique<VarValStatement>(name.Lexeme, constant, move(init)));
 		}
 		if (Match(TokenType::Semicolon))
 			break;

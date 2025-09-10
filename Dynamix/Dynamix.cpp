@@ -51,7 +51,6 @@ int main(int argc, const char* argv[]) {
 	Tokenizer t;
 	Parser p(t);
 	Runtime rt(p);
-	rt.Init();
 	Interpreter intr(p, rt);
 
 	std::unique_ptr<AstNode> program;

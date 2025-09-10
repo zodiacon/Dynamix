@@ -178,7 +178,7 @@ namespace Dynamix {
 
 	class VarValStatement : public Statement {
 	public:
-		VarValStatement(std::string name, bool isConst, std::unique_ptr<Expression> init) noexcept;
+		VarValStatement(std::string name, SymbolFlags flags, std::unique_ptr<Expression> init) noexcept;
 		AstNodeType Type() const noexcept {
 			return AstNodeType::VarValStatement;
 		}
@@ -189,11 +189,15 @@ namespace Dynamix {
 		std::string const& Name() const noexcept;
 		Expression const* Init() const noexcept;
 		bool IsConst() const noexcept;
+		bool IsStatic() const noexcept;
+		SymbolFlags Flags() const noexcept {
+			return m_Flags;
+		}
 
 	private:
 		std::string m_Name;
 		std::unique_ptr<Expression> m_Init;
-		bool m_IsConst;
+		SymbolFlags m_Flags;
 	};
 
 	class AssignExpression : public Expression {

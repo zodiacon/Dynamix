@@ -5,6 +5,7 @@
 #include <atomic>
 #include <unordered_map>
 #include <string>
+#include "SymbolTable.h"
 
 namespace Dynamix {
 	class Interpreter;
@@ -28,15 +29,6 @@ namespace Dynamix {
 		Private,
 	};
 
-	enum class MemberFlags : uint16_t {
-		None = 0,
-		Static = 1,
-		ReadOnly = 2,
-		Const = 4,
-		Native = 8,
-		Ctor = 0x10,
-	};
-
 	union MemberCode {
 		AstNode const* Node;
 		NativeFunction Native;
@@ -53,7 +45,7 @@ namespace Dynamix {
 		}
 
 		MemberVisibility Visibility{ MemberVisibility::Public };
-		MemberFlags Flags{ MemberFlags::None };
+		SymbolFlags Flags{ SymbolFlags::None };
 
 	private:
 		std::string m_Name;
@@ -121,6 +113,7 @@ namespace Dynamix {
 		std::unordered_map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;
+		std::unordered_map<std::string, Value> m_StaticFields;
 		std::string m_Name;
 		ObjectType* m_Base;
 		bool m_ClassCtorRun{ false };

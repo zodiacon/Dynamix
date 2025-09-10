@@ -39,7 +39,7 @@ ArrayType::ArrayType() : ObjectType("Array") {
 		const char* Name;
 		int Arity;
 		NativeFunction Code;
-		MemberFlags Flags{ MemberFlags::Native };
+		SymbolFlags Flags{ SymbolFlags::Native };
 	} methods[] = {
 		{ "Count", 0, 
 			[](auto, auto& args) -> Value {

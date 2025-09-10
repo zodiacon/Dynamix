@@ -28,9 +28,9 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 	for (auto& m : decl->Methods()) {
 		auto mi = std::make_unique<MethodInfo>(m->Name());
 		mi->Arity = (int8_t)m->Parameters().size();
-		mi->Flags = m->IsStatic() ? MemberFlags::Static : MemberFlags::None;
+		mi->Flags = m->IsStatic() ? SymbolFlags::Static : SymbolFlags::None;
 		if (m->Name() == "new")
-			mi->Flags = mi->Flags | MemberFlags::Ctor;
+			mi->Flags = mi->Flags | SymbolFlags::Ctor;
 		mi->Code.Node = m->Body();
 		for (auto& p : m->Parameters()) {
 			mi->Parameters.emplace_back(MethodParameter{ p.Name, p.DefaultValue.get() });
@@ -42,6 +42,7 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 		if (f->Type() == AstNodeType::VarValStatement) {
 			auto vv = reinterpret_cast<VarValStatement const*>(f.get());
 			auto fi = make_unique<FieldInfo>(vv->Name());
+			fi->Flags = vv->Flags();
 			fi->Init = vv->Init();
 			type->AddField(move(fi));
 		}
@@ -64,15 +65,7 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 }
 
 Runtime::Runtime(Parser& parser) : m_Parser(parser) {
-}
-
-bool Runtime::Init() {
-	if (!m_Parser.Init())
-		return false;
-
 	InitStdLibrary();
-
-	return true;
 }
 
 void Runtime::InitStdLibrary() {

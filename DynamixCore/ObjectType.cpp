@@ -21,7 +21,12 @@ Value ObjectType::Invoke(Interpreter& intr, std::string_view name, std::vector<V
 void ObjectType::RunClassConstructor(Interpreter& intr) {
 	if (!m_ClassCtorRun) {
 		m_ClassCtorRun = true;
-		if (auto it = m_Constructors.find(std::format("0/{}", int(MemberFlags::Ctor | MemberFlags::Static))); it != m_Constructors.end()) {
+		// init static fields
+		for(auto& [name, f] : m_Fields)
+			if((f->Flags & SymbolFlags::Static) == SymbolFlags::Static && f->Init)
+				m_StaticFields[name] = intr.Eval(f->Init);
+
+		if (auto it = m_Constructors.find(std::format("0/{}", int(SymbolFlags::Ctor | SymbolFlags::Static))); it != m_Constructors.end()) {
 			auto m = it->second.get();
 			intr.Eval(m->Code.Node);
 		}
@@ -37,7 +42,7 @@ bool ObjectType::AddField(std::unique_ptr<FieldInfo> field) {
 }
 
 bool ObjectType::AddMethod(std::unique_ptr<MethodInfo> method) {
-	if ((method->Flags & MemberFlags::Ctor) == MemberFlags::Ctor) {
+	if ((method->Flags & SymbolFlags::Ctor) == SymbolFlags::Ctor) {
 		return m_Constructors.insert({ std::format("{}/{}", method->Arity, (int)method->Flags), move(method) }).second;
 	}
 	m_Methods.insert({ method->Name(), std::make_unique<MethodInfo>(method->Name()) });
@@ -63,7 +68,7 @@ MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) c
 }
 
 MethodInfo const* Dynamix::ObjectType::GetClassConstructor() const {
-	if (auto it = m_Constructors.find(std::format("0/{}", (int)MemberFlags::Static)); it != m_Constructors.end())
+	if (auto it = m_Constructors.find(std::format("0/{}", (int)SymbolFlags::Static)); it != m_Constructors.end())
 		return it->second.get();
 	return nullptr;
 }
@@ -83,7 +88,7 @@ RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> co
 		obj->AssignField(name, fi->Init ? intr.Eval(fi->Init) : Value());
 	}
 
-	if(auto it = m_Constructors.find(std::format("{}/{}", args.size(), (int)MemberFlags::Ctor)); it != m_Constructors.end())
+	if(auto it = m_Constructors.find(std::format("{}/{}", args.size(), (int)SymbolFlags::Ctor)); it != m_Constructors.end())
 		ctor = it->second.get();
 	else if(!args.empty())
 		throw RuntimeError(RuntimeErrorType::NoMatchingConstructor, "No matching constructor");

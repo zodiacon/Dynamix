@@ -110,8 +110,8 @@ Expression* UnaryExpression::Arg() const noexcept {
 	return m_Arg.get();
 }
 
-VarValStatement::VarValStatement(string name, bool isConst, unique_ptr<Expression> init) noexcept
-	: m_Name(move(name)), m_Init(move(init)), m_IsConst(isConst) {
+VarValStatement::VarValStatement(string name, SymbolFlags flags, unique_ptr<Expression> init) noexcept
+	: m_Name(move(name)), m_Init(move(init)), m_Flags(flags) {
 	if (m_Init)
 		m_Init->SetParent(this);
 }
@@ -133,7 +133,11 @@ Expression const* VarValStatement::Init() const noexcept {
 }
 
 bool VarValStatement::IsConst() const noexcept {
-	return m_IsConst;
+	return (m_Flags & SymbolFlags::Const) == SymbolFlags::Const;
+}
+
+bool VarValStatement::IsStatic() const noexcept {
+	return (m_Flags & SymbolFlags::Static) == SymbolFlags::Static;
 }
 
 AssignExpression::AssignExpression(string lhs, unique_ptr<Expression> rhs, Token assignType) noexcept

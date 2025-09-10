@@ -23,6 +23,8 @@ namespace Dynamix {
 		Const = 1,
 		VarArg = 2,
 		Static = 4,
+		Ctor = 8,
+		Native = 0x10,
 	};
 
 	class Interpreter;

@@ -10,7 +10,6 @@ using namespace Dynamix;
 TEST_CASE("Parser parses a recursive function and checks AST") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
-    REQUIRE(parser.Init());
 
     // Simple recursive factorial function in the target language
     const char* code = R"(

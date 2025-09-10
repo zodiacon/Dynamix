@@ -74,7 +74,6 @@ namespace Dynamix {
 			return &m_GlobalScope;
 		}
 
-		bool Init();
 		void InitStdLibrary();
 	private:
 		Parser& m_Parser;

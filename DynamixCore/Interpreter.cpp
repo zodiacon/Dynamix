@@ -418,5 +418,5 @@ Value Interpreter::VisitEnumValue(EnumValueExpression const* expr) {
 			return it->second;
 		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Undefined enum element '{}'", expr->Value().Lexeme), expr->Location());
 	}
-	throw RuntimeError(RuntimeErrorType::Syntax, "Unknown element", expr->Location());
+	throw RuntimeError(RuntimeErrorType::Syntax, "Unknown type", expr->Location());
 }

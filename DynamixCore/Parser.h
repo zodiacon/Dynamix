@@ -20,7 +20,6 @@ namespace Dynamix {
 	public:
 		explicit Parser(Tokenizer& t);
 		virtual ~Parser() noexcept = default;
-		virtual bool Init();
 
 		std::unique_ptr<Statements> Parse(std::string_view text, bool repl = false, int line = 1);
 		std::unique_ptr<Statements> ParseFile(std::string_view filename);
@@ -62,6 +61,7 @@ namespace Dynamix {
 		bool Match(std::string_view lexeme, bool consume = true, bool errorIfNotFound = false);
 
 	protected:
+		virtual bool Init();
 		virtual std::unique_ptr<Statements> DoParse();
 
 	private:

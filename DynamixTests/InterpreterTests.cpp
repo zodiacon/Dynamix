@@ -11,7 +11,6 @@ TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt(parser);
-    REQUIRE(rt.Init());
     Interpreter interpreter(parser, rt);
 
     SECTION("Integer literal") {
@@ -55,7 +54,6 @@ TEST_CASE("Interpreter evaluates variable declaration and assignment") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt(parser);
-    REQUIRE(rt.Init());
     Interpreter interpreter(parser, rt);
 
     SECTION("Variable declaration and use") {
@@ -80,7 +78,6 @@ TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt(parser);
-    REQUIRE(rt.Init());
     Interpreter interpreter(parser, rt);
 
     const char* code = R"(

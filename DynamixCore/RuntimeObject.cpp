@@ -29,8 +29,8 @@ Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vec
 		throw RuntimeError(RuntimeErrorType::MethodNotFound,
 			std::format("Method {} with {} args not found in type {}", name, args.size(), Type().Name()));
 
-	bool instance = (method->Flags & MemberFlags::Static) == MemberFlags::None;
-	if ((method->Flags & MemberFlags::Native) == MemberFlags::Native) {
+	bool instance = (method->Flags & SymbolFlags::Static) == SymbolFlags::None;
+	if ((method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
 		args.insert(args.begin(), this);
 		return (*method->Code.Native)(intr, args);
 	}
