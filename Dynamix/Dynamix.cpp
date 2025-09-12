@@ -9,10 +9,14 @@
 using namespace Dynamix;
 using namespace std;
 
-void ShowErrors(Parser const& p) {
-	println("{} Errors:", p.Errors().size());
+void ShowErrors(Parser const& p, bool repl = false) {
+	if(!repl)
+		println("{} Errors:", p.Errors().size());
 	for (auto& e : p.Errors()) {
-		println("({},{}): {}", e.Location().Line, e.Location().Col, e.Description());
+		if(repl)
+			println("{}", e.Description());
+		else
+			println("({},{}): {}", e.Location().Line, e.Location().Col, e.Description());
 	}
 }
 
@@ -41,7 +45,7 @@ int RunRepl(Parser& p, Interpreter& intr, std::unique_ptr<AstNode> node) {
 			}
 		}
 		else {
-			ShowErrors(p);
+			ShowErrors(p, true);
 		}
 	}
 	return 0;

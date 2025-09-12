@@ -41,7 +41,7 @@ namespace Dynamix {
 		int GetPrecedence() const;
 
 		std::unique_ptr<Expression> ParseExpression(int precedence = 0);
-		std::unique_ptr<Statement> ParseVarConstStatement(bool constant, SymbolFlags extraFlags = SymbolFlags::None);
+		std::unique_ptr<Statement> ParseVarValStatement(bool constant, SymbolFlags extraFlags = SymbolFlags::None);
 		std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration(bool method = false, SymbolFlags extraFlags = SymbolFlags::None);
 		std::unique_ptr<RepeatStatement> ParseRepeatStatement();
 		std::unique_ptr<WhileStatement> ParseWhileStatement();

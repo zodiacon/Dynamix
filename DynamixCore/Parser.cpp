@@ -277,7 +277,7 @@ bool Parser::AddParslet(TokenType type, unique_ptr<PrefixParslet> parslet) {
 	return m_PrefixParslets.insert({ type, move(parslet) }).second;
 }
 
-unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant, SymbolFlags extraFlags) {
+unique_ptr<Statement> Parser::ParseVarValStatement(bool constant, SymbolFlags extraFlags) {
 	auto next = Next();		// eat var/val
 
 	auto stmts = make_unique<Statements>();
@@ -312,7 +312,7 @@ unique_ptr<Statement> Parser::ParseVarConstStatement(bool constant, SymbolFlags 
 		}
 		if (Match(TokenType::Semicolon))
 			break;
-	} while (Match(TokenType::Comma, true, true));
+	} while (Match(TokenType::Comma));
 
 	return stmts->Count() == 0 ? nullptr : (stmts->Count() == 1 ? move(stmts->RemoveAt(0)) : move(stmts));
 }
@@ -450,8 +450,8 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 		return nullptr;
 
 	switch (peek.Type) {
-		case TokenType::Var: return ParseVarConstStatement(false);
-		case TokenType::Val: return ParseVarConstStatement(true);
+		case TokenType::Var: return ParseVarValStatement(false);
+		case TokenType::Val: return ParseVarValStatement(true);
 		case TokenType::Repeat:
 			if (!topLevel)
 				return ParseRepeatStatement();
@@ -657,7 +657,7 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 				[[fallthrough]];
 			case TokenType::Var:
 			{
-				auto stmt = ParseVarConstStatement(val, extraFlags);
+				auto stmt = ParseVarValStatement(val, extraFlags);
 				fields.push_back(move(stmt));
 				extraFlags = SymbolFlags::None;
 				break;

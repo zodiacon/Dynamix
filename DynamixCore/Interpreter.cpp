@@ -16,6 +16,7 @@ Interpreter::Interpreter(Parser& p, Runtime& rt) : m_Parser(p), m_Runtime(rt) {
 }
 
 Value Interpreter::Eval(AstNode const* root) {
+	assert(root);
 	try {
 		return root ? root->Accept(this) : Value();
 	}
@@ -327,6 +328,13 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	RuntimeObject* obj = nullptr;
 	ObjectType* type = nullptr;
 
+	if (value.IsAstNode() && value.AsAstNode()->Type() == AstNodeType::EnumDeclararion) {
+		auto decl = reinterpret_cast<EnumDeclaration const*>(value.AsAstNode());
+		if (auto it = decl->Values().find(expr->Member()); it != decl->Values().end())
+			return it->second;
+		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Element '{}' not found in enum '{}'", expr->Member(), decl->Name()), expr->Location());
+	}
+
 	if (!value.IsObject())
 		throw RuntimeError(RuntimeErrorType::ObjectExpected, "Object expected", expr->Location());
 	obj = value.AsObject();
@@ -343,7 +351,6 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	if (obj && method->IsStatic())
 		throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access static method '{}' via instance",
 			method->Name()), expr->Location());
-
 	else if (!obj && !method->IsStatic())
 		throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access instance method '{}' via class",
 			method->Name()), expr->Location());

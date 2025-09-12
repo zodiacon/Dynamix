@@ -198,13 +198,3 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 	return make_unique<NewObjectExpression>(move(ident.Lexeme), move(args));
 }
 
-unique_ptr<Expression> EnumValueParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
-	assert(token.Type == TokenType::Colon);
-	auto ident = parser.Next();
-	if (ident.Type != TokenType::Identifier) {
-		parser.AddError(ParseError(ParseErrorType::IllegalExpression, CodeLocation::FromToken(ident), "Enum or Class member expected"));
-		return nullptr;
-	}
-
-	return make_unique<EnumValueExpression>(move(left), move(ident));
-}
