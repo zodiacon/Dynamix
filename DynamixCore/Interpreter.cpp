@@ -44,14 +44,14 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 	auto left = Eval(expr->Left());
 	switch (expr->Operator().Type) {
-	case TokenType::And:
-		if (!left.ToBoolean())
-			return false;
-		break;
-	case TokenType::Or:
-		if (left.ToBoolean())
-			return true;
-		break;
+		case TokenType::And:
+			if (!left.ToBoolean())
+				return false;
+			break;
+		case TokenType::Or:
+			if (left.ToBoolean())
+				return true;
+			break;
 	}
 
 	return left.BinaryOperator(expr->Operator().Type, Eval(expr->Right()));
@@ -150,6 +150,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
 
 	if (node) {
+		assert(node->Type() == AstNodeType::FunctionDeclaration);
 		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
 		assert(!instance);
 		Scoper scoper(this);
@@ -225,12 +226,12 @@ Value Interpreter::VisitReturn(ReturnStatement const* decl) {
 
 Value Interpreter::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
 	switch (stmt->BreakType()) {
-	case TokenType::Continue:
-		throw ContinueStatementException();
-	case TokenType::Break:
-		throw BreakStatementException();
-	case TokenType::BreakOut:
-		throw BreakoutStatementException();
+		case TokenType::Continue:
+			throw ContinueStatementException();
+		case TokenType::Break:
+			throw BreakStatementException();
+		case TokenType::BreakOut:
+			throw BreakoutStatementException();
 	}
 	assert(false);
 	return Value();
@@ -279,13 +280,13 @@ Value Interpreter::VisitExpressionStatement(ExpressionStatement const* expr) {
 }
 
 Value Interpreter::VisitArrayExpression(ArrayExpression const* expr) {
-	auto& type = ArrayType::Get();
+	auto type = ArrayType::Get();
 	std::vector<Value> values;
 	values.reserve(expr->Items().size());
 	for (auto& item : expr->Items())
 		values.emplace_back(Eval(item.get()));
 
-	return type.CreateArray(values);
+	return type->CreateArray(values);
 }
 
 Value Interpreter::VisitRepeat(RepeatStatement const* stmt) {
@@ -322,19 +323,33 @@ std::unique_ptr<AstNode> Interpreter::Parse(std::string_view code) const {
 
 Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	auto value = Eval(expr->Left());
+	FieldInfo const* field;
+	RuntimeObject* obj = nullptr;
+	ObjectType* type = nullptr;
+
 	if (!value.IsObject())
 		throw RuntimeError(RuntimeErrorType::ObjectExpected, "Object expected", expr->Location());
-	auto obj = value.AsObject();
-	auto field = obj->Type().GetField(expr->Member());
-	if (field)
-		return obj->GetField(field->Name());
+	obj = value.AsObject();
+	type = obj->Type();
+	field = type->GetField(expr->Member());
 
-	auto method = obj->Type().GetMethod(expr->Member());
+	if (field)
+		return obj ? obj->GetField(field->Name()) : type->GetStaticField(field->Name());
+
+	auto method = type->GetMethod(expr->Member());
 	if (!method)
-		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), obj->Type().Name()), expr->Location());
+		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), type->Name()), expr->Location());
+
+	if (obj && method->IsStatic())
+		throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access static method '{}' via instance",
+			method->Name()), expr->Location());
+
+	else if (!obj && !method->IsStatic())
+		throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access instance method '{}' via class",
+			method->Name()), expr->Location());
 
 	auto c = new Callable;
-	c->Instance = obj;
+	c->Instance = obj ? obj : type;
 	c->Method = method->Name();
 	return c;
 }
@@ -353,7 +368,8 @@ Value Interpreter::VisitAssignArrayIndex(AssignArrayIndexExpression const* expr)
 }
 
 Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
-	Element v{ decl, ElementFlags::Class };
+	auto type = m_Runtime.GetObjectType(decl, this);
+	Element v{ type, ElementFlags::Class };
 	CurrentScope()->AddElement(decl->Name(), move(v));
 
 	return Value();
@@ -378,7 +394,7 @@ Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {
 	auto obj = Eval(expr->Lhs()->Left());
 	assert(obj.IsObject());
 	obj.AsObject()->AssignField(expr->Lhs()->Member(), Eval(expr->Value()), expr->AssignType().Type);
-	return expr->Lhs();
+	return Eval(expr->Lhs());
 }
 
 Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
@@ -412,11 +428,17 @@ Value Interpreter::VisitEnumValue(EnumValueExpression const* expr) {
 		throw RuntimeError(RuntimeErrorType::Syntax, "Syntax error", expr->Location());
 
 	auto node = left.AsAstNode();
-	if (node->Type() == AstNodeType::EnumDeclararion) {
-		auto decl = reinterpret_cast<EnumDeclaration const*>(node);
-		if (auto it = decl->Values().find(expr->Value().Lexeme); it != decl->Values().end())
-			return it->second;
-		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Undefined enum element '{}'", expr->Value().Lexeme), expr->Location());
+	switch (node->Type()) {
+		case AstNodeType::EnumDeclararion:
+		{
+			auto decl = reinterpret_cast<EnumDeclaration const*>(node);
+			if (auto it = decl->Values().find(expr->Value().Lexeme); it != decl->Values().end())
+				return it->second;
+			throw RuntimeError(RuntimeErrorType::UnknownMember, format("Undefined enum element '{}'", expr->Value().Lexeme), expr->Location());
+		}
+		case AstNodeType::ClassDeclaration:
+			return node;
 	}
+
 	throw RuntimeError(RuntimeErrorType::Syntax, "Unknown type", expr->Location());
 }

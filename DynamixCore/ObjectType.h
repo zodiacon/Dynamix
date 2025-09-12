@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include "SymbolTable.h"
+#include "RuntimeObject.h"
 
 namespace Dynamix {
 	class Interpreter;
@@ -44,6 +45,8 @@ namespace Dynamix {
 			return m_Type;
 		}
 
+		bool IsStatic() const;
+
 		MemberVisibility Visibility{ MemberVisibility::Public };
 		SymbolFlags Flags{ SymbolFlags::None };
 
@@ -70,9 +73,9 @@ namespace Dynamix {
 		Expression const* Init{};
 	};
 
-	class ObjectType : public MemberInfo, NoCopy, NoMove {
+	class ObjectType : public RuntimeObject, public MemberInfo {
 	public:
-		explicit ObjectType(std::string name, ObjectType* base = nullptr) : MemberInfo(name, MemberType::Class), m_Base(base) {}
+		explicit ObjectType(std::string name, ObjectType* base = nullptr);
 
 		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
 		virtual void DestroyObject(RuntimeObject* object);
@@ -92,6 +95,8 @@ namespace Dynamix {
 		FieldInfo const* GetField(std::string const& name) const;
 		MethodInfo const* GetMethod(std::string const& name, int8_t arity = -1) const;
 		MethodInfo const* GetClassConstructor() const;
+		Value& GetStaticField(std::string const& name);
+		void SetStaticField(std::string const& name, Value value);
 
 		template<typename T>
 		static T* GetInstance(RuntimeObject* obj) {
@@ -113,7 +118,6 @@ namespace Dynamix {
 		std::unordered_map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;
-		std::unordered_map<std::string, Value> m_StaticFields;
 		std::string m_Name;
 		ObjectType* m_Base;
 		bool m_ClassCtorRun{ false };

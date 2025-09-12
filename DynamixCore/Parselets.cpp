@@ -164,9 +164,9 @@ unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token const
 }
 
 unique_ptr<Expression> GetMemberParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
-	assert(token.Type == TokenType::Dot);
+	assert(token.Type == TokenType::Dot || token.Type == TokenType::Colon);
 	auto next = parser.Next();
-	return std::make_unique<GetMemberExpression>(move(left), next.Lexeme);
+	return std::make_unique<GetMemberExpression>(move(left), next.Lexeme, token);
 }
 
 unique_ptr<Expression> ArrayAccessParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {

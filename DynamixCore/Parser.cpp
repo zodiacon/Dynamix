@@ -128,9 +128,9 @@ bool Parser::Init() {
 	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayExpressionParslet>());
 	AddParslet(TokenType::Dot, make_unique<GetMemberParslet>());
+	AddParslet(TokenType::Colon, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());
-	AddParslet(TokenType::Colon, make_unique<EnumValueParslet>());
 
 	return true;
 }

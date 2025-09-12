@@ -5,9 +5,9 @@
 
 using namespace Dynamix;
 
-ArrayType& ArrayType::Get() {
+ArrayType* ArrayType::Get() {
 	static ArrayType type;
-	return type;
+	return &type;
 }
 
 ArrayObject* ArrayType::CreateArray(std::vector<Value>& args) {
@@ -119,7 +119,7 @@ Int ArrayObject::Insert(Int index, Value item) {
 
 Int ArrayObject::Append(Value list) {
 	auto obj = list.ToObject();
-	if (obj->Type().Name() != Type().Name())
+	if (obj->Type()->Name() != Type()->Name())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Cannot append non-array to array");
 	auto other = ObjectType::GetInstance<ArrayObject>(obj);
 	m_Items.insert(m_Items.end(), other->m_Items.begin(), other->m_Items.end());

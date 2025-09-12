@@ -10,7 +10,7 @@ namespace Dynamix {
 
 	class ArrayType : public ObjectType {
 	public:
-		static ArrayType& Get();
+		static ArrayType* Get();
 
 		ArrayObject* CreateArray(std::vector<Value>& args);
 

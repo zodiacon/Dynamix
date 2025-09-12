@@ -356,7 +356,7 @@ Value::~Value() {
 
 ObjectType const* Value::GetObjectType() const {
 	switch (m_Type) {
-		case ValueType::Object: return &oValue->Type();
+		case ValueType::Object: return oValue->Type();
 		//case ValueType::String: return &StringType::Get();
 		//case ValueType::Integer: return &IntegerType::Get();
 		//case ValueType::Real: return &RealType::Get();

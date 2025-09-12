@@ -41,8 +41,9 @@ TEST_CASE("ArrayObject index assignment", "[array]") {
 
 TEST_CASE("ArrayType::CreateArray", "[array]") {
     std::vector<Value> init = { Value(100), Value(200) };
-    ArrayType& type = ArrayType::Get();
-    ArrayObject* arr = type.CreateArray(init);
+    auto type = ArrayType::Get();
+    REQUIRE(type);
+    ArrayObject* arr = type->CreateArray(init);
 
     REQUIRE(arr != nullptr);
     REQUIRE(arr->Items().size() == 2);

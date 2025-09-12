@@ -22,7 +22,7 @@ namespace Dynamix {
 
 	class RuntimeObject : NoCopy, public IServices {
 	public:
-		explicit RuntimeObject(ObjectType& type);
+		explicit RuntimeObject(ObjectType* type);
 		RuntimeObject(RuntimeObject&& other) = default;
 		RuntimeObject& operator=(RuntimeObject&& other) = default;
 
@@ -32,11 +32,11 @@ namespace Dynamix {
 		void AssignField(std::string const& name, Value value, TokenType assignType = TokenType::Assign);
 		Value GetField(std::string const& name) const;
 
-		ObjectType& Type() {
+		ObjectType* Type() {
 			return m_Type;
 		}
 
-		ObjectType const& Type() const{
+		ObjectType const* Type() const{
 			return m_Type;
 		}
 
@@ -49,10 +49,12 @@ namespace Dynamix {
 		virtual Value InvokeIndexer(Value const& index);
 		virtual void AssignIndexer(Value const& index, Value const& value, TokenType assign);
 
+	protected:
+		std::unordered_map<std::string, Value> m_FieldValues;
+
 	private:
-		std::unordered_map<std::string, Value> m_Fields;
 		int m_RefCount{ 1 };
-		ObjectType& m_Type;
+		ObjectType* m_Type;
 	};
 }
 

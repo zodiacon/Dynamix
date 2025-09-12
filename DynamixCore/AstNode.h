@@ -29,7 +29,7 @@ namespace Dynamix {
 		VarValStatement,
 		ArrayAccess,
 		GetMember,
-		Class,
+		ClassDeclaration,
 		EnumDeclararion,
 	};
 
@@ -97,17 +97,22 @@ namespace Dynamix {
 
 	class GetMemberExpression : public Expression {
 	public:
-		GetMemberExpression(std::unique_ptr<Expression> left, std::string member) noexcept;
+		GetMemberExpression(std::unique_ptr<Expression> left, std::string member, Token op) noexcept;
+		Value Accept(Visitor* visitor) const override;
+
 		Expression const* Left() const noexcept;
 		std::string const& Member() const noexcept;
 		AstNodeType Type() const noexcept {
 			return AstNodeType::GetMember;
 		}
-		Value Accept(Visitor* visitor) const override;
+		Token const& Operator() const noexcept {
+			return m_Operator;
+		}
 
 	private:
 		std::unique_ptr<Expression> m_Left;
 		std::string m_Member;
+		Token m_Operator;
 	};
 
 	class AccessArrayExpression : public Expression {
@@ -302,7 +307,7 @@ namespace Dynamix {
 
 	class UnaryExpression : public Expression {
 	public:
-		UnaryExpression(Token op, std::unique_ptr<Expression> arg);
+		UnaryExpression(Token op, std::unique_ptr<Expression> arg) noexcept;
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
 		Token const& Operator() const noexcept;
@@ -367,10 +372,10 @@ namespace Dynamix {
 		std::string const& Name() const noexcept {
 			return m_Name;
 		}
-		Statements const* Body() const {
+		Statements const* Body() const noexcept {
 			return m_Body.get();
 		}
-		Expression const* Collection() const {
+		Expression const* Collection() const noexcept {
 			return m_Collection.get();
 		}
 
@@ -444,7 +449,7 @@ namespace Dynamix {
 	public:
 		explicit ClassDeclaration(std::string name) noexcept;
 		AstNodeType Type() const noexcept override {
-			return AstNodeType::Class;
+			return AstNodeType::ClassDeclaration;
 		}
 		Value Accept(Visitor* visitor) const override;
 		void SetMethods(std::vector<std::unique_ptr<FunctionDeclaration>> methods) noexcept {

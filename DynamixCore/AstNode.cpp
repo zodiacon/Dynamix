@@ -33,7 +33,8 @@ string BinaryExpression::ToString() const {
 	return format("({} {} {})", m_Left->ToString(), m_Operator.Lexeme, m_Right->ToString());
 }
 
-GetMemberExpression::GetMemberExpression(unique_ptr<Expression> left, string member) noexcept : m_Left(move(left)), m_Member(move(member)) {
+GetMemberExpression::GetMemberExpression(unique_ptr<Expression> left, string member, Token op) noexcept 
+	: m_Left(move(left)), m_Member(move(member)), m_Operator(move(op)) {
 }
 
 Expression const* GetMemberExpression::Left() const noexcept {
@@ -90,7 +91,7 @@ string NameExpression::ToString() const {
 	return m_Name;
 }
 
-UnaryExpression::UnaryExpression(Token op, unique_ptr<Expression> arg) : m_Arg(move(arg)), m_Operator(move(op)) {
+UnaryExpression::UnaryExpression(Token op, unique_ptr<Expression> arg) noexcept : m_Arg(move(arg)), m_Operator(move(op)) {
 	m_Arg->SetParent(this);
 }
 

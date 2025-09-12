@@ -14,8 +14,8 @@ RuntimeError::RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation 
 	m_Type(type), m_Message(std::move(msg)), m_Location(std::move(location)) {
 }
 
-ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
-	assert(classNode->Type() == AstNodeType::Class);
+ObjectType* Runtime::GetObjectType(AstNode const* classNode, Interpreter* intr) {
+	assert(classNode->Type() == AstNodeType::ClassDeclaration);
 	auto decl = reinterpret_cast<ClassDeclaration const*>(classNode);
 	auto it = m_Types.find(decl->Name());
 	if (it != m_Types.end())
@@ -38,22 +38,29 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 		type->AddMethod(move(mi));
 	}
 
+	auto addField = [&](auto vv) {
+		auto fi = make_unique<FieldInfo>(vv->Name());
+		fi->Flags = vv->Flags();
+		fi->Init = vv->Init();
+		auto f = fi.get();
+		type->AddField(move(fi));
+		if (f->IsStatic()) {
+			assert(intr);
+			type->SetStaticField(f->Name(), f->Init ? intr->Eval(f->Init) : Value());
+		}
+	};
+
 	for (auto& f : decl->Fields()) {
 		if (f->Type() == AstNodeType::VarValStatement) {
 			auto vv = reinterpret_cast<VarValStatement const*>(f.get());
-			auto fi = make_unique<FieldInfo>(vv->Name());
-			fi->Flags = vv->Flags();
-			fi->Init = vv->Init();
-			type->AddField(move(fi));
+			addField(vv);
 		}
 		else {
 			assert(f->Type() == AstNodeType::Statements);
 			auto stmts = reinterpret_cast<Statements const*>(f.get());
 			for (auto& s : stmts->Get()) {
 				auto vv = reinterpret_cast<VarValStatement const*>(s.get());
-				auto fi = make_unique<FieldInfo>(vv->Name());
-				fi->Init = vv->Init();
-				type->AddField(move(fi));
+				addField(vv);
 			}
 		}
 	}
@@ -62,6 +69,10 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode) {
 	m_Types.insert({ decl->Name(), move(type) });
 
 	return p;
+}
+
+ObjectType* Runtime::GetObjectType(std::string const& name) {
+	return m_Types.at(name).get();
 }
 
 Runtime::Runtime(Parser& parser) : m_Parser(parser) {

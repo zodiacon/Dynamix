@@ -32,6 +32,7 @@ namespace Dynamix {
 		NoMatchingConstructor,
 		Syntax,
 		MethodNotFound,
+		InvalidMemberAccess,
 	};
 
 	struct ReturnStatementException {
@@ -68,8 +69,9 @@ namespace Dynamix {
 	class Runtime {
 	public:
 		Runtime(Parser& parser);
-		ObjectType* GetObjectType(AstNode const* classNode);
-		ObjectType* GetObjectType(std::string const& classNode) const;
+		[[maybe_unused]] ObjectType* GetObjectType(AstNode const* classNode, Interpreter* intr = nullptr);
+		ObjectType* GetObjectType(std::string const& name);
+
 		Scope* GetGlobalScope() {
 			return &m_GlobalScope;
 		}
