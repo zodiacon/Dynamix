@@ -66,7 +66,6 @@ namespace Dynamix {
 
 	private:
 		Tokenizer& m_Tokenizer;
-		mutable Token m_NextToken{ TokenType::Invalid };
 		std::unordered_map<TokenType, std::unique_ptr<InfixParslet>> m_InfixParslets;
 		std::unordered_map<TokenType, std::unique_ptr<PrefixParslet>> m_PrefixParslets;
 		std::vector<ParseError> m_Errors;

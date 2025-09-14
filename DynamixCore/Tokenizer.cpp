@@ -9,12 +9,14 @@ bool Tokenizer::Tokenize(string_view text, int line) {
 	m_Line = line;
 	m_Col = 1;
 	m_Current = m_Text.data();
+	m_Next.Clear();
+	m_MultiLineCommentNesting = 0;
 	return true;
 }
 
 bool Tokenizer::AddToken(string_view lexeme, TokenType type) {
 	return m_TokenTypesRev.try_emplace(type, lexeme).second &&
-	m_TokenTypes.try_emplace(lexeme, type).second;
+		m_TokenTypes.try_emplace(lexeme, type).second;
 }
 
 bool Tokenizer::AddTokens(initializer_list<pair<string_view, TokenType>> tokens) {
@@ -26,11 +28,31 @@ bool Tokenizer::AddTokens(initializer_list<pair<string_view, TokenType>> tokens)
 }
 
 Token Tokenizer::Next() {
+	if (m_Next) {
+		auto next = m_Next;
+		m_Next.Clear();
+		return next;
+	}
+
 	EatWhitespace();
+	while (m_MultiLineCommentNesting > 0) {
+		if (IsNextChars(m_MultiLineCommentEnd))
+			--m_MultiLineCommentNesting;
+		else if (IsNextChars(m_MultiLineCommentStart))
+			++m_MultiLineCommentNesting;
+		else if (*m_Current == 0)
+			return Token{ TokenType::End };
+		m_Col++;
+		if (*++m_Current == '\n') {
+			m_Col = 1;
+			m_Line++;
+		}
+	}
+
 	auto ch = *m_Current;
-	if(ch == 0)
+	if (ch == 0)
 		return Token{ TokenType::End };
-	if (isalpha(ch) || ch == '_' || ch == '$') {
+	if (isalpha(ch) || ch == '_') {
 		return ParseIdentifier();
 	}
 	if (ch >= '0' && ch <= '9') {
@@ -46,19 +68,28 @@ Token Tokenizer::Next() {
 	return ParseOperator();
 }
 
-Token Tokenizer::Peek() {
-	auto current = m_Current;
-	auto line = m_Line;
-	auto col = m_Col;
-	auto token = Next();
-	m_Current = current;
-	m_Line = line;
-	m_Col = col;
-	return token;
+Token const& Tokenizer::Peek() {
+	if (m_Next)
+		return m_Next;
+
+	m_Next = Next();
+	return m_Next;
 }
 
-std::string_view Dynamix::Tokenizer::TokenTypeToString(TokenType type) const {
+std::string_view Tokenizer::TokenTypeToString(TokenType type) const {
 	return m_TokenTypesRev.find(type)->second;
+}
+
+bool Tokenizer::IsNextChars(string_view chars) {
+	auto current = m_Current;
+	int i = 0;
+	while (*current && *current++ == chars[i]) {
+		if (++i == chars.length()) {
+			m_Current = current;
+			return true;
+		}
+	}
+	return false;
 }
 
 bool Tokenizer::ProcessSingleLineComment() {
@@ -91,6 +122,11 @@ void Tokenizer::EatWhitespace() {
 			m_Line++;
 		}
 		++m_Current;
+	}
+
+	if (IsNextChars(m_MultiLineCommentStart)) {
+		m_MultiLineCommentNesting++;
+		return;
 	}
 	if (ProcessSingleLineComment())
 		EatWhitespace();

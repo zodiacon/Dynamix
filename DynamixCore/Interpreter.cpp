@@ -341,20 +341,25 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	type = obj->Type();
 	field = type->GetField(expr->Member());
 
-	if (field)
+	auto check = [](auto obj, auto member, auto expr) {
+		if (!obj->IsObjectType() && member->IsStatic())
+			throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access static method '{}' via instance",
+				member->Name()), expr->Location());
+		else if (obj->IsObjectType() && !member->IsStatic())
+			throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access instance method '{}' via class",
+				member->Name()), expr->Location());
+	};
+
+	if (field) {
+		check(obj, field, expr);
 		return obj ? obj->GetField(field->Name()) : type->GetStaticField(field->Name());
+	}
 
 	auto method = type->GetMethod(expr->Member());
 	if (!method)
 		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), type->Name()), expr->Location());
 
-	if (obj && method->IsStatic())
-		throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access static method '{}' via instance",
-			method->Name()), expr->Location());
-	else if (!obj && !method->IsStatic())
-		throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access instance method '{}' via class",
-			method->Name()), expr->Location());
-
+	check(obj, method, expr);
 	auto c = new Callable;
 	c->Instance = obj ? obj : type;
 	c->Method = method->Name();
@@ -390,7 +395,8 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 	if ((v->Flags & ElementFlags::Class) != ElementFlags::Class)
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, format("'{}' is not a class name in scope", expr->ClassName()));
 
-	auto type = m_Runtime.GetObjectType(v->VarValue.AsAstNode());
+	assert(v->VarValue.IsObject());
+	auto type = reinterpret_cast<ObjectType*>(v->VarValue.AsObject());
 	std::vector<Value> args;
 	for (auto& arg : expr->Args())
 		args.push_back(Eval(arg.get()));

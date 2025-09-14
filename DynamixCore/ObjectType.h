@@ -79,6 +79,9 @@ namespace Dynamix {
 
 		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
 		virtual void DestroyObject(RuntimeObject* object);
+		bool IsObjectType() const override {
+			return true;
+		}
 
 		// instance 
 		Value Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;

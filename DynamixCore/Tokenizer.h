@@ -16,7 +16,7 @@ namespace Dynamix {
 		bool AddTokens(std::initializer_list<std::pair<std::string_view, TokenType>> tokens);
 
 		Token Next();
-		Token Peek();
+		Token const& Peek();
 
 		std::string_view TokenTypeToString(TokenType type) const;
 
@@ -25,6 +25,7 @@ namespace Dynamix {
 		}
 
 	private:
+		bool IsNextChars(std::string_view chars);
 		bool ProcessSingleLineComment();
 		void EatWhitespace();
 		Token ParseIdentifier();
@@ -32,6 +33,7 @@ namespace Dynamix {
 		Token ParseOperator();
 		Token ParseString(bool raw);
 
+		Token m_Next;
 		int m_Line;
 		uint16_t m_Col{ 1 };
 		std::unordered_map<std::string_view, TokenType> m_TokenTypes;
@@ -39,6 +41,8 @@ namespace Dynamix {
 		std::string_view m_Text;
 		const char* m_Current{ nullptr };
 		std::string_view m_CommentToEndOfLine{ "//" };
+		std::string_view m_MultiLineCommentStart{ "/*" }, m_MultiLineCommentEnd{ "*/" };
+		int m_MultiLineCommentNesting;
 	};
 }
 

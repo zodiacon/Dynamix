@@ -140,7 +140,6 @@ std::unique_ptr<Statements> Parser::Parse(string_view text, bool repl, int line)
 	if (!m_Tokenizer.Tokenize(text, line))
 		return nullptr;
 
-	m_NextToken.Type = TokenType::Invalid;
 	m_Errors.clear();
 	return DoParse();
 }
@@ -187,15 +186,11 @@ unique_ptr<Statements> Parser::DoParse() {
 }
 
 Token Parser::Next() {
-	auto next = m_Tokenizer.Next();
-	m_NextToken.Type = TokenType::Invalid;
-	return next;
+	return m_Tokenizer.Next();
 }
 
 Token const& Parser::Peek() const {
-	if (m_NextToken.Type == TokenType::Invalid)
-		m_NextToken = m_Tokenizer.Peek();
-	return m_NextToken;
+	return m_Tokenizer.Peek();
 }
 
 bool Parser::SkipTo(TokenType type) {

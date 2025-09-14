@@ -96,7 +96,7 @@ namespace Dynamix {
 	};
 
 	struct Token final {
-		TokenType Type;
+		TokenType Type{ TokenType::Invalid };
 		std::string Lexeme;
 		int Line;
 		uint16_t Col;
@@ -106,6 +106,15 @@ namespace Dynamix {
 		};
 		std::string_view TypeToString() const;
 		static std::string_view TypeToString(TokenType type);
+		bool IsValid() const {
+			return Type != TokenType::Invalid;
+		}
+		operator bool() const {
+			return IsValid();
+		}
+		void Clear() {
+			Type = TokenType::Invalid;
+		}
 	};
 }
 
