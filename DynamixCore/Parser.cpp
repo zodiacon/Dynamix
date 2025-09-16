@@ -46,6 +46,8 @@ bool Parser::Init() {
 		{ "breakout", TokenType::BreakOut },
 		{ "match", TokenType::Match },
 		{ "this", TokenType::This },
+		{ "case", TokenType::Case },
+		{ "default", TokenType::Default },
 
 		{ "$include", TokenType::MetaInclude },
 		{ "$default", TokenType::MetaDefault },
@@ -84,6 +86,8 @@ bool Parser::Init() {
 		{ "&=", TokenType::Assign_And },
 		{ "|=", TokenType::Assign_Or },
 		{ "^=", TokenType::Assign_Xor },
+		{ "..", TokenType::DotDot },
+		{ "..=", TokenType::DotDotInclusive },
 		}))
 		return false;
 
@@ -131,6 +135,8 @@ bool Parser::Init() {
 	AddParslet(TokenType::Colon, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());
+	AddParslet(TokenType::DotDot, make_unique<RangeParslet>());
+	AddParslet(TokenType::DotDotInclusive, make_unique<RangeParslet>());
 
 	return true;
 }
@@ -374,7 +380,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
 	Next();		// eat repeat keyword
 	bool empty = Match(TokenType::OpenBrace, false);
-	auto times = empty ? make_unique<LiteralExpression>(Token { TokenType::True }) : ParseExpression();
+	auto times = empty ? make_unique<LiteralExpression>(true) : ParseExpression();
 	if (!times)
 		return nullptr;
 	auto body = ParseBlock();
@@ -561,12 +567,12 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 			}
 			else {
 				auto literal = reinterpret_cast<LiteralExpression*>(value.get());
-				if (literal->Literal().Type != TokenType::Integer) {
+				if (!literal->Literal().IsInteger()) {
 					AddError(ParseError(ParseErrorType::IllegalExpression, Peek(), "Expression must be an Integer"));
 					error = true;
 				}
 				else
-					current = strtoll(literal->Literal().Lexeme.c_str(), nullptr, 0);
+					current = literal->Literal().AsInteger();
 			}
 		}
 		if (!error)

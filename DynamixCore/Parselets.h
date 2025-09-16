@@ -8,8 +8,14 @@ namespace Dynamix {
 	struct Token;
 
 	struct InfixParslet {
+		explicit InfixParslet(int precedence = 0) noexcept : m_Precedence(precedence) {}
 		virtual std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) = 0;
-		virtual int Precedence() const = 0;
+		virtual int Precedence() const noexcept {
+			return m_Precedence;
+		}
+
+	protected:
+		int m_Precedence;
 	};
 
 	struct PrefixParslet {
@@ -37,14 +43,14 @@ namespace Dynamix {
 
 	struct GroupParslet : PrefixParslet {
 		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
-		int Precedence() const override;
+		int Precedence() const noexcept override;
 	};
 
 	struct PrefixOperatorParslet : PrefixParslet {
 		explicit PrefixOperatorParslet(int precedence);
 
 		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
-		int Precedence() const override;
+		int Precedence() const noexcept override;
 
 	private:
 		int m_Precedence;
@@ -52,7 +58,7 @@ namespace Dynamix {
 
 	struct PostfixOperatorParslet : InfixParslet {
 		explicit PostfixOperatorParslet(int precedence);
-		int Precedence() const override;
+		int Precedence() const noexcept override;
 
 	private:
 		int m_Precedence;
@@ -73,10 +79,15 @@ namespace Dynamix {
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
 	};
 
+	struct RangeParslet : PostfixOperatorParslet {
+		RangeParslet() : PostfixOperatorParslet(1260) {}
+		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
+	};
+
 	struct BinaryOperatorParslet : InfixParslet {
 		explicit BinaryOperatorParslet(int precedence, bool right = false);
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
-		int Precedence() const override;
+		int Precedence() const noexcept override;
 
 	private:
 		int m_Precedence;
@@ -85,10 +96,14 @@ namespace Dynamix {
 
 	struct AssignParslet : InfixParslet {
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
-		int Precedence() const override;
+		int Precedence() const noexcept override;
 	};
 
 	struct IfThenElseParslet : PrefixParslet {
+		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
+	};
+
+	struct MatchParslet : PrefixParslet {
 		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
 	};
 

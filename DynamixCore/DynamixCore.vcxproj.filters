@@ -24,9 +24,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Token.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AstNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,6 +87,12 @@
     <ClInclude Include="ObjectType.h">
       <Filter>Execution</Filter>
     </ClInclude>
+    <ClInclude Include="RangeType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="Token.h">
+      <Filter>Parsing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Token.cpp">
@@ -148,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="ObjectType.cpp">
       <Filter>Execution</Filter>
+    </ClCompile>
+    <ClCompile Include="RangeType.cpp">
+      <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

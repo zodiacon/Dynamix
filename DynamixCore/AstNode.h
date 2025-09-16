@@ -115,6 +115,34 @@ namespace Dynamix {
 		Token m_Operator;
 	};
 
+	class MatchCaseExpression {
+	public:
+		MatchCaseExpression(bool defaultCase = false) noexcept : m_Default(defaultCase) {}
+
+	private:
+		bool m_Default;
+	};
+
+	class MatchExpression : public Expression {
+	public:
+		explicit MatchExpression(std::unique_ptr<Expression> expr) noexcept : m_Expr(std::move(expr)) {}
+		Value Accept(Visitor* visitor) const override;
+		void AddCase(MatchCaseExpression expr) noexcept {
+			m_Cases.push_back(std::move(expr));
+		}
+
+		std::vector<MatchCaseExpression> const& Cases() const noexcept {
+			return m_Cases;
+		}
+		Expression const* ToMatch() const noexcept {
+			return m_Expr.get();
+		}
+
+	private:
+		std::unique_ptr<Expression> m_Expr;
+		std::vector<MatchCaseExpression> m_Cases;
+	};
+
 	class AccessArrayExpression : public Expression {
 	public:
 		AccessArrayExpression(std::unique_ptr<Expression> left, std::unique_ptr<Expression> index) noexcept;
@@ -320,17 +348,36 @@ namespace Dynamix {
 
 	class LiteralExpression : public Expression {
 	public:
-		explicit LiteralExpression(Token token);
+		explicit LiteralExpression(Value value) noexcept;
 		Value Accept(Visitor* visitor) const override;
 
 		std::string ToString() const override;
-		Token const& Literal() const noexcept;
+		Value const& Literal() const noexcept;
 		AstNodeType Type() const noexcept override {
 			return AstNodeType::Literal;
 		}
 
 	private:
-		Token m_Token;
+		Value m_Value;
+	};
+
+	class RangeExpression : public Expression {
+	public:
+		RangeExpression(std::unique_ptr<Expression> start, std::unique_ptr<Expression> end, bool endInclusive = false) noexcept;
+		Value Accept(Visitor* visitor) const override;
+		Expression const* Start() const noexcept {
+			return m_Start.get();
+		}
+		Expression const* End() const noexcept {
+			return m_End.get();
+		}
+		bool EndInclusive() const noexcept {
+			return m_EndInclusive;
+		}
+
+	private:
+		std::unique_ptr<Expression> m_Start, m_End;
+		bool m_EndInclusive;
 	};
 
 	class EnumValueExpression : public Expression {

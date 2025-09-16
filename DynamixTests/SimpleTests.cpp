@@ -25,8 +25,8 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE_FALSE(varStmt->IsConst());
         auto literal = dynamic_cast<const LiteralExpression*>(varStmt->Init());
         REQUIRE(literal != nullptr);
-        REQUIRE(literal->Literal().Type == TokenType::Integer);
-        REQUIRE(literal->Literal().Lexeme == "1");
+        REQUIRE(literal->Literal().IsInteger());
+        REQUIRE(literal->Literal().AsInteger() == 1);
     }
 
     SECTION("Parse const val statement and check AST") {
@@ -40,8 +40,8 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(valStmt->IsConst());
         auto* literal = dynamic_cast<const LiteralExpression*>(valStmt->Init());
         REQUIRE(literal != nullptr);
-        REQUIRE(literal->Literal().Type == TokenType::Integer);
-        REQUIRE(literal->Literal().Lexeme == "42");
+        REQUIRE(literal->Literal().IsInteger());
+        REQUIRE(literal->Literal().AsInteger() == 42);
     }
 
     SECTION("Parse function declaration and check AST") {
@@ -76,7 +76,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(whileStmt != nullptr);
         auto* cond = dynamic_cast<const LiteralExpression*>(whileStmt->Condition());
         REQUIRE(cond != nullptr);
-        REQUIRE(cond->Literal().Type == TokenType::True);
+        REQUIRE(cond->Literal().ToBoolean() == true);
         auto* body = whileStmt->Body();
         REQUIRE(body != nullptr);
         REQUIRE(body->Get().size() == 1);
@@ -109,7 +109,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(retStmt != nullptr);
         auto* literal = dynamic_cast<const LiteralExpression*>(retStmt->ReturnValue());
         REQUIRE(literal != nullptr);
-        REQUIRE(literal->Literal().Lexeme == "123");
+        REQUIRE(literal->Literal().ToInteger() == 123);
     }
 
     SECTION("Parse binary expression and check AST") {
@@ -125,8 +125,8 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         auto* right = dynamic_cast<const LiteralExpression*>(binExpr->Right());
         REQUIRE(left != nullptr);
         REQUIRE(right != nullptr);
-        REQUIRE(left->Literal().Lexeme == "1");
-        REQUIRE(right->Literal().Lexeme == "2");
+        REQUIRE(left->Literal().ToInteger() == 1);
+        REQUIRE(right->Literal().ToInteger() == 2);
         REQUIRE(binExpr->Operator().Type == TokenType::Plus);
     }
 }

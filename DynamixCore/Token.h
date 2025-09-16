@@ -20,6 +20,8 @@ namespace Dynamix {
 
 		If = Keyword,
 		Else,
+		Case,
+		Default,
 		Fn,
 		Return,
 		While,
@@ -90,6 +92,8 @@ namespace Dynamix {
 		LessThan,
 		GreaterThanOrEqual,
 		LessThanOrEqual,
+		DotDot,
+		DotDotInclusive,
 
 		MetaInclude,
 		MetaDefault,

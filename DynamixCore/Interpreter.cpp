@@ -39,7 +39,7 @@ void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor
 }
 
 Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
-	return Value::FromToken(expr->Literal());
+	return expr->Literal();
 }
 
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {

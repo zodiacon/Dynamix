@@ -150,6 +150,11 @@ Token Tokenizer::ParseIdentifier() {
 Token Tokenizer::ParseNumber() {
 	char* pd, * pi;
 	auto dvalue = strtod(m_Current, &pd);
+	bool integer = false;
+	if (*pd == '.' && *(pd - 1) == '.') {
+		integer = true;
+	}
+		
 	int base = 10;
 	int startLen = 0;
 	if (*m_Current == '0') {
@@ -163,7 +168,7 @@ Token Tokenizer::ParseNumber() {
 	}
 	auto ivalue = strtoll(m_Current, &pi, base);
 	assert(pd && pi);
-	auto type = pd > pi ? TokenType::Real : TokenType::Integer;
+	auto type = pd > pi && !integer ? TokenType::Real : TokenType::Integer;
 	auto len = int(type == TokenType::Real ? pd - m_Current : pi - m_Current);
 	m_Col += (int)len + startLen;
 	m_Current += len;

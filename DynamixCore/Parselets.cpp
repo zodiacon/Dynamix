@@ -24,15 +24,15 @@ BinaryOperatorParslet::BinaryOperatorParslet(int precedence, bool right) : m_Pre
 PrefixOperatorParslet::PrefixOperatorParslet(int precedence) : m_Precedence(precedence) {
 }
 
-int BinaryOperatorParslet::Precedence() const {
+int BinaryOperatorParslet::Precedence() const noexcept {
 	return m_Precedence;
 }
 
-int PrefixOperatorParslet::Precedence() const {
+int PrefixOperatorParslet::Precedence() const noexcept {
 	return m_Precedence;
 }
 
-int PostfixOperatorParslet::Precedence() const {
+int PostfixOperatorParslet::Precedence() const noexcept {
 	return m_Precedence;
 }
 
@@ -55,7 +55,7 @@ unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const&
 }
 
 unique_ptr<Expression> LiteralParslet::Parse(Parser& parser, Token const& token) {
-	return make_unique<LiteralExpression>(token);
+	return make_unique<LiteralExpression>(Value::FromToken(token));
 }
 
 unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
@@ -63,7 +63,7 @@ unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, unique_ptr<E
 	return make_unique<BinaryExpression>(move(left), token, move(right));
 }
 
-int GroupParslet::Precedence() const {
+int GroupParslet::Precedence() const noexcept {
 	return 1000;
 }
 
@@ -75,7 +75,7 @@ unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 
 unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	auto right = parser.ParseExpression(Precedence() - 1);
-	if(left->Type() == AstNodeType::Name)
+	if (left->Type() == AstNodeType::Name)
 		return make_unique<AssignExpression>(reinterpret_cast<NameExpression const*>(left.get())->Name(), move(right), token);
 
 	if (left->Type() == AstNodeType::ArrayAccess) {
@@ -89,7 +89,7 @@ unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expressio
 	return nullptr;
 }
 
-int AssignParslet::Precedence() const {
+int AssignParslet::Precedence() const noexcept {
 	return 2;
 }
 
@@ -198,3 +198,44 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 	return make_unique<NewObjectExpression>(move(ident.Lexeme), move(args));
 }
 
+unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
+	auto expr = parser.ParseExpression();
+	if (!expr)
+		return nullptr;
+
+	parser.Match(TokenType::OpenBrace, true, true);
+
+	auto next = parser.Peek();
+	std::vector<MatchCaseExpression> cases;
+	auto match = make_unique<MatchExpression>(move(expr));
+
+	while (next.Type != TokenType::CloseBrace) {
+		switch (next.Type) {
+			case TokenType::Case:
+				parser.Next();		// eat case
+				while (parser.Peek().Type != TokenType::Colon) {
+
+				}
+				break;
+
+			case TokenType::Default:
+				break;
+
+			default:
+				parser.AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(next), "Expected 'case' or 'default'"));
+				parser.Next();
+				break;
+		}
+
+	}
+	return match;
+}
+
+unique_ptr<Expression> RangeParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
+	assert(token.Type == TokenType::DotDot || token.Type == TokenType::DotDotInclusive);
+	auto end = parser.ParseExpression();
+	if (!end)
+		return nullptr;
+
+	return make_unique<RangeExpression>(move(left), move(end), token.Type == TokenType::DotDotInclusive);
+}

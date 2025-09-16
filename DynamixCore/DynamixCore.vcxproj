@@ -141,6 +141,7 @@
     <ClInclude Include="Interpreter.h" />
     <ClInclude Include="NoCopyMove.h" />
     <ClInclude Include="print.h" />
+    <ClInclude Include="RangeType.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="RuntimeObject.h" />
     <ClInclude Include="ObjectType.h" />
@@ -162,6 +163,7 @@
     <ClCompile Include="AstNode.cpp" />
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="Print.cpp" />
+    <ClCompile Include="RangeType.cpp" />
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="RuntimeObject.cpp" />
     <ClCompile Include="ObjectType.cpp" />

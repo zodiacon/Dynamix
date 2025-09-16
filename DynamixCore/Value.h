@@ -127,6 +127,11 @@ namespace Dynamix {
 			return m_Type == ValueType::Callable;
 		}
 
+		Int AsInteger() const noexcept {
+			assert(m_Type == ValueType::Integer);
+			return iValue;
+		}
+
 		Int ToInteger() const;
 		Bool ToBoolean() const;
 		Real ToReal() const;

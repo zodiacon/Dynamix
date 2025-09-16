@@ -53,7 +53,7 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
         REQUIRE(left != nullptr);
         REQUIRE(right != nullptr);
         REQUIRE(left->Name() == "n");
-        REQUIRE(right->Literal().Lexeme == "0");
+        REQUIRE(right->Literal().ToInteger() == 0);
 
         // Then branch: return 1;
         auto thenBlock = reinterpret_cast<const Statements*>(ifExpr->Then());
@@ -63,7 +63,7 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
         REQUIRE(thenReturn != nullptr);
         auto thenLiteral = reinterpret_cast<const LiteralExpression*>(thenReturn->ReturnValue());
         REQUIRE(thenLiteral != nullptr);
-        REQUIRE(thenLiteral->Literal().Lexeme == "1");
+        REQUIRE(thenLiteral->Literal().ToInteger() == 1);
     }
 
     // Second statement: return n * fact(n - 1);
@@ -94,6 +94,6 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
         REQUIRE(argLeft != nullptr);
         REQUIRE(argRight != nullptr);
         REQUIRE(argLeft->Name() == "n");
-        REQUIRE(argRight->Literal().Lexeme == "1");
+        REQUIRE(argRight->Literal().ToInteger() == 1);
     }
 }

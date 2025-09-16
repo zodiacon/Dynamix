@@ -77,5 +77,3 @@ namespace Dynamix {
 		bool m_Repl{ false };
 	};
 }
-
-

@@ -57,7 +57,7 @@ Expression* BinaryExpression::Right() const noexcept {
 	return m_Right.get();
 }
 
-LiteralExpression::LiteralExpression(Token token) : m_Token(move(token)) {
+LiteralExpression::LiteralExpression(Value value) noexcept : m_Value(move(value)) {
 }
 
 Value LiteralExpression::Accept(Visitor* visitor) const {
@@ -65,11 +65,11 @@ Value LiteralExpression::Accept(Visitor* visitor) const {
 }
 
 string LiteralExpression::ToString() const {
-	return m_Token.Lexeme;
+	return m_Value.ToString();
 }
 
-Token const& LiteralExpression::Literal() const noexcept {
-	return m_Token;
+Value const& LiteralExpression::Literal() const noexcept {
+	return m_Value;
 }
 
 NameExpression::NameExpression(string name, string ns) : m_Name(move(name)), m_NameSpace(move(ns)) {
@@ -502,4 +502,16 @@ EnumValueExpression::EnumValueExpression(unique_ptr<Expression> left, Token valu
 
 Value EnumValueExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitEnumValue(this);
+}
+
+RangeExpression::RangeExpression(unique_ptr<Expression> start, unique_ptr<Expression> end, bool endInclusive) noexcept 
+	: m_Start(move(start)), m_End(move(end)), m_EndInclusive(endInclusive) {
+}
+
+Value RangeExpression::Accept(Visitor* visitor) const {
+	return Value();
+}
+
+Value MatchExpression::Accept(Visitor* visitor) const {
+	return Value();
 }
