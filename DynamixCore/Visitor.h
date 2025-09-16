@@ -30,7 +30,7 @@ namespace Dynamix {
 	class NewObjectExpression;
 	class AssignFieldExpression;
 	class ForEachStatement;
-	class EnumValueExpression;
+	class RangeExpression;
 
 	class Visitor {
 	public:
@@ -62,6 +62,6 @@ namespace Dynamix {
 		virtual Value VisitNewObjectExpression(NewObjectExpression const* expr) = 0;
 		virtual Value VisitAssignField(AssignFieldExpression const* expr) = 0;
 		virtual Value VisitForEach(ForEachStatement const* stmt) = 0;
-		virtual Value VisitEnumValue(EnumValueExpression const* expr) = 0;
+		virtual Value VisitRange(RangeExpression const* expr) = 0;
 	};
 }

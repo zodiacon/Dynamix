@@ -380,22 +380,6 @@ namespace Dynamix {
 		bool m_EndInclusive;
 	};
 
-	class EnumValueExpression : public Expression {
-	public:
-		EnumValueExpression(std::unique_ptr<Expression> left, Token value) noexcept;
-		Value Accept(Visitor* visitor) const override;
-		Token const& Value() const noexcept {
-			return m_Value;
-		}
-		Expression const* Left() const noexcept {
-			return m_Left.get();
-		}
-
-	private:
-		std::unique_ptr<Expression> m_Left;
-		Token m_Value;
-	};
-
 	class InvokeFunctionExpression : public Expression {
 	public:
 		InvokeFunctionExpression(std::unique_ptr<Expression> callable, std::vector<std::unique_ptr<Expression>> args);

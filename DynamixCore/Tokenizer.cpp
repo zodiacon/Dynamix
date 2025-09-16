@@ -28,13 +28,6 @@ bool Tokenizer::AddTokens(initializer_list<pair<string_view, TokenType>> tokens)
 }
 
 Token Tokenizer::Next() {
-	if (m_Next) {
-		auto next = m_Next;
-		m_Next.Clear();
-		return next;
-	}
-
-	EatWhitespace();
 	while (m_MultiLineCommentNesting > 0) {
 		if (IsNextChars(m_MultiLineCommentEnd))
 			--m_MultiLineCommentNesting;
@@ -42,12 +35,24 @@ Token Tokenizer::Next() {
 			++m_MultiLineCommentNesting;
 		else if (*m_Current == 0)
 			return Token{ TokenType::End };
-		m_Col++;
-		if (*++m_Current == '\n') {
-			m_Col = 1;
-			m_Line++;
+		else {
+			m_Col++;
+			if (*++m_Current == '\n') {
+				m_Col = 1;
+				m_Line++;
+			}
 		}
 	}
+
+	if (m_Next) {
+		auto next = m_Next;
+		m_Next.Clear();
+		return next;
+	}
+
+	EatWhitespace();
+	if (m_MultiLineCommentNesting > 0)
+		return Next();
 
 	auto ch = *m_Current;
 	if (ch == 0)
@@ -83,7 +88,8 @@ std::string_view Tokenizer::TokenTypeToString(TokenType type) const {
 bool Tokenizer::IsNextChars(string_view chars) {
 	auto current = m_Current;
 	int i = 0;
-	while (*current && *current++ == chars[i]) {
+	while (*current && *current == chars[i]) {
+		current++;
 		if (++i == chars.length()) {
 			m_Current = current;
 			return true;

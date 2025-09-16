@@ -497,19 +497,12 @@ Value ForEachStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitForEach(this);
 }
 
-EnumValueExpression::EnumValueExpression(unique_ptr<Expression> left, Token value) noexcept : m_Left(move(left)), m_Value(move(value)) {
-}
-
-Value EnumValueExpression::Accept(Visitor* visitor) const {
-	return visitor->VisitEnumValue(this);
-}
-
 RangeExpression::RangeExpression(unique_ptr<Expression> start, unique_ptr<Expression> end, bool endInclusive) noexcept 
 	: m_Start(move(start)), m_End(move(end)), m_EndInclusive(endInclusive) {
 }
 
 Value RangeExpression::Accept(Visitor* visitor) const {
-	return Value();
+	return visitor->VisitRange(this);
 }
 
 Value MatchExpression::Accept(Visitor* visitor) const {

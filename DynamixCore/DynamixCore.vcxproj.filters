@@ -95,9 +95,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Token.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AstNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -154,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="RangeType.cpp">
       <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="Token.cpp">
+      <Filter>Parsing</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

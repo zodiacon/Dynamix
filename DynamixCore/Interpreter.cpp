@@ -7,6 +7,7 @@
 #include "Runtime.h"
 #include "SymbolTable.h"
 #include "ArrayType.h"
+#include "RangeType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -435,23 +436,15 @@ Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
 	return Value();
 }
 
-Value Interpreter::VisitEnumValue(EnumValueExpression const* expr) {
-	auto left = Eval(expr->Left());
-	if (!left.IsAstNode())
-		throw RuntimeError(RuntimeErrorType::Syntax, "Syntax error", expr->Location());
+Value Interpreter::VisitRange(RangeExpression const* expr) {
+	auto start = Eval(expr->Start());
+	if (!start.IsInteger())
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Range start must be an Integer", expr->Start()->Location());
 
-	auto node = left.AsAstNode();
-	switch (node->Type()) {
-		case AstNodeType::EnumDeclararion:
-		{
-			auto decl = reinterpret_cast<EnumDeclaration const*>(node);
-			if (auto it = decl->Values().find(expr->Value().Lexeme); it != decl->Values().end())
-				return it->second;
-			throw RuntimeError(RuntimeErrorType::UnknownMember, format("Undefined enum element '{}'", expr->Value().Lexeme), expr->Location());
-		}
-		case AstNodeType::ClassDeclaration:
-			return node;
-	}
+	auto end = Eval(expr->End());
+	if (!end.IsInteger())
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Range end must be an Integer", expr->End()->Location());
 
-	throw RuntimeError(RuntimeErrorType::Syntax, "Unknown type", expr->Location());
+	return RangeType::Get()->CreateRange(start.AsInteger(), end.AsInteger() + (expr->EndInclusive() ? 1 : 0));
 }
+
