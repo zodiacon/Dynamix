@@ -22,21 +22,12 @@
     <Filter Include="Execution">
       <UniqueIdentifier>{a8ff446e-ae01-42a9-9e5a-f64e3df6dbee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{8cd473bb-1d66-4236-9975-5b6e88af8df2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AstNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SmallString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Value.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Visitor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SymbolTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EnumClassBitwise.h">
@@ -72,9 +63,6 @@
     <ClInclude Include="StringType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
-    <ClInclude Include="CoreInterfaces.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VectorEnumerator.h">
       <Filter>StdLib</Filter>
     </ClInclude>
@@ -93,21 +81,30 @@
     <ClInclude Include="Token.h">
       <Filter>Parsing</Filter>
     </ClInclude>
+    <ClInclude Include="SliceType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="AstNode.h">
+      <Filter>Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="CoreInterfaces.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Visitor.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Value.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectPtr.h">
+      <Filter>Execution</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolTable.h">
+      <Filter>Parsing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AstNode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SmallString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Value.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Visitor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SymbolTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Print.cpp">
@@ -154,6 +151,21 @@
     </ClCompile>
     <ClCompile Include="Token.cpp">
       <Filter>Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="SliceType.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="AstNode.cpp">
+      <Filter>Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolTable.cpp">
+      <Filter>Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="Visitor.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Value.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

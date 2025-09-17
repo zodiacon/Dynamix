@@ -41,6 +41,7 @@ bool ObjectType::AddField(std::unique_ptr<FieldInfo> field) {
 	if(field->IsStatic()) {
 		m_FieldValues.insert({ field->Name(), Value() });
 	}
+	m_Members.insert({ field->Name(), field.get() });
 	return m_Fields.insert({ field->Name(), std::move(field) }).second;
 }
 
@@ -50,11 +51,17 @@ bool ObjectType::AddMethod(std::unique_ptr<MethodInfo> method) {
 	}
 	auto clone = std::make_unique<MethodInfo>(method->Name());
 	clone->Flags = method->Flags;
-	m_Methods.insert({ method->Name(), move(clone) });
+	m_Members.insert({ method->Name(), clone.get() });
+	m_Methods.insert({ method->Name(), std::move(clone) });
 
 	if (method->Arity >= 0)
 		return m_Methods.insert({ method->Arity < 0 ? method->Name() : std::format("{}/{}", method->Name(), method->Arity), std::move(method) }).second;
 	return false;
+}
+
+bool ObjectType::AddType(ObjectPtr<ObjectType> type) {
+	m_Members.insert({ type->Name(), type });
+	return m_Types.insert({ type->Name(), std::move(type) }).second;
 }
 
 FieldInfo const* ObjectType::GetField(std::string const& name) const {
@@ -88,13 +95,21 @@ void ObjectType::SetStaticField(std::string const& name, Value value) {
 	m_FieldValues[name] = std::move(value);
 }
 
+void ObjectType::ObjectCreated(RuntimeObject* obj) {
+	m_ObjectCount++;
+}
+
+void ObjectType::ObjectDestroyed(RuntimeObject* obj) {
+	m_ObjectCount--;
+}
+
 void ObjectType::DestroyObject(RuntimeObject* instance) {
 	instance->Destruct();
 	delete instance;
 }
 
 ObjectType::ObjectType(std::string name, ObjectType* base)
-	: RuntimeObject(this), MemberInfo(name, MemberType::Class), m_Base(base) {
+	: RuntimeObject(this), MemberInfo(move(name), MemberType::Class), m_Base(base) {
 }
 
 RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {

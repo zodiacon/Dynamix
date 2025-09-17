@@ -215,7 +215,7 @@ bool Parser::Match(TokenType type, bool consume, bool errorIfNotFound) {
 		Next();
 		return true;
 	}
-	if (errorIfNotFound)
+	if (!found && errorIfNotFound)
 		AddError(ParseError(ParseErrorType::Expected, next, format("'{}' expected", m_Tokenizer.TokenTypeToString(type))));
 	return found;
 }
@@ -622,8 +622,9 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	return stmt;
 }
 
-unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
-	Next();		// eat class keyword
+unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration const* parent) {
+	if(!parent)
+		Next();		// eat class keyword
 	auto name = Next();
 	if (name.Type != TokenType::Identifier)
 		AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(name), "Expected: identifier"));
@@ -633,10 +634,11 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	}
 
 	Match(TokenType::OpenBrace, true, true);
-	auto decl = make_unique<ClassDeclaration>(move(name.Lexeme));
+	auto decl = make_unique<ClassDeclaration>(move(name.Lexeme), parent);
 	PushScope(decl.get());
 	vector<unique_ptr<FunctionDeclaration>> methods;
 	vector<unique_ptr<Statement>> fields;
+	vector<unique_ptr<ClassDeclaration>> types;
 	auto extraFlags = SymbolFlags::None;
 
 	while (Peek().Type != TokenType::CloseBrace) {
@@ -665,7 +667,14 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 			}
 			case TokenType::Class:
 				Next();		// eat class keyword
-				extraFlags = SymbolFlags::Static;
+				if (Peek().Type == TokenType::Identifier) {
+					auto nested = ParseClassDeclaration(decl.get());
+					if (nested)
+						types.push_back(move(nested));
+				}
+				else {
+					extraFlags = SymbolFlags::Static;
+				}
 				break;
 
 			default:
@@ -678,6 +687,7 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration() {
 	PopScope();
 	decl->SetMethods(move(methods));
 	decl->SetFields(move(fields));
+	decl->SetTypes(move(types));
 	return move(decl);
 }
 

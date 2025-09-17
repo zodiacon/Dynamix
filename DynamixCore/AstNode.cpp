@@ -460,7 +460,7 @@ string ExpressionStatement::ToString() const {
 	return Expr()->ToString();
 }
 
-ClassDeclaration::ClassDeclaration(std::string name) noexcept : m_Name(move(name)) {
+ClassDeclaration::ClassDeclaration(std::string name, ClassDeclaration const* parent) noexcept : m_Name(move(name)), m_Parent(parent) {
 }
 
 Value ClassDeclaration::Accept(Visitor* visitor) const {

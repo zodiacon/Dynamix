@@ -183,6 +183,14 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 		parser.AddError(ParseError(ParseErrorType::IllegalExpression, CodeLocation::FromToken(ident), "Class name expected after 'new'"));
 		return nullptr;
 	}
+	while (parser.Peek().Type == TokenType::Colon) {
+		ident.Lexeme += ":";
+		parser.Next();
+		if (!parser.Match(TokenType::Identifier, false, true))
+			break;
+		ident.Lexeme += parser.Next().Lexeme;
+	}
+
 	parser.Match(TokenType::OpenParen, true, true);
 
 	vector<unique_ptr<Expression>> args;

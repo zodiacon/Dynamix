@@ -381,10 +381,16 @@ Value Interpreter::VisitAssignArrayIndex(AssignArrayIndexExpression const* expr)
 }
 
 Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
-	auto type = m_Runtime.GetObjectType(decl, this);
-	Element v{ type, ElementFlags::Class };
-	CurrentScope()->AddElement(decl->Name(), move(v));
+	auto type = m_Runtime.BuildType(decl, this);
+	Element v{ type.Get(), ElementFlags::Class };
+	auto name = decl->Name();
+	if (decl->Parent())
+		name = decl->Parent()->Name() + ":" + name;
 
+	CurrentScope()->AddElement(name, move(v));
+	for (auto& t : decl->Types()) {
+		VisitClassDeclaration(t.get());
+	}
 	return Value();
 }
 

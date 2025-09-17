@@ -210,7 +210,6 @@ namespace Dynamix {
 			ValueErrorType error;
 			char* strValue;
 			NativeFunction fValue;
-			Value* ptrValue;
 		};
 		union {
 			struct {

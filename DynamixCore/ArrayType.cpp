@@ -28,10 +28,18 @@ void ArrayObject::AssignIndexer(Value const& index, Value const& value, TokenTyp
 	m_Items[i].Assign(value, assign);
 }
 
+void ArrayObject::Reverse() {
+	std::reverse(m_Items.begin(), m_Items.end());
+}
+
 Int ArrayObject::ValidateIndex(Int i) const {
 	if (i < 0 || i >= (Int)m_Items.size())
 		throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} is out of range (array size: {})", i, m_Items.size()));
 	return i;
+}
+
+SliceObject* ArrayObject::Slice(Int start, Int count) {
+	return nullptr;
 }
 
 ArrayType::ArrayType() : ObjectType("Array") {
@@ -57,12 +65,23 @@ ArrayType::ArrayType() : ObjectType("Array") {
 				GetInstance<ArrayObject>(args[0])->Clear();
 				return Value();
 				} },
+		{ "Clone", 0,
+			[](auto, auto& args) -> Value {
+				assert(args.size() == 1);
+				return GetInstance<ArrayObject>(args[0])->Clone();
+				} },
+		{ "Reverse", 0,
+			[](auto, auto& args) -> Value {
+				assert(args.size() == 1);
+				auto inst = GetInstance<ArrayObject>(args[0]);
+				inst->Reverse();
+				return inst;
+				} },
 		{ "Add", 1,
 			[](auto, auto& args) -> Value {
 				assert(args.size() == 2);
 				return GetInstance<ArrayObject>(args[0])->Add(args[1]);
 			} },
-
 		{ "Append", 1,
 			[](auto, auto& args) -> Value {
 				assert(args.size() == 2);
@@ -93,9 +112,15 @@ std::unique_ptr<IEnumerator> ArrayObject::GetEnumerator() const {
 	return std::make_unique<VectorEnumerator>(m_Items);
 }
 
+RuntimeObject* ArrayObject::Clone() const {
+	return new ArrayObject(m_Items);
+}
+
 void* ArrayObject::QueryService(ServiceId id) {
 	switch (id) {
 		case ServiceId::Enumerable: return static_cast<IEnumerable*>(this);
+		case ServiceId::Clonable: return static_cast<IClonable*>(this);
+		case ServiceId::Sliceable: return static_cast<ISliceable*>(this);
 	}
 	return nullptr;
 }

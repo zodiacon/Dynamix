@@ -7,6 +7,7 @@
 #include <string>
 #include "SymbolTable.h"
 #include "RuntimeObject.h"
+#include "ObjectPtr.h"
 
 namespace Dynamix {
 	class Interpreter;
@@ -40,11 +41,9 @@ namespace Dynamix {
 		std::string const& Name() const {
 			return m_Name;
 		}
-
 		MemberType Type() const {
 			return m_Type;
 		}
-
 		bool IsStatic() const;
 
 		MemberVisibility Visibility{ MemberVisibility::Public };
@@ -95,6 +94,8 @@ namespace Dynamix {
 
 		bool AddField(std::unique_ptr<FieldInfo> field);
 		bool AddMethod(std::unique_ptr<MethodInfo> method);
+		bool AddType(ObjectPtr<ObjectType> type);
+
 		FieldInfo const* GetField(std::string const& name) const;
 		MethodInfo const* GetMethod(std::string const& name, int8_t arity = -1) const;
 		MethodInfo const* GetClassConstructor() const;
@@ -117,11 +118,16 @@ namespace Dynamix {
 		}
 
 	private:
+		friend class RuntimeObject;
+		void ObjectCreated(RuntimeObject* obj);
+		void ObjectDestroyed(RuntimeObject* obj);
+
 		unsigned m_ObjectCount{ 0 };
 		std::unordered_map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;
-		std::string m_Name;
+		std::unordered_map<std::string, ObjectPtr<ObjectType>> m_Types;
+		std::unordered_map<std::string, MemberInfo*> m_Members;
 		ObjectType* m_Base;
 		bool m_ClassCtorRun{ false };
 	};

@@ -6,6 +6,7 @@
 #include "Value.h"
 #include "CoreInterfaces.h"
 #include "NoCopyMove.h"
+#include "ObjectPtr.h"
 
 namespace Dynamix {
 	class ObjectType;
@@ -25,6 +26,7 @@ namespace Dynamix {
 		explicit RuntimeObject(ObjectType* type);
 		RuntimeObject(RuntimeObject&& other) = default;
 		RuntimeObject& operator=(RuntimeObject&& other) = default;
+		virtual ~RuntimeObject() noexcept;
 
 		virtual void Construct(std::vector<Value> const& args);
 		virtual void Destruct();
@@ -58,5 +60,6 @@ namespace Dynamix {
 		int m_RefCount{ 1 };
 		ObjectType* m_Type;
 	};
+
 }
 

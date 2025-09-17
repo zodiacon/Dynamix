@@ -17,14 +17,12 @@ RuntimeError::RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation 
 ObjectType* Runtime::GetObjectType(AstNode const* classNode, Interpreter* intr) {
 	assert(classNode->Type() == AstNodeType::ClassDeclaration);
 	auto decl = reinterpret_cast<ClassDeclaration const*>(classNode);
-	auto it = m_Types.find(decl->Name());
-	if (it != m_Types.end())
-		return it->second.get();
+	auto type = BuildType(decl, intr);
+	return type.Get();
+}
 
-	//
-	// create a new type
-	//
-	auto type = make_unique<ObjectType>(decl->Name());
+ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpreter* intr) const {
+	auto type = new ObjectType(decl->Name());
 	for (auto& m : decl->Methods()) {
 		auto mi = std::make_unique<MethodInfo>(m->Name());
 		mi->Arity = (int8_t)m->Parameters().size();
@@ -48,7 +46,7 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode, Interpreter* intr) 
 			assert(intr);
 			type->SetStaticField(f->Name(), f->Init ? intr->Eval(f->Init) : Value());
 		}
-	};
+		};
 
 	for (auto& f : decl->Fields()) {
 		if (f->Type() == AstNodeType::VarValStatement) {
@@ -65,14 +63,10 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode, Interpreter* intr) 
 		}
 	}
 
-	auto p = type.get();
-	m_Types.insert({ decl->Name(), move(type) });
-
-	return p;
-}
-
-ObjectType* Runtime::GetObjectType(std::string const& name) {
-	return m_Types.at(name).get();
+	for (auto& t : decl->Types()) {
+		type->AddType(BuildType(t.get(), intr));
+	}
+	return type;
 }
 
 Runtime::Runtime(Parser& parser) : m_Parser(parser) {

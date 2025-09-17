@@ -478,7 +478,7 @@ namespace Dynamix {
 
 	class ClassDeclaration : public Statement {
 	public:
-		explicit ClassDeclaration(std::string name) noexcept;
+		explicit ClassDeclaration(std::string name, ClassDeclaration const* parent = nullptr) noexcept;
 		AstNodeType Type() const noexcept override {
 			return AstNodeType::ClassDeclaration;
 		}
@@ -489,12 +489,20 @@ namespace Dynamix {
 		void SetFields(std::vector<std::unique_ptr<Statement>> fields) noexcept {
 			m_Fields = std::move(fields);
 		}
-
+		void SetTypes(std::vector<std::unique_ptr<ClassDeclaration>> types) noexcept {
+			m_Types = std::move(types);
+		}
+		ClassDeclaration const* Parent() const noexcept {
+			return m_Parent;
+		}
 		std::vector<std::unique_ptr<FunctionDeclaration>> const& Methods() const noexcept {
 			return m_Methods;
 		}
 		std::vector<std::unique_ptr<Statement>> const& Fields() const noexcept {
 			return m_Fields;
+		}
+		std::vector<std::unique_ptr<ClassDeclaration>> const& Types() const noexcept {
+			return m_Types;
 		}
 		std::string const& Name() const {
 			return m_Name;
@@ -504,6 +512,8 @@ namespace Dynamix {
 		std::string m_Name;
 		std::vector<std::unique_ptr<FunctionDeclaration>> m_Methods;
 		std::vector<std::unique_ptr<Statement>> m_Fields;
+		std::vector<std::unique_ptr<ClassDeclaration>> m_Types;
+		ClassDeclaration const* m_Parent;
 	};
 
 	class EnumDeclaration : public Statement {

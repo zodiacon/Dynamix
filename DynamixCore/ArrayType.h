@@ -18,7 +18,7 @@ namespace Dynamix {
 		ArrayType();
 	};
 
-	class ArrayObject : public RuntimeObject, public IEnumerable {
+	class ArrayObject : public RuntimeObject, public IEnumerable, public IClonable, public ISliceable {
 	public:
 		ArrayObject(std::vector<Value> init);
 		std::vector<Value>& Items() noexcept {
@@ -26,6 +26,8 @@ namespace Dynamix {
 		}
 
 		std::unique_ptr<IEnumerator> GetEnumerator() const override;
+		RuntimeObject* Clone() const override;
+		SliceObject* Slice(Int start, Int count) override;
 
 		void* QueryService(ServiceId id) override;
 
@@ -49,7 +51,6 @@ namespace Dynamix {
 		Value InvokeIndexer(Value const& index) override;
 		void AssignIndexer(Value const& index, Value const& value, TokenType assign) override;
 
-		ArrayObject* Clone() const;
 		void Reverse();
 		void ForEach(AstNode const* code);
 
@@ -58,5 +59,6 @@ namespace Dynamix {
 
 	private:
 		std::vector<Value> m_Items;
+
 	};
 }

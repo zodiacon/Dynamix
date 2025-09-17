@@ -140,6 +140,7 @@
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="Interpreter.h" />
     <ClInclude Include="NoCopyMove.h" />
+    <ClInclude Include="ObjectPtr.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="RangeType.h" />
     <ClInclude Include="Runtime.h" />
@@ -149,6 +150,7 @@
     <ClInclude Include="Parselets.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Scope.h" />
+    <ClInclude Include="SliceType.h" />
     <ClInclude Include="SmallString.h" />
     <ClInclude Include="StringType.h" />
     <ClInclude Include="SymbolTable.h" />
@@ -171,6 +173,7 @@
     <ClCompile Include="Parselets.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Scope.cpp" />
+    <ClCompile Include="SliceType.cpp" />
     <ClCompile Include="SmallString.cpp" />
     <ClCompile Include="StringType.cpp" />
     <ClCompile Include="SymbolTable.cpp" />

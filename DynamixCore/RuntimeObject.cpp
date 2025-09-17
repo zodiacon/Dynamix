@@ -7,6 +7,11 @@
 using namespace Dynamix;
 
 RuntimeObject::RuntimeObject(ObjectType* type) : m_Type(type) {
+	m_Type->ObjectCreated(this);
+}
+
+Dynamix::RuntimeObject::~RuntimeObject() noexcept {
+	m_Type->ObjectDestroyed(this);
 }
 
 void RuntimeObject::Construct(std::vector<Value> const& args) {

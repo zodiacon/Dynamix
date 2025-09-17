@@ -51,7 +51,7 @@ namespace Dynamix {
 		std::unique_ptr<BreakOrContinueStatement> ParseBreakContinueStatement();
 		std::unique_ptr<EnumDeclaration> ParseEnumDeclaration();
 		std::unique_ptr<ForStatement> ParseForStatement();
-		std::unique_ptr<ClassDeclaration> ParseClassDeclaration();
+		std::unique_ptr<ClassDeclaration> ParseClassDeclaration(ClassDeclaration const* parent = nullptr);
 		std::unique_ptr<ForEachStatement> ParseForEachStatement();
 
 		Token Next();

@@ -68,19 +68,19 @@ namespace Dynamix {
 
 	class Runtime {
 	public:
-		Runtime(Parser& parser);
+		explicit Runtime(Parser& parser);
+		void InitStdLibrary();
 		[[maybe_unused]] ObjectType* GetObjectType(AstNode const* classNode, Interpreter* intr = nullptr);
-		ObjectType* GetObjectType(std::string const& name);
+
+		ObjectPtr<ObjectType> BuildType(ClassDeclaration const* decl, Interpreter* intr) const;
 
 		Scope* GetGlobalScope() {
 			return &m_GlobalScope;
 		}
 
-		void InitStdLibrary();
 	private:
 		Parser& m_Parser;
 		Scope m_GlobalScope;
-		std::unordered_map<std::string, std::unique_ptr<ObjectType>> m_Types;
 	};
 }
 

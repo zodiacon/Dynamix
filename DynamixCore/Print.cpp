@@ -4,6 +4,7 @@
 #include "Value.h"
 #include "Interpreter.h"
 #include "AstNode.h"
+#include "RuntimeObject.h"
 
 using namespace Dynamix;
 
