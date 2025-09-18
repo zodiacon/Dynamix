@@ -1,7 +1,8 @@
 #include "ArrayType.h"
-#include "RuntimeObject.h"
 #include "Runtime.h"
 #include "VectorEnumerator.h"
+#include "RuntimeObject.h"
+#include "TypeHelper.h"
 
 using namespace Dynamix;
 
@@ -43,68 +44,20 @@ SliceObject* ArrayObject::Slice(Int start, Int count) {
 }
 
 ArrayType::ArrayType() : ObjectType("Array") {
-	struct {
-		const char* Name;
-		int Arity;
-		NativeFunction Code;
-		SymbolFlags Flags{ SymbolFlags::Native };
-	} methods[] = {
-		{ "Count", 0, 
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				return GetInstance<ArrayObject>(args[0])->Count();
-				} },
-		{ "IsEmpty", 0,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				return GetInstance<ArrayObject>(args[0])->IsEmpty();
-				} },
-		{ "Clear", 0,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				GetInstance<ArrayObject>(args[0])->Clear();
-				return Value();
-				} },
-		{ "Clone", 0,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				return GetInstance<ArrayObject>(args[0])->Clone();
-				} },
-		{ "Reverse", 0,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				auto inst = GetInstance<ArrayObject>(args[0]);
-				inst->Reverse();
-				return inst;
-				} },
-		{ "Add", 1,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 2);
-				return GetInstance<ArrayObject>(args[0])->Add(args[1]);
-			} },
-		{ "Append", 1,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 2);
-				return GetInstance<ArrayObject>(args[0])->Append(args[1]);
-			} },
-
-		{ "RemoveAt", 1,
-			[](auto, auto& args) -> Value {
-			assert(args.size() == 2);
-			return GetInstance<ArrayObject>(args[0])->RemoveAt(args[1].ToInteger());
-			} },
-	};
-
-	for (auto& m : methods) {
-		auto mi = std::make_unique<MethodInfo>(m.Name);
-		mi->Arity = m.Arity;
-		mi->Code.Native = m.Code;
-		mi->Flags = m.Flags;
-		AddMethod(move(mi));
-	}
+	BEGIN_METHODS(ArrayObject)
+		METHOD(Count, 0, return inst->Count();)
+		METHOD(IsEmpty, 0, return inst->IsEmpty();)
+		METHOD(Clear, 0, inst->Clear();	return inst;)
+		METHOD(Clone, 0, return GetInstance<ArrayObject>(args[0])->Clone();)
+		METHOD(Reverse, 0, inst->Reverse();	return inst;)
+		METHOD(Add, 1, return inst->Add(args[1]);)
+		METHOD(Append, 1, return inst->Append(args[1]);)
+		METHOD(RemoveAt, 1, return inst->RemoveAt(args[1].ToInteger());)
+		METHOD(Resize, 1, inst->Resize(args[1].ToInteger()); return inst;)
+	END_METHODS()
 }
 
-ArrayObject::ArrayObject(std::vector<Value> init) : 
+ArrayObject::ArrayObject(std::vector<Value> init) :
 	RuntimeObject(ArrayType::Get()), m_Items(std::move(init)) {
 }
 

@@ -14,6 +14,7 @@ namespace Dynamix {
 	class Runtime;
 	class Expression;
 	struct Parameter;
+	class Scope;
 
 	enum class MemberType : uint8_t {
 		Field,
@@ -96,9 +97,11 @@ namespace Dynamix {
 		bool AddMethod(std::unique_ptr<MethodInfo> method);
 		bool AddType(ObjectPtr<ObjectType> type);
 
-		FieldInfo const* GetField(std::string const& name) const;
-		MethodInfo const* GetMethod(std::string const& name, int8_t arity = -1) const;
+		FieldInfo const* GetField(std::string const& name) const noexcept;
+		MethodInfo const* GetMethod(std::string const& name, int8_t arity = -1) const noexcept;
 		MethodInfo const* GetClassConstructor() const;
+		void AddTypesToScope(Scope* scope);
+
 		Value& GetStaticField(std::string const& name);
 		void SetStaticField(std::string const& name, Value value);
 
@@ -132,3 +135,4 @@ namespace Dynamix {
 		bool m_ClassCtorRun{ false };
 	};
 }
+

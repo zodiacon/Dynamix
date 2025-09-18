@@ -102,6 +102,9 @@
     <ClInclude Include="SymbolTable.h">
       <Filter>Parsing</Filter>
     </ClInclude>
+    <ClInclude Include="TypeHelper.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">

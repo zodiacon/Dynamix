@@ -1,8 +1,10 @@
+#include <format>
+
 #include "ObjectType.h"
 #include "RuntimeObject.h"
 #include "Runtime.h"
 #include "Interpreter.h"
-#include <format>
+#include "Scope.h"
 
 using namespace Dynamix;
 
@@ -64,12 +66,12 @@ bool ObjectType::AddType(ObjectPtr<ObjectType> type) {
 	return m_Types.insert({ type->Name(), std::move(type) }).second;
 }
 
-FieldInfo const* ObjectType::GetField(std::string const& name) const {
+FieldInfo const* ObjectType::GetField(std::string const& name) const noexcept {
 	auto it = m_Fields.find(name);
 	return it == m_Fields.end() ? nullptr : it->second.get();
 }
 
-MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) const {
+MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) const noexcept {
 	if (arity < 0)
 		if (auto it = m_Methods.find(name); it != m_Methods.end())
 			return it->second.get();
@@ -83,6 +85,13 @@ MethodInfo const* ObjectType::GetClassConstructor() const {
 	if (auto it = m_Constructors.find(std::format("0/{}", (int)SymbolFlags::Static)); it != m_Constructors.end())
 		return it->second.get();
 	return nullptr;
+}
+
+void ObjectType::AddTypesToScope(Scope* scope) {
+	for (auto& [name, type] : m_Types) {
+		Element t{ static_cast<RuntimeObject*>(type.Get()), ElementFlags::Class };
+		scope->AddElement(name, std::move(t));
+	}
 }
 
 Value& ObjectType::GetStaticField(std::string const& name) {

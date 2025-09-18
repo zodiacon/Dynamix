@@ -5,6 +5,8 @@
 #include "Value.h"
 
 namespace Dynamix {
+	class RuntimeObject;
+
 	enum class ServiceId {
 		Invalid,
 		Enumerable,

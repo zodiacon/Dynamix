@@ -1,60 +1,19 @@
 #include <format>
 #include "RangeType.h"
+#include "TypeHelper.h"
 
 using namespace Dynamix;
 using namespace std;
 
 RangeType::RangeType() : ObjectType("Range") {
-	struct {
-		const char* Name;
-		int Arity;
-		NativeFunction Code;
-		SymbolFlags Flags{ SymbolFlags::Native };
-	} methods[] = {
-		{ "Size", 0,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				return GetInstance<RangeObject>(args[0])->Size();
-				} },
-		{ "Shift", 1,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 2);
-				auto inst = GetInstance<RangeObject>(args[0]);
-				inst->Shift(args[1].ToInteger());
-				return inst;
-				} },
-		{ "Start", 1,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 2);
-				auto inst = GetInstance<RangeObject>(args[0]);
-				inst->Start(args[1].ToInteger());
-				return inst;
-				} },
-		{ "Start", 0,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				return GetInstance<RangeObject>(args[0])->Start();
-				} },
-		{ "End", 1,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 2);
-				auto inst = GetInstance<RangeObject>(args[0]);
-				inst->End(args[1].ToInteger());
-				return inst;
-				} },
-		{ "End", 0,
-			[](auto, auto& args) -> Value {
-				assert(args.size() == 1);
-				return GetInstance<RangeObject>(args[0])->End();
-				} },
-	};
-	for (auto& m : methods) {
-		auto mi = std::make_unique<MethodInfo>(m.Name);
-		mi->Arity = m.Arity;
-		mi->Code.Native = m.Code;
-		mi->Flags = m.Flags;
-		AddMethod(move(mi));
-	}
+	BEGIN_METHODS(RangeObject)
+		METHOD(Size, 0,	return inst->Size();)
+		METHOD(Shift, 1, inst->Shift(args[1].ToInteger()); return inst;)
+		METHOD(Start, 1, inst->Start(args[1].ToInteger()); return inst;)
+		METHOD(Start, 0, return inst->Start();)
+		METHOD(End, 1, inst->End(args[1].ToInteger()); return inst;)
+		METHOD(End, 0, return inst->End();)
+		END_METHODS()
 }
 
 RangeType* RangeType::Get() {

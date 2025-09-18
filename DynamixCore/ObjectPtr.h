@@ -1,11 +1,11 @@
 #pragma once
 
 #include <type_traits>
-#include "RuntimeObject.h"
 
 namespace Dynamix {
-	template<typename T = RuntimeObject> //requires std::is_base_of_v<RuntimeObject, T>
+	template<typename T = RuntimeObject>
 	class ObjectPtr {
+		static_assert(std::is_base_of_v<RuntimeObject, T>, "T must derive from RuntimeObject");
 	public:
 		ObjectPtr(T* obj = nullptr) : p(obj) {
 			if (p)

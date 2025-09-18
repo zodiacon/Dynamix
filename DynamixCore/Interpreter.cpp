@@ -137,7 +137,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			vector<Value> args;
 			for (auto& arg : expr->Arguments())
 				args.push_back(Eval(arg.get()));
-
+			instance->Type()->AddTypesToScope(CurrentScope());
 			try {
 				return instance->Invoke(*this, callable->Method, args);
 			}

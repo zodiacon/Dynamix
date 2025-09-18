@@ -1,12 +1,12 @@
 #pragma once
 
 #include "ObjectType.h"
-#include "RuntimeObject.h"
 #include "Value.h"
 #include "CoreInterfaces.h"
 
 namespace Dynamix {
 	class ArrayObject;
+	class RuntimeObject;
 
 	class ArrayType : public ObjectType {
 	public:
@@ -40,6 +40,9 @@ namespace Dynamix {
 		Int Insert(Int index, Value item);
 		void Clear() {
 			m_Items.clear();
+		}
+		void Resize(Int newsize) {
+			m_Items.resize(newsize);
 		}
 		Bool IsEmpty() const {
 			return Bool(m_Items.empty());

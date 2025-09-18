@@ -14,7 +14,7 @@ namespace Dynamix {
 	class Runtime;
 	class AstNode;
 
-	class Interpreter final : public Visitor {
+	class Interpreter final : public Visitor, NoCopy {
 	public:
 		Interpreter(Parser& p, Runtime& rt);
 

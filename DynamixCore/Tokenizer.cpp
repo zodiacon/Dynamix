@@ -263,6 +263,9 @@ Token Tokenizer::ParseString(bool raw) {
 			}
 		}
 	}
+	if(*m_Current == 0)
+		return Token{ .Type = TokenType::Error, .Lexeme = "Unterminated string", .Line = m_Line, .Col = m_Col };
+
 	m_Current++;
 	return Token{ .Type = TokenType::String, .Lexeme = lexeme, .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()), };
 }
