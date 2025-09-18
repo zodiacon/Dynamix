@@ -543,9 +543,15 @@ namespace Dynamix {
 		std::unique_ptr<Expression> m_Body;
 	};
 
+	struct FieldInitializer {
+		std::string Name;
+		std::unique_ptr<Expression> Init;
+	};
+
 	class NewObjectExpression : public Expression {
 	public:
-		NewObjectExpression(std::string className, std::vector<std::unique_ptr<Expression>> args) : m_ClassName(std::move(className)), m_Args(std::move(args)) {}
+		NewObjectExpression(std::string className, std::vector<std::unique_ptr<Expression>> args, std::vector<FieldInitializer> inits)
+			: m_ClassName(std::move(className)), m_Args(std::move(args)), m_FieldInit(move(inits)) {}
 		Value Accept(Visitor* visitor) const override;
 		std::string const& ClassName() const {
 			return m_ClassName;
@@ -554,9 +560,17 @@ namespace Dynamix {
 			return m_Args;
 		}
 
+		void AddFieldInit(FieldInitializer init) noexcept {
+			m_FieldInit.push_back(std::move(init));
+		}
+
+		std::vector<FieldInitializer> const& FieldInitializers() const noexcept {
+			return m_FieldInit;
+		}
 	private:
 		std::string m_ClassName;
 		std::vector<std::unique_ptr<Expression>> m_Args;
+		std::vector<FieldInitializer> m_FieldInit;
 	};
 
 	class BreakOrContinueStatement : public Statement {

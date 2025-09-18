@@ -33,10 +33,11 @@ namespace Dynamix {
 		void PushScope(AstNode* node);
 		void PopScope();
 
-		bool AddSymbol(Symbol sym);
-		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const;
-		SymbolTable const* GetSymbolTable() const;
-		std::vector<Symbol const*> GlobalSymbols() const;
+		CodeLocation Location() const noexcept;
+
+		bool AddSymbol(Symbol sym) noexcept;
+		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const noexcept;
+		std::vector<Symbol const*> GlobalSymbols() const noexcept;
 
 		int GetPrecedence() const;
 

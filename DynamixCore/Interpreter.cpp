@@ -407,7 +407,16 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 	std::vector<Value> args;
 	for (auto& arg : expr->Args())
 		args.push_back(Eval(arg.get()));
-	return type->CreateObject(*this, args);
+	auto obj = type->CreateObject(*this, args);
+	assert(obj);
+	for (auto& init : expr->FieldInitializers()) {
+		auto field = type->GetField(init.Name);
+		if (field == nullptr)
+			throw RuntimeError(RuntimeErrorType::UnknownMember,
+				format("Field '{}' on type '{}' does not exist", init.Name, type->Name()), expr->Location());
+		obj->AssignField(init.Name, Eval(init.Init.get()));
+	}
+	return obj;
 }
 
 Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {
@@ -421,7 +430,8 @@ Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
 	auto collection = Eval(stmt->Collection());
 	// String to be dealt with later
 	if (!collection.IsObject())
-		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Expected collection in 'foreach' statement", stmt->Collection()->Location());
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Expected collection in 'foreach' statement", 
+			stmt->Collection()->Location());
 
 	auto enumerable = static_cast<IEnumerable*>(collection.AsObject()->QueryService(ServiceId::Enumerable));
 	if (!enumerable)

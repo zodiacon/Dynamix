@@ -198,12 +198,38 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 	while (next.Type != TokenType::CloseParen) {
 		auto param = parser.ParseExpression();
 		args.push_back(move(param));
-		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false))
+		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false)) {
 			parser.AddError(ParseError(ParseErrorType::CommaExpected, next, "Expected , or )"));
+			return nullptr;
+		}
 		next = parser.Peek();
 	}
 	parser.Match(TokenType::CloseParen, true, true);
-	return make_unique<NewObjectExpression>(move(ident.Lexeme), move(args));
+
+	vector<FieldInitializer> inits;
+	if (parser.Peek().Type == TokenType::OpenBrace) {
+		parser.Next();
+		while (parser.Peek().Type != TokenType::CloseBrace) {
+			parser.Match(TokenType::Dot, true, true);
+			if (!parser.Match(TokenType::Identifier, false, true))
+				break;
+			auto field = parser.Next().Lexeme;
+			parser.Match(TokenType::Assign, true, true);
+			auto init = parser.ParseExpression();
+			if (!init) {
+				parser.AddError(ParseError(ParseErrorType::MissingInitExpression, parser.Location(), "Missing init expression"));
+				parser.SkipTo(TokenType::CloseBrace);
+				return nullptr;
+			}
+			inits.push_back(FieldInitializer{ move(field), move(init) });
+			if (!parser.Match(TokenType::Comma) && parser.Peek().Type != TokenType::CloseBrace) {
+				parser.AddError(ParseError(ParseErrorType::Expected, parser.Location(), "Expected: ',' or '}'"));
+			}
+		}
+		parser.Next();
+	}
+
+	return make_unique<NewObjectExpression>(move(ident.Lexeme), move(args), move(inits));
 }
 
 unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {

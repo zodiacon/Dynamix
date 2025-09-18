@@ -199,6 +199,10 @@ Token const& Parser::Peek() const {
 	return m_Tokenizer.Peek();
 }
 
+CodeLocation Parser::Location() const noexcept {
+	return CodeLocation{ .FileName = m_CurrentFile, .Line = m_Tokenizer.Line(), .Col = m_Tokenizer.Column() };
+}
+
 bool Parser::SkipTo(TokenType type) {
 	auto next = Next();
 	while (next.Type != type) {
@@ -234,6 +238,9 @@ bool Parser::Match(string_view lexeme, bool consume, bool errorIfNotFound) {
 
 unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 	auto token = Next();
+	if (token.Type == TokenType::End)
+		return nullptr;
+
 	if (auto it = m_PrefixParslets.find(token.Type); it != m_PrefixParslets.end()) {
 		auto left = it->second->Parse(*this, token);
 		while (precedence < GetPrecedence()) {
@@ -389,15 +396,15 @@ unique_ptr<RepeatStatement> Parser::ParseRepeatStatement() {
 	return make_unique<RepeatStatement>(move(times), move(body));
 }
 
-bool Parser::AddSymbol(Symbol sym) {
+bool Parser::AddSymbol(Symbol sym) noexcept {
 	return m_Symbols.top()->AddSymbol(move(sym));
 }
 
-Symbol const* Parser::FindSymbol(string const& name, bool localOnly) const {
+Symbol const* Parser::FindSymbol(string const& name, bool localOnly) const noexcept{
 	return m_Symbols.top()->FindSymbol(name, localOnly);
 }
 
-vector<Symbol const*> Parser::GlobalSymbols() const {
+vector<Symbol const*> Parser::GlobalSymbols() const noexcept {
 	return m_GlobalSymbols.EnumSymbols();
 }
 

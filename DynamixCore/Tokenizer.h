@@ -18,6 +18,14 @@ namespace Dynamix {
 		Token Next();
 		Token const& Peek();
 
+		int Line() const noexcept {
+			return m_Line;
+		}
+
+		uint16_t Column() const noexcept {
+			return m_Col;
+		}
+
 		std::string_view TokenTypeToString(TokenType type) const;
 
 		operator bool() {
