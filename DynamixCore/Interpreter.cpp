@@ -13,7 +13,7 @@ using namespace Dynamix;
 using namespace std;
 
 Interpreter::Interpreter(Parser& p, Runtime& rt) : m_Parser(p), m_Runtime(rt) {
-	m_Scopes.push(make_unique<Scope>(m_Runtime.GetGlobalScope()));    // global scope
+	m_Scopes.push(Scope(m_Runtime.GetGlobalScope()));    // global scope
 }
 
 Value Interpreter::Eval(AstNode const* root) {
@@ -30,11 +30,11 @@ void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor
 	assert(ctor->Code.Node->Type() == AstNodeType::Statements);
 	Scoper scoper(this);
 	Element pThis{ instance };
-	CurrentScope()->AddElement("this", move(pThis));
+	CurrentScope().AddElement("this", move(pThis));
 	int i = 0;
 	for (auto& arg : args) {
 		Element varg{ arg };
-		CurrentScope()->AddElement(ctor->Parameters[i++].Name, move(varg));
+		CurrentScope().AddElement(ctor->Parameters[i++].Name, move(varg));
 	}
 	Eval(ctor->Code.Node);
 }
@@ -64,30 +64,33 @@ Value Interpreter::VisitUnary(UnaryExpression const* expr) {
 }
 
 Value Interpreter::VisitName(NameExpression const* expr) {
-	auto elements = CurrentScope()->FindElements(expr->Name());
+	auto elements = CurrentScope().FindElements(expr->Name());
 	if (elements.size() == 1) {
 		return elements[0]->VarValue;
 	}
-	if (elements.size() > 1)
+	if (elements.size() > 1) {
+		if (elements[0]->Flags == ElementFlags::None)
+			return Value(expr->Name().c_str());
 		throw RuntimeError(RuntimeErrorType::MultipleSymbols, format("Multiple symbols referring to: '{}'", expr->Name()), expr->Location());
+	}
 	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: '{}'", expr->Name()), expr->Location());
 
 }
 
 Value Interpreter::VisitVar(VarValStatement const* expr) {
-	if (CurrentScope()->FindElement(expr->Name(), -1, true))
+	if (CurrentScope().FindElement(expr->Name(), -1, true))
 		return Value::Error(ValueErrorType::DuplicateName);
 
 	Element v;
 	if (expr->Init())
 		v.VarValue = Eval(expr->Init());
 
-	CurrentScope()->AddElement(expr->Name(), move(v));
+	CurrentScope().AddElement(expr->Name(), move(v));
 	return Value();
 }
 
 Value Interpreter::VisitAssign(AssignExpression const* expr) {
-	auto lhs = CurrentScope()->FindElement(expr->Lhs());
+	auto lhs = CurrentScope().FindElement(expr->Lhs());
 	if (!lhs)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: {}", expr->Lhs()), expr->Location());
 
@@ -96,40 +99,34 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
-	NativeFunction native = nullptr;
+	auto f = Eval(expr->Callable());
+	if (f.IsNativeFunction()) {
+		std::vector<Value> args;
+		args.reserve(expr->Arguments().size() + 1);
+		for (auto& arg : expr->Arguments()) {
+			args.emplace_back(Eval(arg.get()));
+		}
+		return (*f.AsNativeCode())(*this, args);
+	}
+	if (f.IsString()) {
+		auto e = CurrentScope().FindElement(f.ToString(), expr->Arguments().size());
+		if (e)
+			f = e->VarValue;
+		else
+			throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Cannot find method '{}' with {} arguments", f.ToString(), expr->Arguments().size()));
+	}
 	AstNode const* node = nullptr;
 	RuntimeObject* instance = nullptr;
 	Callable* callable = nullptr;
-	Value f;
-	if (expr->Callable()->Type() == AstNodeType::Name) {
-		auto nameExpr = reinterpret_cast<NameExpression const*>(expr->Callable());
-		auto func = CurrentScope()->FindElement(nameExpr->Name(), (int8_t)expr->Arguments().size());
-		if (func == nullptr) {
-			auto funcs = CurrentScope()->FindElements(nameExpr->Name());
-			if (funcs.empty())
-				throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown function: '{}'", nameExpr->Name()), expr->Location());
-			string expected;
-			for (auto& v : funcs)
-				expected += format("{},", v->Arity);
-			throw RuntimeError(RuntimeErrorType::WrongNumberArguments, format("Wrong number of arguments to '{}' (Expected: {})",
-				nameExpr->Name(), expected.substr(0, expected.length() - 1)));
-		}
-		else {
-			f = func->VarValue;
-		}
-	}
 
-	if (f.IsNull())
-		f = Eval(expr->Callable());
+	assert(!f.IsNull());
 
-	if (f.IsNativeFunction())
-		native = f.AsNativeCode();
-	else if (f.IsAstNode())
+	if (f.IsAstNode())
 		node = f.AsAstNode();
 	else if (f.IsCallable()) {
 		callable = f.AsCallable();
 		instance = callable->Instance;
-		native = callable->Native;
+		auto native = callable->Native;
 		node = callable->Node;
 
 		if (!callable->Method.empty()) {
@@ -145,6 +142,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 				return ret.ReturnValue;
 			}
 			catch (BreakoutStatementException const&) {
+				return Value();
 			}
 		}
 	}
@@ -158,7 +156,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		Scoper scoper(this);
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
 			Element v{ Eval(expr->Arguments()[i].get()) };
-			CurrentScope()->AddElement(decl->Parameters()[i].Name, move(v));
+			CurrentScope().AddElement(decl->Parameters()[i].Name, move(v));
 		}
 		try {
 			auto result = Eval(decl->Body());
@@ -169,18 +167,6 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		}
 		catch (BreakoutStatementException const&) {
 		}
-	}
-	else {
-		assert(native);
-
-		std::vector<Value> args;
-		args.reserve(expr->Arguments().size() + 1);
-		if (instance)
-			args.push_back(instance);
-		for (auto& arg : expr->Arguments()) {
-			args.emplace_back(Eval(arg.get()));
-		}
-		return (*native)(*this, args);
 	}
 	return Value();
 }
@@ -213,10 +199,9 @@ Value Interpreter::VisitIfThenElse(IfThenElseExpression const* expr) {
 }
 
 Value Interpreter::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
-	Element v;
-	v.VarValue = decl;
+	Element v{ decl };
 	v.Arity = (int8_t)decl->Parameters().size();
-	CurrentScope()->AddElement(decl->Name(), move(v));
+	CurrentScope().AddElement(decl->Name(), v);
 
 	return Value();
 }
@@ -271,12 +256,12 @@ Value Interpreter::VisitAnonymousFunction(AnonymousFunctionExpression const* fun
 }
 
 Value Interpreter::VisitEnumDeclaration(EnumDeclaration const* decl) {
-	if (CurrentScope()->FindElement(decl->Name(), -1, true)) {
+	if (CurrentScope().FindElement(decl->Name(), -1, true)) {
 		throw RuntimeError(RuntimeErrorType::DuplicateDefinition, format("Type '{}' already defined in this scope", decl->Name()), decl->Location());
 	}
 	auto type = m_Runtime.BuildEnum(decl);
 	Element e{ (RuntimeObject*)type.Get(), ElementFlags::Enum };
-	CurrentScope()->AddElement(decl->Name(), move(e));
+	CurrentScope().AddElement(decl->Name(), move(e));
 
 	return Value();
 }
@@ -310,12 +295,15 @@ Value Interpreter::VisitRepeat(RepeatStatement const* stmt) {
 	return Value();
 }
 
-Scope* Interpreter::CurrentScope() {
-	return m_Scopes.top().get();
+Scope& Interpreter::CurrentScope() {
+	return m_Scopes.top();
 }
 
 void Interpreter::PushScope() {
-	m_Scopes.push(make_unique<Scope>(m_Scopes.top().get()));
+	if (m_Scopes.size() > 100)
+		throw RuntimeError(RuntimeErrorType::StackOverflow, "Call stack is too deep");
+
+	m_Scopes.push(Scope(&m_Scopes.top()));
 }
 
 void Interpreter::PopScope() {
@@ -334,7 +322,9 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	ObjectType* type = nullptr;
 	bool isStatic = expr->Operator().Type == TokenType::Colon;
 	type = obj->Type();
-	field = type->GetField(expr->Member());
+	auto member = type->GetMember(expr->Member());
+	if (!member)
+		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), type->Name()), expr->Location());
 
 	auto check = [](auto obj, auto member, auto expr) {
 		if (!obj->IsObjectType() && member->IsStatic())
@@ -345,20 +335,25 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 				member->Name()), expr->Location());
 	};
 
-	if (field) {
-		check(obj, field, expr);
-		return obj ? obj->GetField(field->Name()) : type->GetStaticField(field->Name());
+	switch (member->Type()) {
+		case MemberType::Field:
+		{
+			field = reinterpret_cast<FieldInfo const*>(member);
+			check(obj, field, expr);
+			return obj ? obj->GetField(field->Name()) : type->GetStaticField(field->Name());
+		}
+		case MemberType::Method:
+		{
+			auto method = reinterpret_cast<MethodInfo const*>(member);
+			check(obj, method, expr);
+			auto c = new Callable;
+			c->Instance = obj ? obj : type;
+			c->Method = method->Name();
+			return c;
+		}
 	}
-
-	auto method = type->GetMethod(expr->Member());
-	if (!method)
-		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), type->Name()), expr->Location());
-
-	check(obj, method, expr);
-	auto c = new Callable;
-	c->Instance = obj ? obj : type;
-	c->Method = method->Name();
-	return c;
+	assert(false);
+	return Value();
 }
 
 Value Interpreter::VisitAccessArray(AccessArrayExpression const* expr) {
@@ -381,7 +376,7 @@ Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
 	if (decl->Parent())
 		name = decl->Parent()->Name() + ":" + name;
 
-	CurrentScope()->AddElement(name, move(v));
+	CurrentScope().AddElement(name, move(v));
 	for (auto& t : decl->Types()) {
 		VisitClassDeclaration(t.get());
 	}
@@ -389,7 +384,7 @@ Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
 }
 
 Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
-	auto v = CurrentScope()->FindElement(expr->ClassName());
+	auto v = CurrentScope().FindElement(expr->ClassName());
 	if (v == nullptr)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Class '{}' not found in scope", expr->ClassName()));
 
@@ -424,7 +419,7 @@ Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
 	auto collection = Eval(stmt->Collection());
 	// String to be dealt with later
 	if (!collection.IsObject())
-		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Expected collection in 'foreach' statement", 
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Expected collection in 'foreach' statement",
 			stmt->Collection()->Location());
 
 	auto enumerable = static_cast<IEnumerable*>(collection.AsObject()->QueryService(ServiceId::Enumerable));
@@ -433,10 +428,10 @@ Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
 
 	Scoper scoper(this);
 	Element e{};
-	CurrentScope()->AddElement(stmt->Name(), e);
+	CurrentScope().AddElement(stmt->Name(), e);
 	auto enumerator = enumerable->GetEnumerator();
 	Value next;
-	auto index = CurrentScope()->FindElement(stmt->Name());
+	auto index = CurrentScope().FindElement(stmt->Name());
 	assert(index);
 
 	while (!(next = enumerator->GetNextValue()).IsError()) {

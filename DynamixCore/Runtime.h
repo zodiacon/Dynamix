@@ -34,6 +34,7 @@ namespace Dynamix {
 		MethodNotFound,
 		InvalidMemberAccess,
 		DuplicateDefinition,
+		StackOverflow,
 	};
 
 	struct ReturnStatementException {

@@ -40,13 +40,13 @@ Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vec
 		return (*method->Code.Native)(intr, args);
 	}
 	if (instance)
-		intr.CurrentScope()->AddElement("this", { this });
+		intr.CurrentScope().AddElement("this", { this });
 	else {
 		for(auto& [name, v] : m_FieldValues)
-			intr.CurrentScope()->AddElement(name, { v });
+			intr.CurrentScope().AddElement(name, { v });
 	}
 	for(size_t i = 0; i < method->Parameters.size(); i++)
-		intr.CurrentScope()->AddElement(method->Parameters[i].Name, { args[i] });
+		intr.CurrentScope().AddElement(method->Parameters[i].Name, { args[i] });
 	return intr.Eval(method->Code.Node);
 }
 

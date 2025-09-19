@@ -104,10 +104,6 @@ namespace Dynamix {
 		std::string Lexeme;
 		int Line;
 		uint16_t Col;
-		union {
-			long long iValue;
-			double rValue;
-		};
 		std::string_view TypeToString() const;
 		static std::string_view TypeToString(TokenType type);
 		bool IsValid() const {

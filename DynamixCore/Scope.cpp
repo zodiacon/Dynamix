@@ -30,12 +30,13 @@ Element* Scope::FindElement(std::string const& name, int arity, bool localOnly) 
 }
 
 std::vector<Element*> Scope::FindElements(std::string const& name, bool localOnly) {
-	std::vector<Element*> v;
 	if (auto it = m_Elements.find(name); it != m_Elements.end()) {
+		std::vector<Element*> v;
+		v.reserve(it->second.size());
 		for (auto& e : it->second)
 			v.push_back(&e);
 		return v;
 	}
 
-	return m_Parent && !localOnly ? m_Parent->FindElements(name) : v;
+	return m_Parent && !localOnly ? m_Parent->FindElements(name) : std::vector<Element*>();
 }

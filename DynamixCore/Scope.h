@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Value.h"
 #include <unordered_map>
+#include "Value.h"
+#include "NoCopyMove.h"
 
 namespace Dynamix {
 	enum class ElementFlags : uint8_t {
@@ -19,7 +20,7 @@ namespace Dynamix {
 		int8_t Arity{ -1 };
 	};
 
-	class Scope {
+	class Scope : public NoCopy {
 	public:
 		explicit Scope(Scope* parent = nullptr);
 		bool AddElement(std::string name, Element var);

@@ -87,10 +87,16 @@ MethodInfo const* ObjectType::GetClassConstructor() const {
 	return nullptr;
 }
 
-void ObjectType::AddTypesToScope(Scope* scope) {
+MemberInfo const* ObjectType::GetMember(std::string const& name) const {
+	if (auto it = m_Members.find(name); it != m_Members.end())
+		return it->second;
+	return nullptr;
+}
+
+void ObjectType::AddTypesToScope(Scope& scope) {
 	for (auto& [name, type] : m_Types) {
 		Element t{ static_cast<RuntimeObject*>(type.Get()), ElementFlags::Class };
-		scope->AddElement(name, std::move(t));
+		scope.AddElement(name, std::move(t));
 	}
 }
 

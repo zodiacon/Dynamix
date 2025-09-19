@@ -51,7 +51,7 @@ namespace Dynamix {
 		Value VisitForEach(ForEachStatement const* stmt) override;
 		Value VisitRange(RangeExpression const* expr) override;
 
-		Scope* CurrentScope();
+		Scope& CurrentScope();
 
 		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 
@@ -75,6 +75,6 @@ namespace Dynamix {
 	private:
 		Parser& m_Parser;
 		Runtime& m_Runtime;
-		std::stack<std::unique_ptr<Scope>> m_Scopes;
+		std::stack<Scope> m_Scopes;
 	};
 }

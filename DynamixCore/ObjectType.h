@@ -100,7 +100,9 @@ namespace Dynamix {
 		FieldInfo const* GetField(std::string const& name) const noexcept;
 		MethodInfo const* GetMethod(std::string const& name, int8_t arity = -1) const noexcept;
 		MethodInfo const* GetClassConstructor() const;
-		void AddTypesToScope(Scope* scope);
+		MemberInfo const* GetMember(std::string const& name) const;
+
+		void AddTypesToScope(Scope& scope);
 
 		Value& GetStaticField(std::string const& name);
 		void SetStaticField(std::string const& name, Value value);
