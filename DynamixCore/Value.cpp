@@ -40,7 +40,7 @@ Real Value::ToReal() const {
 
 RuntimeObject* Dynamix::Value::ToObject() const {
 	if (m_Type != ValueType::Object)
-		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Value is not an object");
+		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Object expected");
 	return oValue;
 }
 

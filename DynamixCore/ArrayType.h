@@ -8,7 +8,7 @@ namespace Dynamix {
 	class ArrayObject;
 	class RuntimeObject;
 
-	class ArrayType : public ObjectType {
+	class ArrayType : public StaticObjectType {
 	public:
 		static ArrayType* Get();
 

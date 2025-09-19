@@ -6,6 +6,7 @@
 #include "Interpreter.h"
 #include "RuntimeObject.h"
 #include "print.h"
+#include "EnumType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -67,6 +68,16 @@ ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpret
 		type->AddType(BuildType(t.get(), intr));
 	}
 	return type;
+}
+
+ObjectPtr<ObjectType> Runtime::BuildEnum(EnumDeclaration const* decl) const {
+	auto type = new ObjectType(decl->Name(), EnumType::Get());
+	for (auto& [name, value] : decl->Values()) {
+		auto field = std::make_unique<FieldInfo>(name);
+		field->Flags = SymbolFlags::Static;
+		type->AddField(std::move(field), value);
+	}
+	return ObjectPtr<ObjectType>(type);
 }
 
 Runtime::Runtime(Parser& parser) : m_Parser(parser) {

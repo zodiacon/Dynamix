@@ -39,9 +39,9 @@ unsigned ObjectType::GetObjectCount() const {
 	return m_ObjectCount;
 }
 
-bool ObjectType::AddField(std::unique_ptr<FieldInfo> field) {
+bool ObjectType::AddField(std::unique_ptr<FieldInfo> field, Value value) {
 	if(field->IsStatic()) {
-		m_FieldValues.insert({ field->Name(), Value() });
+		m_FieldValues.insert({ field->Name(), std::move(value) });
 	}
 	m_Members.insert({ field->Name(), field.get() });
 	return m_Fields.insert({ field->Name(), std::move(field) }).second;
@@ -146,4 +146,7 @@ RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> co
 
 bool MemberInfo::IsStatic() const {
 	return (Flags & SymbolFlags::Static) == SymbolFlags::Static;
+}
+
+StaticObjectType::StaticObjectType(std::string name, ObjectType* baseType) : ObjectType(move(name), baseType) {
 }

@@ -5,7 +5,7 @@
 using namespace Dynamix;
 using namespace std;
 
-RangeType::RangeType() : ObjectType("Range") {
+RangeType::RangeType() : StaticObjectType("Range") {
 	BEGIN_METHODS(RangeObject)
 		METHOD(Size, 0,	return inst->Size();)
 		METHOD(Shift, 1, inst->Shift(args[1].ToInteger()); return inst;)

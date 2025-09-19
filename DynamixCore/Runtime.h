@@ -33,6 +33,7 @@ namespace Dynamix {
 		Syntax,
 		MethodNotFound,
 		InvalidMemberAccess,
+		DuplicateDefinition,
 	};
 
 	struct ReturnStatementException {
@@ -73,6 +74,7 @@ namespace Dynamix {
 		[[maybe_unused]] ObjectType* GetObjectType(AstNode const* classNode, Interpreter* intr = nullptr);
 
 		ObjectPtr<ObjectType> BuildType(ClassDeclaration const* decl, Interpreter* intr) const;
+		ObjectPtr<ObjectType> BuildEnum(EnumDeclaration const* decl) const;
 
 		Scope* GetGlobalScope() {
 			return &m_GlobalScope;

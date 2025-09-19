@@ -271,7 +271,11 @@ Value Interpreter::VisitAnonymousFunction(AnonymousFunctionExpression const* fun
 }
 
 Value Interpreter::VisitEnumDeclaration(EnumDeclaration const* decl) {
-	Element e{ decl, ElementFlags::Enum };
+	if (CurrentScope()->FindElement(decl->Name(), -1, true)) {
+		throw RuntimeError(RuntimeErrorType::DuplicateDefinition, format("Type '{}' already defined in this scope", decl->Name()), decl->Location());
+	}
+	auto type = m_Runtime.BuildEnum(decl);
+	Element e{ (RuntimeObject*)type.Get(), ElementFlags::Enum };
 	CurrentScope()->AddElement(decl->Name(), move(e));
 
 	return Value();
@@ -326,19 +330,9 @@ std::unique_ptr<AstNode> Interpreter::Parse(std::string_view code) const {
 Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	auto value = Eval(expr->Left());
 	FieldInfo const* field;
-	RuntimeObject* obj = nullptr;
+	auto obj = value.ToObject();
 	ObjectType* type = nullptr;
-
-	if (value.IsAstNode() && value.AsAstNode()->Type() == AstNodeType::EnumDeclararion) {
-		auto decl = reinterpret_cast<EnumDeclaration const*>(value.AsAstNode());
-		if (auto it = decl->Values().find(expr->Member()); it != decl->Values().end())
-			return it->second;
-		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Element '{}' not found in enum '{}'", expr->Member(), decl->Name()), expr->Location());
-	}
-
-	if (!value.IsObject())
-		throw RuntimeError(RuntimeErrorType::ObjectExpected, "Object expected", expr->Location());
-	obj = value.AsObject();
+	bool isStatic = expr->Operator().Type == TokenType::Colon;
 	type = obj->Type();
 	field = type->GetField(expr->Member());
 

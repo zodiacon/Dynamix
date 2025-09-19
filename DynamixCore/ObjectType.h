@@ -93,7 +93,7 @@ namespace Dynamix {
 
 		unsigned GetObjectCount() const;
 
-		bool AddField(std::unique_ptr<FieldInfo> field);
+		bool AddField(std::unique_ptr<FieldInfo> field, Value value = Value());
 		bool AddMethod(std::unique_ptr<MethodInfo> method);
 		bool AddType(ObjectPtr<ObjectType> type);
 
@@ -133,6 +133,18 @@ namespace Dynamix {
 		std::unordered_map<std::string, MemberInfo*> m_Members;
 		ObjectType* m_Base;
 		bool m_ClassCtorRun{ false };
+	};
+
+	class StaticObjectType : public ObjectType {
+	public:
+		StaticObjectType(std::string name, ObjectType* baseType = nullptr);
+
+		int AddRef() noexcept override {
+			return 2;
+		}
+		int Release() noexcept override {
+			return 1;
+		}
 	};
 }
 

@@ -5,7 +5,7 @@
 namespace Dynamix {
 	class RangeObject;
 
-	class RangeType : public ObjectType {
+	class RangeType : public StaticObjectType {
 	public:
 		static RangeType* Get();
 

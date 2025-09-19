@@ -43,7 +43,7 @@ SliceObject* ArrayObject::Slice(Int start, Int count) {
 	return nullptr;
 }
 
-ArrayType::ArrayType() : ObjectType("Array") {
+ArrayType::ArrayType() : StaticObjectType("Array") {
 	BEGIN_METHODS(ArrayObject)
 		METHOD(Count, 0, return inst->Count();)
 		METHOD(IsEmpty, 0, return inst->IsEmpty();)
