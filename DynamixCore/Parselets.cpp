@@ -14,10 +14,6 @@ using namespace std;
 PostfixOperatorParslet::PostfixOperatorParslet(int precedence) : m_Precedence(precedence) {
 }
 
-//unique_ptr<Expression> PostfixOperatorParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
-//	return make_unique<PostfixExpression>(move(left), token);
-//}
-
 BinaryOperatorParslet::BinaryOperatorParslet(int precedence, bool right) : m_Precedence(precedence), m_RightAssoc(right) {
 }
 
@@ -270,6 +266,7 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 				parser.Next();		// eat default
 				parser.Match(TokenType::Colon, true, true);
 				auto action = parser.ParseStatementsForMatch(true);
+				match->AddCase(MatchCaseExpression(move(action)));
 				break;
 			}
 

@@ -29,25 +29,7 @@ Value RuntimeObject::GetField(std::string const& name) const {
 }
 
 Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags) {
-	auto method = m_Type->GetMethod(name, (int8_t)args.size());
-	if (!method)
-		throw RuntimeError(RuntimeErrorType::MethodNotFound,
-			std::format("Method {} with {} args not found in type {}", name, args.size(), Type()->Name()));
-
-	bool instance = !method->IsStatic();
-	if ((method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
-		args.insert(args.begin(), this);
-		return (*method->Code.Native)(intr, args);
-	}
-	if (instance)
-		intr.CurrentScope().AddElement("this", { this });
-	else {
-		for(auto& [name, v] : m_FieldValues)
-			intr.CurrentScope().AddElement(name, { v });
-	}
-	for(size_t i = 0; i < method->Parameters.size(); i++)
-		intr.CurrentScope().AddElement(method->Parameters[i].Name, { args[i] });
-	return intr.Eval(method->Code.Node);
+	return m_Type->Invoke(intr, this, name, args, flags);
 }
 
 Value RuntimeObject::InvokeIndexer(Value const& index) {

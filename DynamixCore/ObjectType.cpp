@@ -8,15 +8,34 @@
 
 using namespace Dynamix;
 
-Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const {
-	return Value();
+Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string const& name, std::vector<Value>& args, InvokeFlags flags) const {
+	auto method = GetMethod(name, (int8_t)args.size());
+	if (!method && m_Base)
+		return m_Base->Invoke(intr, instance, name, args, flags);
+	if (!method)
+		throw RuntimeError(RuntimeErrorType::MethodNotFound,
+			std::format("Method {} with {} args not found in type {}", name, args.size(), Name()));
+
+	if (instance && (method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
+		args.insert(args.begin(), instance);
+		return (*method->Code.Native)(intr, args);
+	}
+	if (instance)
+		intr.CurrentScope().AddElement("this", { instance });
+	else {
+		for (auto& [name, v] : m_FieldValues)
+			intr.CurrentScope().AddElement(name, { v });
+	}
+	for (size_t i = 0; i < method->Parameters.size(); i++)
+		intr.CurrentScope().AddElement(method->Parameters[i].Name, { args[i] });
+	return intr.Eval(method->Code.Node);
 }
 
 Value ObjectType::Invoke(Interpreter& intr, Value& instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const {
 	return Value();
 }
 
-Value ObjectType::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const {
+Value ObjectType::Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags) const {
 	return Invoke(intr, nullptr, name, args, flags);
 }
 
