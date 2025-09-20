@@ -164,7 +164,7 @@ unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token const
 }
 
 unique_ptr<Expression> GetMemberParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
-	assert(token.Type == TokenType::Dot || token.Type == TokenType::Colon);
+	assert(token.Type == TokenType::Dot || token.Type == TokenType::DoubleColon);
 	auto next = parser.Next();
 	return std::make_unique<GetMemberExpression>(move(left), next.Lexeme, token);
 }
@@ -242,26 +242,45 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 	auto next = parser.Peek();
 	std::vector<MatchCaseExpression> cases;
 	auto match = make_unique<MatchExpression>(move(expr));
-
 	while (next.Type != TokenType::CloseBrace) {
 		switch (next.Type) {
 			case TokenType::Case:
+			{
 				parser.Next();		// eat case
+				std::vector<std::unique_ptr<Expression>> exprs;
 				while (parser.Peek().Type != TokenType::Colon) {
-
+					auto expr = parser.ParseExpression();
+					if (!expr)
+						break;
+					exprs.push_back(move(expr));
+					if (parser.Match(TokenType::Comma))
+						continue;
 				}
+				assert(parser.Peek().Type == TokenType::Colon);
+				parser.Next();		// eat colon
+				auto action = parser.ParseStatementsForMatch(true);
+				MatchCaseExpression mce(move(action));
+				mce.SetCases(move(exprs));
+				match->AddCase(move(mce));
 				break;
+			}
 
 			case TokenType::Default:
+			{
+				parser.Next();		// eat default
+				parser.Match(TokenType::Colon, true, true);
+				auto action = parser.ParseStatementsForMatch(true);
 				break;
+			}
 
 			default:
 				parser.AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(next), "Expected 'case' or 'default'"));
 				parser.Next();
 				break;
 		}
-
+		next = parser.Peek();
 	}
+	parser.Next();
 	return match;
 }
 

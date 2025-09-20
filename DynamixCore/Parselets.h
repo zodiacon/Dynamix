@@ -79,8 +79,8 @@ namespace Dynamix {
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
 	};
 
-	struct RangeParslet : PostfixOperatorParslet {
-		RangeParslet() : PostfixOperatorParslet(1260) {}
+	struct RangeParslet : InfixParslet {
+		RangeParslet() : InfixParslet(1260) {}
 		std::unique_ptr<Expression> Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) override;
 	};
 

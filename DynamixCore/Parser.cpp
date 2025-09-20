@@ -132,11 +132,12 @@ bool Parser::Init() {
 	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayExpressionParslet>());
 	AddParslet(TokenType::Dot, make_unique<GetMemberParslet>());
-	AddParslet(TokenType::Colon, make_unique<GetMemberParslet>());
+	AddParslet(TokenType::DoubleColon, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());
 	AddParslet(TokenType::DotDot, make_unique<RangeParslet>());
 	AddParslet(TokenType::DotDotInclusive, make_unique<RangeParslet>());
+	AddParslet(TokenType::Match, make_unique<MatchParslet>());
 
 	return true;
 }
@@ -416,6 +417,26 @@ void Parser::PopScope() {
 	m_Symbols.pop();
 }
 
+unique_ptr<Statements> Parser::ParseStatementsForMatch(bool newScope) {
+	auto block = make_unique<Statements>();
+	if (newScope)
+		PushScope(block.get());
+	auto next = Peek();
+	while (next.Type != TokenType::Case && next.Type != TokenType::Default && next.Type != TokenType::CloseBrace) {
+		auto stmt = ParseStatement(false, false);
+		if (!stmt)
+			break;
+		stmt->SetLocation(CodeLocation{ m_CurrentFile, next.Line, next.Col });
+		stmt->SetParent(block.get());
+		block->Add(move(stmt));
+
+		next = Peek();
+	}
+	if (newScope)
+		PopScope();
+	return block;
+}
+
 unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
 	Match(TokenType::OpenBrace, true, true);
 
@@ -433,6 +454,8 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool ne
 
 	while (Peek().Type != TokenType::CloseBrace) {
 		auto peek = Peek();
+		if (peek.Type == TokenType::End)
+			break;
 		auto stmt = ParseStatement();
 		if (m_Errors.size() > 10)
 			break;
@@ -448,7 +471,7 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool ne
 	return block;
 }
 
-unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
+unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound) {
 	auto peek = Peek();
 	if (peek.Type == TokenType::Error) {
 		AddError(ParseError{ ParseErrorType::Syntax, peek });
@@ -510,8 +533,10 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel) {
 					return std::make_unique<ExpressionStatement>(move(expr), semi);
 				}
 			}
+			break;
 	}
-	AddError(ParseError(ParseErrorType::InvalidStatement, peek));
+	if(errorIfNotFound)
+		AddError(ParseError(ParseErrorType::InvalidStatement, peek));
 	return nullptr;
 }
 

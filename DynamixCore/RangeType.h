@@ -10,6 +10,7 @@ namespace Dynamix {
 		static RangeType* Get();
 
 		RangeObject* CreateRange(Int start, Int end);
+		RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args) override;
 
 	private:
 		RangeType();

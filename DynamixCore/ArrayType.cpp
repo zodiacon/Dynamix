@@ -45,15 +45,15 @@ SliceObject* ArrayObject::Slice(Int start, Int count) {
 
 ArrayType::ArrayType() : StaticObjectType("Array") {
 	BEGIN_METHODS(ArrayObject)
-		METHOD(Count, 0, return inst->Count();)
-		METHOD(IsEmpty, 0, return inst->IsEmpty();)
-		METHOD(Clear, 0, inst->Clear();	return inst;)
-		METHOD(Clone, 0, return GetInstance<ArrayObject>(args[0])->Clone();)
-		METHOD(Reverse, 0, inst->Reverse();	return inst;)
-		METHOD(Add, 1, return inst->Add(args[1]);)
-		METHOD(Append, 1, return inst->Append(args[1]);)
-		METHOD(RemoveAt, 1, return inst->RemoveAt(args[1].ToInteger());)
-		METHOD(Resize, 1, inst->Resize(args[1].ToInteger()); return inst;)
+		METHOD(Count, 0, return inst->Count();),
+		METHOD(IsEmpty, 0, return inst->IsEmpty();),
+		METHOD(Clear, 0, inst->Clear();	return inst;),
+		METHOD(Clone, 0, return GetInstance<ArrayObject>(args[0])->Clone();),
+		METHOD(Reverse, 0, inst->Reverse();	return inst;),
+		METHOD(Add, 1, return inst->Add(args[1]);),
+		METHOD(Append, 1, return inst->Append(args[1]);),
+		METHOD(RemoveAt, 1, return inst->RemoveAt(args[1].ToInteger());),
+		METHOD(Resize, 1, inst->Resize(args[1].ToInteger()); return inst;),
 	END_METHODS()
 }
 

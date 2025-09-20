@@ -7,13 +7,16 @@ using namespace std;
 
 RangeType::RangeType() : StaticObjectType("Range") {
 	BEGIN_METHODS(RangeObject)
-		METHOD(Size, 0,	return inst->Size();)
-		METHOD(Shift, 1, inst->Shift(args[1].ToInteger()); return inst;)
-		METHOD(Start, 1, inst->Start(args[1].ToInteger()); return inst;)
-		METHOD(Start, 0, return inst->Start();)
-		METHOD(End, 1, inst->End(args[1].ToInteger()); return inst;)
-		METHOD(End, 0, return inst->End();)
+		METHOD(Size, 0, return inst->Size();),
+		METHOD(Shift, 1, inst->Shift(args[1].ToInteger()); return inst;),
+		METHOD(Start, 1, inst->Start(args[1].ToInteger()); return inst;),
+		METHOD(Start, 0, return inst->Start();),
+		METHOD(End, 1, inst->End(args[1].ToInteger()); return inst;),
+		METHOD(End, 0, return inst->End();),
+		CTOR(2),
 		END_METHODS()
+
+	
 }
 
 RangeType* RangeType::Get() {
@@ -23,6 +26,10 @@ RangeType* RangeType::Get() {
 
 RangeObject* RangeType::CreateRange(Int start, Int end) {
 	return new RangeObject(start, end);
+}
+
+RuntimeObject* RangeType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {
+	return CreateRange(args[0].ToInteger(), args[1].ToInteger());
 }
 
 RangeObject::RangeObject(Int start, Int end) : RuntimeObject(RangeType::Get()), m_Start(start), m_End(end) {

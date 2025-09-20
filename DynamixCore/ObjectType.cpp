@@ -28,7 +28,7 @@ void ObjectType::RunClassConstructor(Interpreter& intr) {
 			if ((f->Flags & SymbolFlags::Static) == SymbolFlags::Static && f->Init)
 				m_FieldValues[name] = intr.Eval(f->Init);
 
-		if (auto it = m_Constructors.find(std::format("0/{}", int(SymbolFlags::Ctor | SymbolFlags::Static))); it != m_Constructors.end()) {
+		if (auto it = m_Constructors.find(std::format("class/new")); it != m_Constructors.end()) {
 			auto m = it->second.get();
 			intr.Eval(m->Code.Node);
 		}
@@ -49,7 +49,7 @@ bool ObjectType::AddField(std::unique_ptr<FieldInfo> field, Value value) {
 
 bool ObjectType::AddMethod(std::unique_ptr<MethodInfo> method) {
 	if ((method->Flags & SymbolFlags::Ctor) == SymbolFlags::Ctor) {
-		return m_Constructors.insert({ std::format("{}/{}", method->Arity, (int)method->Flags), move(method) }).second;
+		return m_Constructors.insert({ method->IsStatic() ? "class/new" : std::format("new/{}", method->Arity), move(method) }).second;
 	}
 	auto clone = std::make_unique<MethodInfo>(method->Name());
 	clone->Flags = method->Flags;
@@ -82,7 +82,7 @@ MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) c
 }
 
 MethodInfo const* ObjectType::GetClassConstructor() const {
-	if (auto it = m_Constructors.find(std::format("0/{}", (int)SymbolFlags::Static)); it != m_Constructors.end())
+	if (auto it = m_Constructors.find("class/new"); it != m_Constructors.end())
 		return it->second.get();
 	return nullptr;
 }
@@ -137,7 +137,7 @@ RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> co
 		obj->AssignField(name, fi->Init ? intr.Eval(fi->Init) : Value());
 	}
 
-	if (auto it = m_Constructors.find(std::format("{}/{}", args.size(), (int)SymbolFlags::Ctor)); it != m_Constructors.end())
+	if (auto it = m_Constructors.find(std::format("new/{}", args.size())); it != m_Constructors.end())
 		ctor = it->second.get();
 	else if (!args.empty())
 		throw RuntimeError(RuntimeErrorType::NoMatchingConstructor, "No matching constructor");

@@ -6,18 +6,21 @@ namespace Dynamix {
 	struct MethodDef {
 		const char* Name;
 		int Arity;
-		NativeFunction Code;
 		SymbolFlags Flags{ SymbolFlags::Native };
+		NativeFunction Code;
 	};
 };
 
-#define METHOD(name, arity, body)	\
-{ #name, arity,	\
+#define METHOD_EX(name, arity, body, flags)	\
+{ #name, arity, flags,	\
 [](auto& intr, auto& args) -> Value {	\
 	assert(args.size() == (arity + 1));	\
 	auto inst = GetInstance<Type>(args[0]);	\
 	body	\
-	} },
+	} }
+
+#define METHOD(name, arity, body)	METHOD_EX(name, arity, body, SymbolFlags::Native)
+#define CTOR(arity) { "new", arity, SymbolFlags::Native | SymbolFlags::Ctor }
 
 #define BEGIN_METHODS(type)	\
 using Type = type;	\

@@ -109,7 +109,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		return (*f.AsNativeCode())(*this, args);
 	}
 	if (f.IsString()) {
-		auto e = CurrentScope().FindElement(f.ToString(), expr->Arguments().size());
+		auto e = CurrentScope().FindElement(f.ToString(), (int8_t)expr->Arguments().size());
 		if (e)
 			f = e->VarValue;
 		else
@@ -352,8 +352,7 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 			return c;
 		}
 	}
-	assert(false);
-	return Value();
+	throw RuntimeError(RuntimeErrorType::Unexpected, "Unexpected token", expr->Location());
 }
 
 Value Interpreter::VisitAccessArray(AccessArrayExpression const* expr) {

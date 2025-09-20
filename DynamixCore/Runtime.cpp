@@ -7,6 +7,7 @@
 #include "RuntimeObject.h"
 #include "print.h"
 #include "EnumType.h"
+#include "RangeType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -106,5 +107,7 @@ void Runtime::InitStdLibrary() {
 		v.Arity = f.Arity;
 		m_GlobalScope.AddElement(f.Name, move(v));
 	}
+
+	m_GlobalScope.AddElement("Range", Element{ (RuntimeObject*)RangeType::Get(), ElementFlags::Class });
 }
 

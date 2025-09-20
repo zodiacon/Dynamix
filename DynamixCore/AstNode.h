@@ -117,10 +117,20 @@ namespace Dynamix {
 
 	class MatchCaseExpression {
 	public:
-		MatchCaseExpression(bool defaultCase = false) noexcept : m_Default(defaultCase) {}
+		explicit MatchCaseExpression(std::unique_ptr<Statements> action) noexcept : m_Action(std::move(action)) {}
+		void AddCase(std::unique_ptr<Expression> expr) noexcept {
+			m_Cases.push_back(std::move(expr));
+		}
+		void SetCases(std::vector<std::unique_ptr<Expression>> cases) noexcept {
+			m_Cases = std::move(cases);
+		}
+		Statements const* Action() const noexcept {
+			return m_Action.get();
+		}
 
 	private:
-		bool m_Default;
+		std::unique_ptr<Statements> m_Action;
+		std::vector<std::unique_ptr<Expression>> m_Cases;
 	};
 
 	class MatchExpression : public Expression {

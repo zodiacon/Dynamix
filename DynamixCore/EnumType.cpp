@@ -1,4 +1,5 @@
 #include "EnumType.h"
+#include "TypeHelper.h"
 
 using namespace Dynamix;
 

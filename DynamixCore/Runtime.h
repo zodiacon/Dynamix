@@ -35,6 +35,7 @@ namespace Dynamix {
 		InvalidMemberAccess,
 		DuplicateDefinition,
 		StackOverflow,
+		Unexpected,
 	};
 
 	struct ReturnStatementException {
