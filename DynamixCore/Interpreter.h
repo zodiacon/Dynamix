@@ -50,12 +50,15 @@ namespace Dynamix {
 		Value VisitAssignField(AssignFieldExpression const* expr) override;
 		Value VisitForEach(ForEachStatement const* stmt) override;
 		Value VisitRange(RangeExpression const* expr) override;
+		Value VisitMatch(MatchExpression const* expr) override;
 
 		Scope& CurrentScope();
 
 		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 
 		friend class Scoper;
+
+		CodeLocation Location() const noexcept;
 
 	protected:
 		void PushScope();
@@ -76,5 +79,6 @@ namespace Dynamix {
 		Parser& m_Parser;
 		Runtime& m_Runtime;
 		std::stack<Scope> m_Scopes;
+		AstNode const* m_CurrentNode{ nullptr };
 	};
 }

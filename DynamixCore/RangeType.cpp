@@ -13,6 +13,7 @@ RangeType::RangeType() : StaticObjectType("Range") {
 		METHOD(Start, 0, return inst->Start();),
 		METHOD(End, 1, inst->End(args[1].ToInteger()); return inst;),
 		METHOD(End, 0, return inst->End();),
+		METHOD(IsInRange, 1, return inst->IsInRange(args[1].ToInteger());),
 		CTOR(2),
 		END_METHODS()
 

@@ -14,6 +14,10 @@ bool Tokenizer::Tokenize(string_view text, int line) {
 	return true;
 }
 
+void Tokenizer::SetCommentToEndOfLine(std::string_view chars) {
+	m_CommentToEndOfLine = chars;
+}
+
 bool Tokenizer::AddToken(string_view lexeme, TokenType type) {
 	return m_TokenTypesRev.try_emplace(type, lexeme).second &&
 		m_TokenTypes.try_emplace(lexeme, type).second;

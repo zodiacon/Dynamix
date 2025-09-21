@@ -8,6 +8,7 @@
 #include "print.h"
 #include "EnumType.h"
 #include "RangeType.h"
+#include "StringType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -92,9 +93,10 @@ void Runtime::InitStdLibrary() {
 		SymbolFlags Flags{ SymbolFlags::VarArg };
 		int Arity{ -1 };
 	} functions[] = {
-		{ "print", print },
-		{ "println", println },
-		{ "eval", eval, SymbolFlags::None, 1 },
+		{ "Print", Print },
+		{ "PrintLine", PrintLine },
+		{ "Eval", Eval, SymbolFlags::None, 1 },
+		{ "Sleep", Sleep, SymbolFlags::None, 1 },
 	};
 
 	for (auto& f : functions) {
@@ -109,5 +111,7 @@ void Runtime::InitStdLibrary() {
 	}
 
 	m_GlobalScope.AddElement("Range", Element{ (RuntimeObject*)RangeType::Get(), ElementFlags::Class });
+	m_GlobalScope.AddElement("String", Element{ (RuntimeObject*)StringType::Get(), ElementFlags::Class });
+	m_GlobalScope.AddElement("Enum", Element{ (RuntimeObject*)EnumType::Get(), ElementFlags::Class });
 }
 

@@ -179,28 +179,30 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 		parser.AddError(ParseError(ParseErrorType::IllegalExpression, CodeLocation::FromToken(ident), "Class name expected after 'new'"));
 		return nullptr;
 	}
-	while (parser.Peek().Type == TokenType::Colon) {
-		ident.Lexeme += ":";
+	while (parser.Peek().Type == TokenType::DoubleColon) {
+		ident.Lexeme += "::";
 		parser.Next();
 		if (!parser.Match(TokenType::Identifier, false, true))
 			break;
 		ident.Lexeme += parser.Next().Lexeme;
 	}
 
-	parser.Match(TokenType::OpenParen, true, true);
-
 	vector<unique_ptr<Expression>> args;
-	auto next = parser.Peek();
-	while (next.Type != TokenType::CloseParen) {
-		auto param = parser.ParseExpression();
-		args.push_back(move(param));
-		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false)) {
-			parser.AddError(ParseError(ParseErrorType::CommaExpected, next, "Expected , or )"));
-			return nullptr;
+	// allow initializers without open/close parens (means default ctor)
+	if (parser.Peek().Type != TokenType::OpenBrace) {
+		parser.Match(TokenType::OpenParen, true, true);
+		auto next = parser.Peek();
+		while (next.Type != TokenType::CloseParen) {
+			auto param = parser.ParseExpression();
+			args.push_back(move(param));
+			if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false)) {
+				parser.AddError(ParseError(ParseErrorType::CommaExpected, next, "Expected , or )"));
+				return nullptr;
+			}
+			next = parser.Peek();
 		}
-		next = parser.Peek();
+		parser.Match(TokenType::CloseParen, true, true);
 	}
-	parser.Match(TokenType::CloseParen, true, true);
 
 	vector<FieldInitializer> inits;
 	if (parser.Peek().Type == TokenType::OpenBrace) {

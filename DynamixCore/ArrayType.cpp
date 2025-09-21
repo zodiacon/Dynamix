@@ -3,6 +3,7 @@
 #include "VectorEnumerator.h"
 #include "RuntimeObject.h"
 #include "TypeHelper.h"
+#include "SliceType.h"
 
 using namespace Dynamix;
 
@@ -40,7 +41,7 @@ Int ArrayObject::ValidateIndex(Int i) const {
 }
 
 SliceObject* ArrayObject::Slice(Int start, Int count) {
-	return nullptr;
+	return new SliceObject(this, start, count);
 }
 
 ArrayType::ArrayType() : StaticObjectType("Array") {
@@ -54,6 +55,7 @@ ArrayType::ArrayType() : StaticObjectType("Array") {
 		METHOD(Append, 1, return inst->Append(args[1]);),
 		METHOD(RemoveAt, 1, return inst->RemoveAt(args[1].ToInteger());),
 		METHOD(Resize, 1, inst->Resize(args[1].ToInteger()); return inst;),
+		METHOD(Slice, 2, return inst->Slice(args[1].ToInteger(), args[2].ToInteger());),
 	END_METHODS()
 }
 

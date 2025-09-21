@@ -52,6 +52,10 @@ namespace Dynamix {
 			return m_End - m_Start;
 		}
 
+		bool IsInRange(Int value) const noexcept {
+			return value >= m_Start && value < m_End;
+		}
+
 		std::string ToString() const override;
 
 	private:

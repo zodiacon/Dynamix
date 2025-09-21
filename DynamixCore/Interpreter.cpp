@@ -18,8 +18,9 @@ Interpreter::Interpreter(Parser& p, Runtime& rt) : m_Parser(p), m_Runtime(rt) {
 
 Value Interpreter::Eval(AstNode const* root) {
 	assert(root);
+	m_CurrentNode = root;
 	try {
-		return root ? root->Accept(this) : Value();
+		return root->Accept(this);
 	}
 	catch (ReturnStatement const& ret) {
 		return ret.ReturnValue();
@@ -299,6 +300,10 @@ Scope& Interpreter::CurrentScope() {
 	return m_Scopes.top();
 }
 
+CodeLocation Dynamix::Interpreter::Location() const noexcept {
+	return m_CurrentNode ? m_CurrentNode->Location() : CodeLocation();
+}
+
 void Interpreter::PushScope() {
 	if (m_Scopes.size() > 100)
 		throw RuntimeError(RuntimeErrorType::StackOverflow, "Call stack is too deep");
@@ -373,7 +378,7 @@ Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
 	Element v{ type.Get(), ElementFlags::Class };
 	auto name = decl->Name();
 	if (decl->Parent())
-		name = decl->Parent()->Name() + ":" + name;
+		name = decl->Parent()->Name() + "::" + name;
 
 	CurrentScope().AddElement(name, move(v));
 	for (auto& t : decl->Types()) {
@@ -450,5 +455,11 @@ Value Interpreter::VisitRange(RangeExpression const* expr) {
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Range end must be an Integer", expr->End()->Location());
 
 	return RangeType::Get()->CreateRange(start.AsInteger(), end.AsInteger() + (expr->EndInclusive() ? 1 : 0));
+}
+
+Value Interpreter::VisitMatch(MatchExpression const* expr) {
+	auto value = Eval(expr->ToMatch());
+
+	return Value();
 }
 

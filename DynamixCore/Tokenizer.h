@@ -48,8 +48,8 @@ namespace Dynamix {
 		std::unordered_map<TokenType, std::string_view> m_TokenTypesRev;
 		std::string_view m_Text;
 		const char* m_Current{ nullptr };
-		std::string_view m_CommentToEndOfLine{ "//" };
-		std::string_view m_MultiLineCommentStart{ "/*" }, m_MultiLineCommentEnd{ "*/" };
+		std::string m_CommentToEndOfLine{ "//" };
+		std::string m_MultiLineCommentStart{ "/*" }, m_MultiLineCommentEnd{ "*/" };
 		int m_MultiLineCommentNesting;
 	};
 }

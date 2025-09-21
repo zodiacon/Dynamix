@@ -5,9 +5,9 @@
 namespace Dynamix {
 	class Value;
 	class Interpreter;
+
+	Value Print(Interpreter&, std::vector<Value>& args);
+	Value PrintLine(Interpreter&, std::vector<Value>& args);
+	Value Eval(Interpreter&, std::vector<Value>& args);
+	Value Sleep(Interpreter&, std::vector<Value>& args);
 }
-
-Dynamix::Value print(Dynamix::Interpreter&, std::vector<Dynamix::Value>& args);
-Dynamix::Value println(Dynamix::Interpreter&, std::vector<Dynamix::Value>& args);
-Dynamix::Value eval(Dynamix::Interpreter&, std::vector<Dynamix::Value>& args);
-
