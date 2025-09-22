@@ -78,6 +78,10 @@ Value Value::BinaryOperator(TokenType op, Value const& rhs) const {
 Value Value::UnaryOperator(TokenType op) const {
 	switch (op) {
 		case TokenType::Minus: return Negate();
+		case TokenType::Not: return !ToBoolean();
+		case TokenType::TypeOf:
+			assert(IsObject());
+			return oValue->Type();
 	}
 	throw RuntimeError(RuntimeErrorType::UnknownOperator, std::format("Unsupported operator {}", Token::TypeToString(op)));
 }

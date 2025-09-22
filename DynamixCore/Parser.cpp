@@ -51,6 +51,7 @@ bool Parser::Init() {
 		{ "use", TokenType::Use },
 		{ "as", TokenType::As },
 		{ "with", TokenType::With },
+		{ "typeof", TokenType::TypeOf },
 
 		{ "$include", TokenType::MetaInclude },
 		{ "$default", TokenType::MetaDefault },
@@ -141,6 +142,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::DotDot, make_unique<RangeParslet>());
 	AddParslet(TokenType::DotDotInclusive, make_unique<RangeParslet>());
 	AddParslet(TokenType::Match, make_unique<MatchParslet>());
+	AddParslet(TokenType::TypeOf, make_unique<TypeOfParslet>(500));
 
 	return true;
 }

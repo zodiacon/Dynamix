@@ -20,6 +20,9 @@ Value EnumType::ToString(ObjectType* type, Int value) {
 }
 
 CustomEnumType::CustomEnumType(std::string name) : ObjectType(std::move(name), EnumType::Get()) {
+	BEGIN_METHODS(CustomEnumType)
+		METHOD(ToString, 1, return inst->ToString(args[1].ToInteger());),
+		END_METHODS()
 }
 
 bool CustomEnumType::AddField(std::unique_ptr<FieldInfo> field, Value value) {
@@ -30,6 +33,7 @@ bool CustomEnumType::AddField(std::unique_ptr<FieldInfo> field, Value value) {
 	return m_RevFields.insert({ value.AsInteger(), f->Name() }).second;
 }
 
-const char* Dynamix::CustomEnumType::ToString(Int value) const {
+const char* CustomEnumType::ToString(Int value) const {
 	return "Zebra";
 }
+

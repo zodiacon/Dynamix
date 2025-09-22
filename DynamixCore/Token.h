@@ -54,6 +54,7 @@ namespace Dynamix {
 		Use,
 		As,
 		With,
+		TypeOf,
 
 		Plus = Operator,
 		Minus,

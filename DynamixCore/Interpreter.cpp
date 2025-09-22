@@ -133,9 +133,12 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		if (!callable->Method.empty()) {
 			Scoper scoper(this);
 			vector<Value> args;
+			if (instance)
+				args.push_back(instance);
 			for (auto& arg : expr->Arguments())
 				args.push_back(Eval(arg.get()));
-			instance->Type()->AddTypesToScope(CurrentScope());
+			if(!instance->IsObjectType())
+				instance->Type()->AddTypesToScope(CurrentScope());
 			try {
 				return instance->Invoke(*this, callable->Method, args);
 			}
@@ -325,17 +328,17 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	FieldInfo const* field;
 	auto obj = value.ToObject();
 	ObjectType* type = nullptr;
-	bool isStatic = expr->Operator().Type == TokenType::Colon;
+	bool isStatic = expr->Operator().Type == TokenType::DoubleColon;
 	type = obj->Type();
 	auto member = type->GetMember(expr->Member());
 	if (!member)
 		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member {} of type {}", expr->Member(), type->Name()), expr->Location());
 
-	auto check = [](auto obj, auto member, auto expr) {
-		if (!obj->IsObjectType() && member->IsStatic())
+	auto check = [&](auto obj, auto member, auto expr) {
+		if (!isStatic && member->IsStatic())
 			throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access static method '{}' via instance",
 				member->Name()), expr->Location());
-		else if (obj->IsObjectType() && !member->IsStatic())
+		else if (isStatic && !member->IsStatic())
 			throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access instance method '{}' via class",
 				member->Name()), expr->Location());
 	};

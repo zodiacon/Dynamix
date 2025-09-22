@@ -291,3 +291,11 @@ unique_ptr<Expression> RangeParslet::Parse(Parser& parser, std::unique_ptr<Expre
 
 	return make_unique<RangeExpression>(move(left), move(end), token.Type == TokenType::DotDotInclusive);
 }
+
+unique_ptr<Expression> TypeOfParslet::Parse(Parser& parser, Token const& token) {
+	assert(token.Type == TokenType::TypeOf);
+	parser.Match(TokenType::OpenParen, true, true);
+	auto expr = parser.ParseExpression();
+	parser.Match(TokenType::CloseParen, true, true);
+	return make_unique<UnaryExpression>(token, move(expr));
+}

@@ -56,6 +56,11 @@ namespace Dynamix {
 		int m_Precedence;
 	};
 
+	struct TypeOfParslet : PrefixOperatorParslet {
+		explicit TypeOfParslet(int precedence) : PrefixOperatorParslet(precedence) {}
+		std::unique_ptr<Expression> Parse(Parser& parser, Token const& token) override;
+	};
+
 	struct PostfixOperatorParslet : InfixParslet {
 		explicit PostfixOperatorParslet(int precedence);
 		int Precedence() const noexcept override;
