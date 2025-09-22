@@ -46,8 +46,8 @@ namespace Dynamix {
 
 		virtual std::string ToString() const;
 
-		virtual int AddRef() noexcept;
-		virtual int Release() noexcept;
+		virtual int AddRef() const noexcept;
+		virtual int Release() const noexcept;
 
 		Value Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags = InvokeFlags::Method);
 		virtual Value InvokeIndexer(Value const& index);
@@ -57,7 +57,7 @@ namespace Dynamix {
 		std::unordered_map<std::string, Value> m_FieldValues;
 
 	private:
-		int m_RefCount{ 1 };
+		mutable int m_RefCount{ 1 };
 		ObjectType* m_Type;
 	};
 

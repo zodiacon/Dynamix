@@ -40,7 +40,7 @@ Int ArrayObject::ValidateIndex(Int i) const {
 	return i;
 }
 
-SliceObject* ArrayObject::Slice(Int start, Int count) {
+SliceObject const* ArrayObject::Slice(Int start, Int count) const {
 	return new SliceObject(this, start, count);
 }
 
@@ -64,7 +64,7 @@ ArrayObject::ArrayObject(std::vector<Value> init) :
 }
 
 std::unique_ptr<IEnumerator> ArrayObject::GetEnumerator() const {
-	return std::make_unique<VectorEnumerator>(m_Items);
+	return std::make_unique<VectorEnumerator<decltype(m_Items)::const_iterator>>(m_Items.begin(), m_Items.end());
 }
 
 RuntimeObject* ArrayObject::Clone() const {

@@ -78,7 +78,7 @@ namespace Dynamix {
 		explicit ObjectType(std::string name, ObjectType* base = nullptr);
 
 		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
-		virtual void DestroyObject(RuntimeObject* object);
+		virtual void DestroyObject(RuntimeObject const* object) const;
 		bool IsObjectType() const override {
 			return true;
 		}
@@ -93,7 +93,7 @@ namespace Dynamix {
 
 		unsigned GetObjectCount() const;
 
-		bool AddField(std::unique_ptr<FieldInfo> field, Value value = Value());
+		virtual bool AddField(std::unique_ptr<FieldInfo> field, Value value = Value());
 		bool AddMethod(std::unique_ptr<MethodInfo> method);
 		bool AddType(ObjectPtr<ObjectType> type);
 
@@ -127,7 +127,7 @@ namespace Dynamix {
 		void ObjectCreated(RuntimeObject* obj);
 		void ObjectDestroyed(RuntimeObject* obj);
 
-		unsigned m_ObjectCount{ 0 };
+		mutable unsigned m_ObjectCount{ 0 };
 		std::unordered_map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
 		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;
@@ -141,10 +141,10 @@ namespace Dynamix {
 	public:
 		StaticObjectType(std::string name, ObjectType* baseType = nullptr);
 
-		int AddRef() noexcept override {
+		int AddRef() const noexcept override {
 			return 2;
 		}
-		int Release() noexcept override {
+		int Release() const noexcept override {
 			return 1;
 		}
 	};

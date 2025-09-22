@@ -27,7 +27,7 @@ namespace Dynamix {
 
 		std::unique_ptr<IEnumerator> GetEnumerator() const override;
 		RuntimeObject* Clone() const override;
-		SliceObject* Slice(Int start, Int count) override;
+		SliceObject const* Slice(Int start, Int count) const override;
 
 		void* QueryService(ServiceId id) override;
 

@@ -40,14 +40,16 @@ void RuntimeObject::AssignIndexer(Value const& index, Value const& value, TokenT
 	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, std::format("indexer not supported on type {}", Type()->Name()));
 }
 
-int RuntimeObject::AddRef() noexcept {
+int RuntimeObject::AddRef() const noexcept {
 	return ++m_RefCount;
 }
 
-int RuntimeObject::Release() noexcept {
+int RuntimeObject::Release() const noexcept {
 	auto count = --m_RefCount;
-	if (count == 0)
+	if (count == 0) {
 		m_Type->DestroyObject(this);
+		delete this;
+	}
 	return count;
 }
 

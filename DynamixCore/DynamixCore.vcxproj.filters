@@ -108,6 +108,9 @@
     <ClInclude Include="EnumType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="MathType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
@@ -174,6 +177,9 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="EnumType.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MathType.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>

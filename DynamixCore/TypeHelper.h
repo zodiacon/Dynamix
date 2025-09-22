@@ -9,22 +9,40 @@ namespace Dynamix {
 		SymbolFlags Flags{ SymbolFlags::Native };
 		NativeFunction Code;
 	};
-};
 
-#define METHOD_EX(name, arity, body, flags)	\
+	struct FieldDef {
+		const char* Name;
+		Value TheValue;
+		SymbolFlags Flags{ SymbolFlags::Static | SymbolFlags::Const };
+	};
+}
+
+#define METHOD_EX(name, arity, flags, body)	\
 { #name, arity, flags,	\
 [](auto& intr, auto& args) -> Value {	\
-	assert(args.size() == (arity + 1));	\
-	auto inst = GetInstance<Type>(args[0]);	\
+	auto isStatic = (flags & SymbolFlags::Static) == SymbolFlags::Static;	\
+	assert(args.size() == arity + (isStatic ? 0 : 1));	\
+	auto inst = isStatic ? nullptr : GetInstance<Type>(args[0]);	\
 	body	\
 	} }
 
-#define METHOD(name, arity, body)	METHOD_EX(name, arity, body, SymbolFlags::Native)
+#define METHOD(name, arity, body)	METHOD_EX(name, arity, SymbolFlags::Native, body)
 #define CTOR(arity) { "new", arity, SymbolFlags::Native | SymbolFlags::Ctor }
 
 #define BEGIN_METHODS(type)	\
 using Type = type;	\
 MethodDef methods[] {
+
+#define BEGIN_FIELDS FieldDef fields[] {
+#define FIELD(name, code) { #name, code }
+#define END_FIELDS	\
+    };	\
+	for (auto& f : fields) {	\
+		auto fi = std::make_unique<FieldInfo>(f.Name);	\
+		fi->Flags = f.Flags;	\
+		AddField(std::move(fi), f.TheValue);	\
+	}
+
 
 #define METHOD0(name)	\
 { #name, 0, \

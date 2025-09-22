@@ -55,6 +55,7 @@ namespace Dynamix {
 		std::unique_ptr<ClassDeclaration> ParseClassDeclaration(ClassDeclaration const* parent = nullptr);
 		std::unique_ptr<ForEachStatement> ParseForEachStatement();
 		std::unique_ptr<Statements> ParseStatementsForMatch(bool newScope = false);
+		std::unique_ptr<Statement> ParseUseStatement();
 
 		Token Next();
 		Token const& Peek() const;

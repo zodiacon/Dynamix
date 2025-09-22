@@ -51,6 +51,9 @@ namespace Dynamix {
 		Match,
 		Native,
 		This,
+		Use,
+		As,
+		With,
 
 		Plus = Operator,
 		Minus,

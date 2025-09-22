@@ -9,6 +9,7 @@
 #include "EnumType.h"
 #include "RangeType.h"
 #include "StringType.h"
+#include "MathType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -73,7 +74,7 @@ ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpret
 }
 
 ObjectPtr<ObjectType> Runtime::BuildEnum(EnumDeclaration const* decl) const {
-	auto type = new ObjectType(decl->Name(), EnumType::Get());
+	auto type = new CustomEnumType(decl->Name());
 	for (auto& [name, value] : decl->Values()) {
 		auto field = std::make_unique<FieldInfo>(name);
 		field->Flags = SymbolFlags::Static;
@@ -111,7 +112,9 @@ void Runtime::InitStdLibrary() {
 	}
 
 	m_GlobalScope.AddElement("Range", Element{ (RuntimeObject*)RangeType::Get(), ElementFlags::Class });
-	m_GlobalScope.AddElement("String", Element{ (RuntimeObject*)StringType::Get(), ElementFlags::Class });
+	m_GlobalScope.AddElement("String", Element{ (RuntimeObject*)StringTypeA::Get(), ElementFlags::Class });
+	m_GlobalScope.AddElement("StringW", Element{ (RuntimeObject*)StringTypeW::Get(), ElementFlags::Class });
 	m_GlobalScope.AddElement("Enum", Element{ (RuntimeObject*)EnumType::Get(), ElementFlags::Class });
+	m_GlobalScope.AddElement("Math", Element{ (RuntimeObject*)MathType::Get(), ElementFlags::Class });
 }
 

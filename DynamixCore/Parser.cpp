@@ -48,6 +48,9 @@ bool Parser::Init() {
 		{ "this", TokenType::This },
 		{ "case", TokenType::Case },
 		{ "default", TokenType::Default },
+		{ "use", TokenType::Use },
+		{ "as", TokenType::As },
+		{ "with", TokenType::With },
 
 		{ "$include", TokenType::MetaInclude },
 		{ "$default", TokenType::MetaDefault },
@@ -437,6 +440,13 @@ unique_ptr<Statements> Parser::ParseStatementsForMatch(bool newScope) {
 	return block;
 }
 
+unique_ptr<Statement> Parser::ParseUseStatement() {
+	Next();		// eat use keyword
+	if (Match(TokenType::Class)) {
+	}
+	return std::unique_ptr<Statement>();
+}
+
 unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
 	Match(TokenType::OpenBrace, true, true);
 
@@ -481,6 +491,7 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 		return nullptr;
 
 	switch (peek.Type) {
+		case TokenType::Use: return ParseUseStatement();
 		case TokenType::Var: return ParseVarValStatement(false);
 		case TokenType::Val: return ParseVarValStatement(true);
 		case TokenType::Repeat:

@@ -405,6 +405,10 @@ namespace Dynamix {
 		std::vector<std::unique_ptr<Expression>> m_Arguments;
 	};
 
+	class UseStatement : public Statement {
+
+	};
+
 	class ForEachStatement : public Statement {
 	public:
 		ForEachStatement(std::string name, std::unique_ptr<Expression> collection, std::unique_ptr<Statements> body) noexcept;

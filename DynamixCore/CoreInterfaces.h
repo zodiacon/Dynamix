@@ -35,6 +35,6 @@ namespace Dynamix {
 	};
 
 	struct ISliceable {
-		virtual SliceObject* Slice(Int start, Int count = -1) = 0;
+		virtual SliceObject const* Slice(Int start, Int count = -1) const = 0;
 	};
 }

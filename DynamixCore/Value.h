@@ -70,6 +70,8 @@ namespace Dynamix {
 		constexpr Value(ValueType t) noexcept : m_Type(t) {}
 		constexpr Value(AstNode const* node) : nValue(node), m_Type(ValueType::AstNode) {}
 		constexpr Value(NativeFunction f) : fValue(f), m_Type(ValueType::NativeFunction) {}
+		Value(Int value, ObjectType* enumType) : iValue(value), m_EnumType(enumType) {}
+
 		Value(const char* s) noexcept;
 		Value(RuntimeObject* o) noexcept;
 		Value(Callable* c) noexcept;
@@ -81,6 +83,10 @@ namespace Dynamix {
 
 		static Value FromToken(Token const& token);
 		static Value Error(ValueErrorType type = ValueErrorType::Unspecfied);
+
+		void SetEnumType(ObjectType* type) {
+			m_EnumType = type;
+		}
 
 		~Value() noexcept;
 
@@ -136,6 +142,7 @@ namespace Dynamix {
 		Bool ToBoolean() const;
 		Real ToReal() const;
 		RuntimeObject* ToObject() const;
+		ObjectType* ToTypeObject() const;
 
 		AstNode const* AsAstNode() const noexcept {
 			assert(IsAstNode());
@@ -216,8 +223,7 @@ namespace Dynamix {
 				ValueType m_Type;
 				uint32_t m_StrLen;
 			};
-			AstNode* MemberNode;
-			NativeFunction memberCode;
+			ObjectType* m_EnumType;
 		};
 	};
 
@@ -226,20 +232,4 @@ namespace Dynamix {
 }
 
 std::ostream& operator<<(std::ostream& os, const Dynamix::Value& v);
-
-//template<>
-//struct std::formatter<Dynamix::Value> {
-//	template<typename Context>
-//	constexpr auto parse(Context& ctx) {
-//		return ctx.end();
-//	}
-//
-//	template<typename Context>
-//	constexpr auto format(Dynamix::Value const& v, Context& ctx) const {
-//		std::ostringstream out;
-//		out << v;
-//		return ranges::copy(move(out).str(), ctx.out()).out;
-//	}
-//};
-//
 

@@ -10,7 +10,7 @@ SliceType* SliceType::Get() {
 SliceType::SliceType() : ObjectType("Slice") {
 }
 
-SliceObject::SliceObject(RuntimeObject* target, Int start, Int count) noexcept
+SliceObject::SliceObject(RuntimeObject const* target, Int start, Int count) noexcept
 	: RuntimeObject(SliceType::Get()), m_Target(target), m_Start(start), m_Count(count) {
 	target->AddRef();
 }

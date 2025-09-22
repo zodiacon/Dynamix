@@ -4,13 +4,15 @@
 #include "CoreInterfaces.h"
 
 namespace Dynamix {
+	template<typename It>
 	struct VectorEnumerator : IEnumerator {
-		explicit VectorEnumerator(std::vector<Value> const& v);
+		VectorEnumerator(It begin, It end) : m_Iter(begin), m_End(end) {}
 
-		Value GetNextValue() override;
+		Value GetNextValue() {
+			return m_Iter == m_End ? Value::Error(ValueErrorType::CollectionEnd) : *m_Iter++;
+		}
 
 	private:
-		std::vector<Value> const& m_Vec;
-		std::vector<Value>::const_iterator m_Iter;
+		It m_Iter, m_End;
 	};
 }

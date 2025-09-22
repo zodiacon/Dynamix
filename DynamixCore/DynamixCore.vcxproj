@@ -140,6 +140,7 @@
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="EnumType.h" />
     <ClInclude Include="Interpreter.h" />
+    <ClInclude Include="MathType.h" />
     <ClInclude Include="NoCopyMove.h" />
     <ClInclude Include="ObjectPtr.h" />
     <ClInclude Include="print.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="AstNode.cpp" />
     <ClCompile Include="EnumType.cpp" />
     <ClCompile Include="Interpreter.cpp" />
+    <ClCompile Include="MathType.cpp" />
     <ClCompile Include="Print.cpp" />
     <ClCompile Include="RangeType.cpp" />
     <ClCompile Include="Runtime.cpp" />

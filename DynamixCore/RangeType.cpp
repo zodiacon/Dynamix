@@ -16,8 +16,6 @@ RangeType::RangeType() : StaticObjectType("Range") {
 		METHOD(IsInRange, 1, return inst->IsInRange(args[1].ToInteger());),
 		CTOR(2),
 		END_METHODS()
-
-	
 }
 
 RangeType* RangeType::Get() {

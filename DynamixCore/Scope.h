@@ -5,18 +5,21 @@
 #include "NoCopyMove.h"
 
 namespace Dynamix {
-	enum class ElementFlags : uint8_t {
-		None = 0,
-		Const = 1,
-		Static = 2,
-		NativeFunction = 4,
-		Class = 8,
-		Enum = 0x10,
+	enum class ElementFlags : uint16_t {
+		None =				0x00,
+		Function =			0x01,
+		Const =				0x02,
+		Static =			0x04,
+		NativeFunction =	0x08,
+		Class =				0x10,
+		Enum =				0x20,
+		DefaultClass =		0x40,
+		Alias =				0x80,
 	};
 
 	struct Element {
 		Value VarValue;
-		ElementFlags Flags{ ElementFlags::None };
+		ElementFlags Flags{ ElementFlags::Function };
 		int8_t Arity{ -1 };
 	};
 

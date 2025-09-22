@@ -8,13 +8,6 @@
 #include "AstNode.h"
 #include "RuntimeObject.h"
 
-	#include <iostream>
-	#include <format>
-	template<typename... Args>
-	inline void println2(const char* fmt, Args&&... args) {
-		std::cout << std::vformat(fmt, std::make_format_args(args...)) << '\n';
-	}
-
 namespace Dynamix {
 	Value Print(Interpreter&, std::vector<Value>& args) {
 		if (!args.empty()) {

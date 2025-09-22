@@ -13,7 +13,7 @@ namespace Dynamix {
 
 	class SliceObject : public RuntimeObject {
 	public:
-		SliceObject(RuntimeObject* target, Int start, Int count) noexcept;
+		SliceObject(RuntimeObject const* target, Int start, Int count) noexcept;
 		~SliceObject() noexcept;
 
 		Int Start() const noexcept {
@@ -22,12 +22,12 @@ namespace Dynamix {
 		Int Count() const noexcept {
 			return m_Count;
 		}
-		RuntimeObject* Target() const noexcept {
+		RuntimeObject const* Target() const noexcept {
 			return m_Target;
 		}
 
 	private:
-		RuntimeObject* m_Target;
+		RuntimeObject const* m_Target;
 		Int m_Start, m_Count;
 	};
 }

@@ -16,8 +16,10 @@ Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string
 		throw RuntimeError(RuntimeErrorType::MethodNotFound,
 			std::format("Method {} with {} args not found in type {}", name, args.size(), Name()));
 
-	if (instance && (method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
-		args.insert(args.begin(), instance);
+	if ((method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
+		if (instance && !instance->IsObjectType()) {
+			args.insert(args.begin(), instance);
+		}
 		return (*method->Code.Native)(intr, args);
 	}
 	if (instance)
@@ -137,9 +139,8 @@ void ObjectType::ObjectDestroyed(RuntimeObject* obj) {
 	m_ObjectCount--;
 }
 
-void ObjectType::DestroyObject(RuntimeObject* instance) {
-	instance->Destruct();
-	delete instance;
+void ObjectType::DestroyObject(RuntimeObject const* instance) const {
+	m_ObjectCount--;
 }
 
 ObjectType::ObjectType(std::string name, ObjectType* base)
