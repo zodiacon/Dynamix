@@ -43,6 +43,14 @@ MethodDef methods[] {
 		AddField(std::move(fi), f.TheValue);	\
 	}
 
+#define END_METHODS()	};	\
+	for (auto& m : methods) {	\
+		auto mi = std::make_unique<MethodInfo>(m.Name);	\
+		mi->Arity = m.Arity;	\
+		mi->Code.Native = m.Code;	\
+		mi->Flags = m.Flags;	\
+		AddMethod(move(mi));	\
+	}
 
 #define METHOD0(name)	\
 { #name, 0, \
@@ -58,11 +66,3 @@ MethodDef methods[] {
 	return static_cast<Type*>(args[0])->name(args[1]);	\
 	} },
 
-#define END_METHODS()	};	\
-	for (auto& m : methods) {	\
-		auto mi = std::make_unique<MethodInfo>(m.Name);	\
-		mi->Arity = m.Arity;	\
-		mi->Code.Native = m.Code;	\
-		mi->Flags = m.Flags;	\
-		AddMethod(move(mi));	\
-	}

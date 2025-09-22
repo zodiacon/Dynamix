@@ -9,7 +9,7 @@
 using namespace Dynamix;
 
 Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string const& name, std::vector<Value>& args, InvokeFlags flags) const {
-	auto method = GetMethod(name, (int8_t)args.size());
+	auto method = GetMethod(name, (int8_t)args.size() - (instance ? 1 : 0));
 	if (!method && m_Base)
 		return m_Base->Invoke(intr, instance, name, args, flags);
 	if (!method)

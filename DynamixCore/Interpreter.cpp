@@ -140,7 +140,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			if(!instance->IsObjectType())
 				instance->Type()->AddTypesToScope(CurrentScope());
 			try {
-				return instance->Invoke(*this, callable->Method, args);
+				return instance->Invoke(*this, callable->Method, args, instance ? InvokeFlags::Instance : InvokeFlags::Static);
 			}
 			catch (ReturnStatementException const& ret) {
 				return ret.ReturnValue;

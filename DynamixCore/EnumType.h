@@ -20,7 +20,8 @@ namespace Dynamix {
 		explicit CustomEnumType(std::string name);
 
 		bool AddField(std::unique_ptr<FieldInfo> field, Value value) override;
-		virtual const char* ToString(Int value) const;
+		Value ToString(Int value) const;
+		Value Parse(const char* name) const;
 
 	private:
 		std::unordered_map<Int, std::string> m_RevFields;

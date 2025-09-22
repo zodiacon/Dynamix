@@ -27,13 +27,15 @@ CustomEnumType::CustomEnumType(std::string name) : ObjectType(std::move(name), E
 
 bool CustomEnumType::AddField(std::unique_ptr<FieldInfo> field, Value value) {
 	auto f = field.get();
-	if(!ObjectType::AddField(std::move(field), value))
+	if (!ObjectType::AddField(std::move(field), value))
 		return false;
 
 	return m_RevFields.insert({ value.AsInteger(), f->Name() }).second;
 }
 
-const char* CustomEnumType::ToString(Int value) const {
-	return "Zebra";
+Value CustomEnumType::ToString(Int value) const {
+	if (auto it = m_RevFields.find(value); it != m_RevFields.end())
+		return it->second.c_str();
+	return std::to_string(value).c_str();
 }
 

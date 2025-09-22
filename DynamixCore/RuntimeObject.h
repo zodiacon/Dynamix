@@ -13,12 +13,14 @@ namespace Dynamix {
 	class Interpreter;
 
 	enum class InvokeFlags {
-		Method,
-		GetProperty,
-		SetProperty,
-		GetField,
-		SetField,
-		Constructor,
+		Instance = 0,
+		Method = 1,
+		GetProperty = 2,
+		SetProperty = 3,
+		GetField = 4,
+		SetField = 5,
+		Constructor = 0x10,
+		Static = 0x20,
 	};
 
 	class RuntimeObject : NoCopy, public IServices {
