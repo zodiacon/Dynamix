@@ -31,7 +31,7 @@ Value RuntimeObject::GetField(std::string const& name) const {
 }
 
 Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags) {
-	return m_Type->Invoke(intr, this, name, args, flags);
+	return (flags & InvokeFlags::Static) == InvokeFlags::Static ? m_Type->Invoke(intr, name, args, flags) : m_Type->Invoke(intr, this, name, args, flags);
 }
 
 Value RuntimeObject::InvokeIndexer(Value const& index) {

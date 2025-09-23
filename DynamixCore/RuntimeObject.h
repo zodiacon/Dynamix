@@ -51,7 +51,7 @@ namespace Dynamix {
 		virtual int AddRef() const noexcept;
 		virtual int Release() const noexcept;
 
-		Value Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags = InvokeFlags::Method);
+		virtual Value Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags = InvokeFlags::Method);
 		virtual Value InvokeIndexer(Value const& index);
 		virtual void AssignIndexer(Value const& index, Value const& value, TokenType assign);
 

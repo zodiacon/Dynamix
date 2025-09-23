@@ -127,20 +127,22 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	else if (f.IsCallable()) {
 		callable = f.AsCallable();
 		instance = callable->Instance;
+		assert(instance);
 		auto native = callable->Native;
 		node = callable->Node;
+		bool isType = instance ? instance->IsObjectType() : false;
 
 		if (!callable->Method.empty()) {
 			Scoper scoper(this);
 			vector<Value> args;
-			if (instance)
+			if (instance && !isType)
 				args.push_back(instance);
 			for (auto& arg : expr->Arguments())
 				args.push_back(Eval(arg.get()));
-			if(!instance->IsObjectType())
+			if(!isType)
 				instance->Type()->AddTypesToScope(CurrentScope());
 			try {
-				return instance->Invoke(*this, callable->Method, args, instance ? InvokeFlags::Instance : InvokeFlags::Static);
+				return instance->Invoke(*this, callable->Method, args, InvokeFlags::Instance);
 			}
 			catch (ReturnStatementException const& ret) {
 				return ret.ReturnValue;

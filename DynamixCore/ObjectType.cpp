@@ -9,7 +9,7 @@
 using namespace Dynamix;
 
 Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string const& name, std::vector<Value>& args, InvokeFlags flags) const {
-	auto method = GetMethod(name, (int8_t)args.size() - (instance ? 1 : 0));
+	auto method = GetMethod(name, (int8_t)args.size());
 	if (!method && m_Base)
 		return m_Base->Invoke(intr, instance, name, args, flags);
 	if (!method)
@@ -17,12 +17,12 @@ Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string
 			std::format("Method {} with {} args not found in type {}", name, args.size(), Name()));
 
 	if ((method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
-		if (instance && !instance->IsObjectType()) {
+		if (instance) {
 			args.insert(args.begin(), instance);
 		}
 		return (*method->Code.Native)(intr, args);
 	}
-	if (instance)
+	if (instance && !instance->IsObjectType())
 		intr.CurrentScope().AddElement("this", { instance });
 	else {
 		for (auto& [name, v] : m_FieldValues)
