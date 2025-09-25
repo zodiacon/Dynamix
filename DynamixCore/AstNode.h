@@ -43,7 +43,7 @@ namespace Dynamix {
 		void operator delete(void* p, size_t);
 
 		virtual Value Accept(Visitor* visitor) const = 0;
-		virtual AstNodeType Type() const noexcept {
+		virtual AstNodeType NodeType() const noexcept {
 			return AstNodeType::None;
 		}
 
@@ -84,7 +84,7 @@ namespace Dynamix {
 
 	class Expression : public AstNode {
 	public:
-		AstNodeType Type() const noexcept override {
+		AstNodeType NodeType() const noexcept override {
 			return AstNodeType::Expression;
 		}
 	};
@@ -102,7 +102,7 @@ namespace Dynamix {
 
 		Expression const* Left() const noexcept;
 		std::string const& Member() const noexcept;
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::GetMember;
 		}
 		Token const& Operator() const noexcept {
@@ -157,7 +157,7 @@ namespace Dynamix {
 	public:
 		AccessArrayExpression(std::unique_ptr<Expression> left, std::unique_ptr<Expression> index) noexcept;
 		Value Accept(Visitor* visitor) const override;
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::ArrayAccess;
 		}
 		Expression const* Left() const noexcept;
@@ -169,7 +169,7 @@ namespace Dynamix {
 
 	class Statement : public Expression {
 	public:
-		AstNodeType Type() const noexcept override {
+		AstNodeType NodeType() const noexcept override {
 			return AstNodeType::Statement;
 		}
 
@@ -202,7 +202,7 @@ namespace Dynamix {
 
 	class Statements final : public Statement {
 	public:
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::Statements;
 		}
 
@@ -222,7 +222,7 @@ namespace Dynamix {
 	class VarValStatement : public Statement {
 	public:
 		VarValStatement(std::string name, SymbolFlags flags, std::unique_ptr<Expression> init) noexcept;
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::VarValStatement;
 		}
 
@@ -330,12 +330,12 @@ namespace Dynamix {
 
 	class NameExpression : public Expression {
 	public:
-		NameExpression(std::string ns, std::string name);
+		NameExpression(std::string name, std::string ns);
 		Value Accept(Visitor* visitor) const override;
 		std::string const& Name() const noexcept;
 		std::string const& NameSpace() const noexcept;
 		std::string ToString() const override;
-		AstNodeType Type() const noexcept override {
+		AstNodeType NodeType() const noexcept override {
 			return AstNodeType::Name;
 		}
 
@@ -363,7 +363,7 @@ namespace Dynamix {
 
 		std::string ToString() const override;
 		Value const& Literal() const noexcept;
-		AstNodeType Type() const noexcept override {
+		AstNodeType NodeType() const noexcept override {
 			return AstNodeType::Literal;
 		}
 
@@ -397,7 +397,7 @@ namespace Dynamix {
 		Expression const* Callable() const;
 		std::vector<std::unique_ptr<Expression>> const& Arguments() const;
 		std::string ToString() const override;
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::InvokeFunction;
 		}
 	private:
@@ -405,8 +405,27 @@ namespace Dynamix {
 		std::vector<std::unique_ptr<Expression>> m_Arguments;
 	};
 
-	class UseStatement : public Statement {
+	enum class UseType {
+		Class,
+		Namespace,
+		Module,
+	};
 
+	class UseStatement : public Statement {
+	public:
+		UseStatement(std::string name, UseType type) noexcept : m_Name(std::move(name)), m_Type(type) {}
+		Value Accept(Visitor* visitor) const override;
+
+		std::string const& Name() const noexcept {
+			return m_Name;
+		}
+		UseType Type() const noexcept {
+			return m_Type;
+		}
+
+	private:
+		std::string m_Name;
+		UseType m_Type;
 	};
 
 	class ForEachStatement : public Statement {
@@ -479,7 +498,7 @@ namespace Dynamix {
 		bool IsStatic() const noexcept {
 			return m_Static;
 		}
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::FunctionDeclaration;
 		}
 
@@ -493,7 +512,7 @@ namespace Dynamix {
 	class ClassDeclaration : public Statement {
 	public:
 		explicit ClassDeclaration(std::string name, ClassDeclaration const* parent = nullptr) noexcept;
-		AstNodeType Type() const noexcept override {
+		AstNodeType NodeType() const noexcept override {
 			return AstNodeType::ClassDeclaration;
 		}
 		Value Accept(Visitor* visitor) const override;
@@ -534,7 +553,7 @@ namespace Dynamix {
 	public:
 		EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values);
 		Value Accept(Visitor* visitor) const override;
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::EnumDeclararion;
 		}
 		std::string const& Name() const noexcept;
@@ -639,7 +658,7 @@ namespace Dynamix {
 		IfThenElseExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> thenExpr, std::unique_ptr<Statement> elseExpr = nullptr);
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
-		AstNodeType Type() const noexcept {
+		AstNodeType NodeType() const noexcept {
 			return AstNodeType::IfThenElse;
 		}
 

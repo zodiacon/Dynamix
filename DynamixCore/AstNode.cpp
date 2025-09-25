@@ -508,3 +508,7 @@ Value RangeExpression::Accept(Visitor* visitor) const {
 Value MatchExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitMatch(this);
 }
+
+Value UseStatement::Accept(Visitor* visitor) const {
+	return visitor->VisitUse(this);
+}

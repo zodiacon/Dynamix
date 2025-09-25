@@ -444,9 +444,15 @@ unique_ptr<Statements> Parser::ParseStatementsForMatch(bool newScope) {
 
 unique_ptr<Statement> Parser::ParseUseStatement() {
 	Next();		// eat use keyword
+	std::string name;
 	if (Match(TokenType::Class)) {
+		name = Next().Lexeme;
+		Match(TokenType::Semicolon);
+		Symbol sym{ name, SymbolType::UseClass };
+		AddSymbol(sym);
+		return make_unique<UseStatement>(name, UseType::Class);
 	}
-	return std::unique_ptr<Statement>();
+	return nullptr;
 }
 
 unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
@@ -606,7 +612,7 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 		}
 		if (Match(TokenType::Assign)) {
 			auto value = ParseExpression();
-			if (value == nullptr || value->Type() != AstNodeType::Literal) {
+			if (value == nullptr || value->NodeType() != AstNodeType::Literal) {
 				AddError(ParseError(ParseErrorType::IllegalExpression, Peek(), "Expression must be constant"));
 				error = true;
 			}

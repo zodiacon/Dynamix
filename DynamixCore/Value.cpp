@@ -234,10 +234,6 @@ Value Value::BitwiseXor(Value const& rhs) const {
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot bitwise XOR {} by {}", ToString(), rhs.ToString()));
 }
 
-Value Value::Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags) {
-	return GetObjectType()->Invoke(intr, *this, name, args, flags);
-}
-
 Value Value::InvokeIndexer(Value const& index) const {
 	switch (m_Type) {
 		case ValueType::String:
@@ -424,15 +420,25 @@ Value Value::LessThanOrEqual(Value const& rhs) const {
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) <= 0;
 		case ValueType::Null: return true;
 	}
-	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare '{}' and '{}'", ToString(), rhs.ToString()));
 }
 
-Value Dynamix::Value::Negate() const {
+Value Value::Negate() const {
 	switch (m_Type) {
 		case ValueType::Integer: return -iValue;
 		case ValueType::Real: return -dValue;
 	}
-	return Value::Error(ValueErrorType::TypeMismatch);
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot negate '{}'", ToString()));
+}
+
+Value Value::Not() const {
+	return !ToBoolean();
+}
+
+Value Value::BitwiseNot() const {
+	if (m_Type == ValueType::Integer)
+		return ~iValue;
+	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot bitwise not '{}'", ToString()));
 }
 
 Value Value::GreaterThan(Value const& rhs) const {

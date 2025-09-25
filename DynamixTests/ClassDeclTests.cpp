@@ -117,13 +117,7 @@ TEST_CASE("Interpreter supports inheritance", "[class][inheritance]") {
     auto& stmtsVec = stmts->Get();
     REQUIRE(stmtsVec.size() == 4);
 
-    interpreter.Eval(stmtsVec[0].get()); // Base
-    interpreter.Eval(stmtsVec[1].get()); // Derived
-    interpreter.Eval(stmtsVec[2].get()); // obj
-
-    auto* exprStmt = dynamic_cast<ExpressionStatement*>(stmtsVec[3].get());
-    REQUIRE(exprStmt != nullptr);
-    auto val = exprStmt->Expr()->Accept(&interpreter);
+    auto val = interpreter.Eval(stmts.get());
     REQUIRE(val.IsInteger());
     REQUIRE(val.ToInteger() == 123);
 }

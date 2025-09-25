@@ -51,6 +51,7 @@ namespace Dynamix {
 		Value VisitForEach(ForEachStatement const* stmt) override;
 		Value VisitRange(RangeExpression const* expr) override;
 		Value VisitMatch(MatchExpression const* expr) override;
+		Value VisitUse(UseStatement const* use) override;
 
 		Scope& CurrentScope();
 

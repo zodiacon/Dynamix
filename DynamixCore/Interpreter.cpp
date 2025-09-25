@@ -28,7 +28,7 @@ Value Interpreter::Eval(AstNode const* root) {
 }
 
 void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor, std::vector<Value> const& args) {
-	assert(ctor->Code.Node->Type() == AstNodeType::Statements);
+	assert(ctor->Code.Node->NodeType() == AstNodeType::Statements);
 	Scoper scoper(this);
 	Element pThis{ instance };
 	CurrentScope().AddElement("this", move(pThis));
@@ -73,6 +73,11 @@ Value Interpreter::VisitName(NameExpression const* expr) {
 		if (elements[0]->Flags == ElementFlags::None)
 			return Value(expr->Name().c_str());
 		throw RuntimeError(RuntimeErrorType::MultipleSymbols, format("Multiple symbols referring to: '{}'", expr->Name()), expr->Location());
+	}
+	auto e = CurrentScope().FindElementWithUse(expr->Name());
+	if (e) {
+		GetMemberExpression gme(make_unique<NameExpression>(e->VarValue.AsObject()->Type()->Name(), ""), expr->Name(), Token{ TokenType::DoubleColon });
+		return VisitGetMember(&gme);
 	}
 	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: '{}'", expr->Name()), expr->Location());
 
@@ -132,17 +137,17 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		node = callable->Node;
 		bool isType = instance ? instance->IsObjectType() : false;
 
-		if (!callable->Method.empty()) {
+		if (callable->Method) {
 			Scoper scoper(this);
 			vector<Value> args;
-			if (instance && !isType)
+			if (!callable->Method->IsStatic())
 				args.push_back(instance);
 			for (auto& arg : expr->Arguments())
 				args.push_back(Eval(arg.get()));
 			if(!isType)
 				instance->Type()->AddTypesToScope(CurrentScope());
 			try {
-				return instance->Invoke(*this, callable->Method, args, InvokeFlags::Instance);
+				return instance->Invoke(*this, callable->Method->Name(), args, callable->Method->IsStatic() ? InvokeFlags::Static : InvokeFlags::Instance);
 			}
 			catch (ReturnStatementException const& ret) {
 				return ret.ReturnValue;
@@ -156,7 +161,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
 
 	if (node) {
-		assert(node->Type() == AstNodeType::FunctionDeclaration);
+		assert(node->NodeType() == AstNodeType::FunctionDeclaration);
 		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
 		assert(!instance);
 		Scoper scoper(this);
@@ -357,8 +362,8 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 			auto method = reinterpret_cast<MethodInfo const*>(member);
 			check(obj, method, expr);
 			auto c = new Callable;
-			c->Instance = obj ? obj : type;
-			c->Method = method->Name();
+			c->Instance = isStatic ? type : obj;
+			c->Method = method;
 			return c;
 		}
 	}
@@ -464,6 +469,16 @@ Value Interpreter::VisitRange(RangeExpression const* expr) {
 
 Value Interpreter::VisitMatch(MatchExpression const* expr) {
 	auto value = Eval(expr->ToMatch());
+
+	return Value();
+}
+
+Value Interpreter::VisitUse(UseStatement const* use) {
+	auto e = CurrentScope().FindElement(use->Name());
+	if(e == nullptr)
+		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown name '{}'", use->Name()), use->Location());
+
+	CurrentScope().AddUse(use->Name());
 
 	return Value();
 }

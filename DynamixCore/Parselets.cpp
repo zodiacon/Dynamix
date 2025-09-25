@@ -71,13 +71,13 @@ unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 
 unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	auto right = parser.ParseExpression(Precedence() - 1);
-	if (left->Type() == AstNodeType::Name)
+	if (left->NodeType() == AstNodeType::Name)
 		return make_unique<AssignExpression>(reinterpret_cast<NameExpression const*>(left.get())->Name(), move(right), token);
 
-	if (left->Type() == AstNodeType::ArrayAccess) {
+	if (left->NodeType() == AstNodeType::ArrayAccess) {
 		return make_unique<AssignArrayIndexExpression>(move(left), move(right), token);
 	}
-	if (left->Type() == AstNodeType::GetMember) {
+	if (left->NodeType() == AstNodeType::GetMember) {
 		return make_unique<AssignFieldExpression>(move(left), move(right), token);
 	}
 

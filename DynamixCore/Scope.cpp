@@ -1,4 +1,5 @@
 #include "Scope.h"
+#include "ObjectType.h"
 
 using namespace Dynamix;
 
@@ -39,4 +40,21 @@ std::vector<Element*> Scope::FindElements(std::string const& name, bool localOnl
 	}
 
 	return m_Parent && !localOnly ? m_Parent->FindElements(name) : std::vector<Element*>();
+}
+
+Element* Scope::FindElementWithUse(std::string const& name) {
+	for (auto& use : m_Uses) {
+		auto cls = FindElement(use.Name);
+		if (cls) {
+			auto type = reinterpret_cast<ObjectType*>(cls->VarValue.ToObject());
+			if (type->GetMember(name))
+				return cls;
+		}
+	}
+	return nullptr;
+}
+
+bool Scope::AddUse(std::string name, ElementFlags type) {
+	m_Uses.push_back(UseElement{ std::move(name), type });
+	return true;
 }

@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="ArrayType.h" />
     <ClInclude Include="AstNode.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="CoreInterfaces.h" />
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="EnumType.h" />
@@ -166,6 +167,7 @@
   <ItemGroup>
     <ClCompile Include="ArrayType.cpp" />
     <ClCompile Include="AstNode.cpp" />
+    <ClCompile Include="Console.cpp" />
     <ClCompile Include="EnumType.cpp" />
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="MathType.cpp" />
@@ -187,6 +189,9 @@
     <ClCompile Include="Value.cpp" />
     <ClCompile Include="VectorEnumerator.cpp" />
     <ClCompile Include="Visitor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Dynamix.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

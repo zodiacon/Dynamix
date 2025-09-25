@@ -27,7 +27,7 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
     REQUIRE(stmtsVec.size() == 1);
 
     auto* fnDecl = reinterpret_cast<FunctionDeclaration*>(stmtsVec[0].get());
-    REQUIRE(fnDecl->Type() == AstNodeType::FunctionDeclaration);
+    REQUIRE(fnDecl->NodeType() == AstNodeType::FunctionDeclaration);
     REQUIRE(fnDecl->Name() == "fact");
     REQUIRE(fnDecl->Parameters().size() == 1);
     REQUIRE(fnDecl->Parameters()[0].Name == "n");
@@ -36,14 +36,14 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
     auto body = fnDecl->Body();
     REQUIRE(body != nullptr);
     auto bodyStmts = reinterpret_cast<const Statements*>(body);
-    REQUIRE(bodyStmts->Type() == AstNodeType::Statements);
+    REQUIRE(bodyStmts->NodeType() == AstNodeType::Statements);
     REQUIRE(bodyStmts->Count() == 2);
 
     // First statement: if (n == 0) { return 1; }
     {
         auto stmt = reinterpret_cast<const ExpressionStatement*>(bodyStmts->GetAt(0));
         auto ifExpr = reinterpret_cast<const IfThenElseExpression*>(stmt->Expr());
-        REQUIRE(ifExpr->Type() == AstNodeType::IfThenElse);
+        REQUIRE(ifExpr->NodeType() == AstNodeType::IfThenElse);
 
         // Condition: n == 0
         auto cond = reinterpret_cast<const BinaryExpression*>(ifExpr->Condition());

@@ -85,7 +85,6 @@ namespace Dynamix {
 
 		// instance 
 		Value Invoke(Interpreter& intr, RuntimeObject* instance, std::string const& name, std::vector<Value>& args, InvokeFlags flags) const;
-		Value Invoke(Interpreter& intr, Value& instance, std::string_view name, std::vector<Value>& args, InvokeFlags flags) const;
 		// static
 		Value Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags) const;
 

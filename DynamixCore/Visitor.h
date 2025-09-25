@@ -32,6 +32,7 @@ namespace Dynamix {
 	class ForEachStatement;
 	class RangeExpression;
 	class MatchExpression;
+	class UseStatement;
 
 	class Visitor {
 	public:
@@ -65,5 +66,6 @@ namespace Dynamix {
 		virtual Value VisitForEach(ForEachStatement const* stmt) = 0;
 		virtual Value VisitRange(RangeExpression const* expr) = 0;
 		virtual Value VisitMatch(MatchExpression const* expr) = 0;
+		virtual Value VisitUse(UseStatement const* use) = 0;
 	};
 }

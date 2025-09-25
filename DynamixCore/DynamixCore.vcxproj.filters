@@ -111,6 +111,9 @@
     <ClInclude Include="MathType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
@@ -182,5 +185,11 @@
     <ClCompile Include="MathType.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
+    <ClCompile Include="Console.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Dynamix.natvis" />
   </ItemGroup>
 </Project>

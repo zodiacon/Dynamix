@@ -57,7 +57,7 @@ namespace Dynamix {
 		RuntimeObject* Instance{ nullptr };
 		AstNode const* Node{ nullptr };
 		NativeFunction Native{ nullptr };
-		std::string Method;
+		MethodInfo const* Method{ nullptr };
 	};
 
 	class Value final {
@@ -198,8 +198,6 @@ namespace Dynamix {
 		Value Negate() const;
 		Value Not() const;
 		Value BitwiseNot() const;
-
-		Value Invoke(Interpreter& intr, std::string_view name, std::vector<Value>& args, InvokeFlags flags);
 
 		Value InvokeIndexer(Value const& index) const;
 

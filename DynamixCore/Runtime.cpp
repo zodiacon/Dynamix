@@ -19,7 +19,7 @@ RuntimeError::RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation 
 }
 
 ObjectType* Runtime::GetObjectType(AstNode const* classNode, Interpreter* intr) {
-	assert(classNode->Type() == AstNodeType::ClassDeclaration);
+	assert(classNode->NodeType() == AstNodeType::ClassDeclaration);
 	auto decl = reinterpret_cast<ClassDeclaration const*>(classNode);
 	auto type = BuildType(decl, intr);
 	return type.Get();
@@ -53,12 +53,12 @@ ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpret
 		};
 
 	for (auto& f : decl->Fields()) {
-		if (f->Type() == AstNodeType::VarValStatement) {
+		if (f->NodeType() == AstNodeType::VarValStatement) {
 			auto vv = reinterpret_cast<VarValStatement const*>(f.get());
 			addField(vv);
 		}
 		else {
-			assert(f->Type() == AstNodeType::Statements);
+			assert(f->NodeType() == AstNodeType::Statements);
 			auto stmts = reinterpret_cast<Statements const*>(f.get());
 			for (auto& s : stmts->Get()) {
 				auto vv = reinterpret_cast<VarValStatement const*>(s.get());
