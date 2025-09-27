@@ -5,6 +5,7 @@
 #include "Runtime.h"
 #include "Interpreter.h"
 #include "Scope.h"
+#include "TypeHelper.h"
 
 using namespace Dynamix;
 
@@ -138,12 +139,11 @@ void ObjectType::ObjectDestroyed(RuntimeObject* obj) {
 	m_ObjectCount--;
 }
 
-void ObjectType::DestroyObject(RuntimeObject const* instance) const {
-	m_ObjectCount--;
-}
-
 ObjectType::ObjectType(std::string name, ObjectType* base)
 	: RuntimeObject(this), MemberInfo(move(name), MemberType::Class), m_Base(base) {
+	BEGIN_METHODS(ObjectType)
+		METHOD(ObjectCount, 0, return Value((Int)inst->GetObjectCount());),
+	END_METHODS()
 }
 
 RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {

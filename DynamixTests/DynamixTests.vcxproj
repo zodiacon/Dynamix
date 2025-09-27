@@ -136,6 +136,7 @@
     <ClCompile Include="ComplexTests.cpp" />
     <ClCompile Include="ForEachTests.cpp" />
     <ClCompile Include="InterpreterTests.cpp" />
+    <ClCompile Include="MemoryTests.cpp" />
     <ClCompile Include="SimpleTests.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -78,7 +78,6 @@ namespace Dynamix {
 		explicit ObjectType(std::string name, ObjectType* base = nullptr);
 
 		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
-		virtual void DestroyObject(RuntimeObject const* object) const;
 		bool IsObjectType() const override {
 			return true;
 		}

@@ -433,7 +433,9 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 				format("Field '{}' on type '{}' does not exist", init.Name, type->Name()), expr->Location());
 		obj->AssignField(init.Name, Eval(init.Init.get()));
 	}
-	return obj;
+	Value vobj(obj);
+	obj->Release();
+	return vobj;
 }
 
 Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {

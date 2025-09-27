@@ -49,7 +49,6 @@ int RuntimeObject::AddRef() const noexcept {
 int RuntimeObject::Release() const noexcept {
 	auto count = --m_RefCount;
 	if (count == 0) {
-		m_Type->DestroyObject(this);
 		delete this;
 	}
 	return count;

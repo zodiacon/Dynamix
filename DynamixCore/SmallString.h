@@ -15,9 +15,13 @@ public:
 			}
 		}
 		else
-			m_Chars[0] = (T)0;
+			m_Chars[0] = static_cast<T>(0);
 	}
-	
+
+	const char* c_str() const noexcept {
+		return m_Chars;
+	}
+
 	operator const T* () const {
 		return m_Chars;
 	}
