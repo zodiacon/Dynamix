@@ -12,8 +12,8 @@ ArrayType* ArrayType::Get() {
 	return &type;
 }
 
-ArrayObject* ArrayType::CreateArray(std::vector<Value>& args) {
-	return new ArrayObject(args);
+ArrayObject* ArrayType::CreateArray(std::vector<Value> args) {
+	return new ArrayObject(std::move(args));
 }
 
 Value ArrayObject::InvokeIndexer(Value const& index) {
@@ -56,6 +56,7 @@ ArrayType::ArrayType() : StaticObjectType("Array") {
 		METHOD(RemoveAt, 1, return inst->RemoveAt(args[1].ToInteger());),
 		METHOD(Resize, 1, inst->Resize(args[1].ToInteger()); return inst;),
 		METHOD(Slice, 2, return inst->Slice(args[1].ToInteger(), args[2].ToInteger());),
+		ENUMERABLE_METHODS
 	END_METHODS()
 }
 

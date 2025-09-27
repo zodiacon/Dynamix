@@ -30,6 +30,10 @@ namespace Dynamix {
 		virtual std::unique_ptr<IEnumerator> GetEnumerator() const = 0;
 	};
 
+	struct Enumerable : public IEnumerable {
+		virtual Value Filter(Interpreter& intr, Value predciate);
+	};
+
 	struct IClonable {
 		virtual RuntimeObject* Clone() const = 0;
 	};
@@ -38,3 +42,4 @@ namespace Dynamix {
 		virtual SliceObject const* Slice(Int start, Int count = -1) const = 0;
 	};
 }
+

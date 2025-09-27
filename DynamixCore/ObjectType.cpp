@@ -19,9 +19,9 @@ Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string
 			std::format("Method {} with {} args not found in type {}", name, args.size(), Name()));
 
 	if ((method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
-		if (instance && !instance->IsObjectType()) {
-			args.insert(args.begin(), instance);
-		}
+		//if (instance && !instance->IsObjectType()) {
+		//	args.insert(args.begin(), instance);
+		//}
 		return (*method->Code.Native)(intr, args);
 	}
 	if (instance && !instance->IsObjectType())

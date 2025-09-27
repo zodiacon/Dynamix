@@ -12,13 +12,13 @@ namespace Dynamix {
 	public:
 		static ArrayType* Get();
 
-		ArrayObject* CreateArray(std::vector<Value>& args);
+		ArrayObject* CreateArray(std::vector<Value> args);
 
 	private:
 		ArrayType();
 	};
 
-	class ArrayObject : public RuntimeObject, public IEnumerable, public IClonable, public ISliceable {
+	class ArrayObject : public RuntimeObject, public Enumerable, public IClonable, public ISliceable {
 	public:
 		ArrayObject(std::vector<Value> init);
 		std::vector<Value>& Items() noexcept {

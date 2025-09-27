@@ -188,6 +188,9 @@
     <ClCompile Include="Console.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
+    <ClCompile Include="Enumerable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Dynamix.natvis" />

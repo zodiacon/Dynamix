@@ -28,6 +28,8 @@ namespace Dynamix {
 
 #define METHOD(name, arity, body)	METHOD_EX(name, arity, SymbolFlags::Native, body)
 #define CTOR(arity) { "new", arity, SymbolFlags::Native | SymbolFlags::Ctor }
+#define ENUMERABLE_METHODS	\
+	METHOD(Filter, 1, return inst->Filter(intr, args[1]);),
 
 #define BEGIN_METHODS(type)	\
 using Type = type;	\
