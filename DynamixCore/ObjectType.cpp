@@ -86,8 +86,9 @@ bool ObjectType::AddType(ObjectPtr<ObjectType> type) {
 }
 
 FieldInfo const* ObjectType::GetField(std::string const& name) const noexcept {
-	auto it = m_Fields.find(name);
-	return it == m_Fields.end() ? nullptr : it->second.get();
+	if(auto it = m_Fields.find(name); it != m_Fields.end())
+		return it->second.get();
+	return m_Base ? m_Base->GetField(name) : nullptr;
 }
 
 MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) const noexcept {
@@ -97,7 +98,7 @@ MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) c
 
 	if (auto it = m_Methods.find(std::format("{}/{}", name, arity)); it != m_Methods.end())
 		return it->second.get();
-	return nullptr;
+	return m_Base ? m_Base->GetMethod(name, arity) : nullptr;
 }
 
 MethodInfo const* ObjectType::GetClassConstructor() const {
@@ -109,7 +110,7 @@ MethodInfo const* ObjectType::GetClassConstructor() const {
 MemberInfo const* ObjectType::GetMember(std::string const& name) const {
 	if (auto it = m_Members.find(name); it != m_Members.end())
 		return it->second;
-	return nullptr;
+	return m_Base ? m_Base->GetMember(name) : nullptr;
 }
 
 void ObjectType::AddTypesToScope(Scope& scope) {

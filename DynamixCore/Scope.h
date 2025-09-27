@@ -37,6 +37,7 @@ namespace Dynamix {
 		std::vector<Element*> FindElements(std::string const& name, bool localOnly = false);
 		Element* FindElementWithUse(std::string const& name);
 		bool AddUse(std::string name, ElementFlags type = ElementFlags::DefaultClass);
+		Scope Clone() const;
 
 	private:
 		std::unordered_map<std::string, std::vector<Element>> m_Elements;

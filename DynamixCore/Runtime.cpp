@@ -26,7 +26,14 @@ ObjectType* Runtime::GetObjectType(AstNode const* classNode, Interpreter* intr) 
 }
 
 ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpreter* intr) const {
-	auto type = new ObjectType(decl->Name());
+	ObjectType* baseType = nullptr;
+	if (!decl->BaseName().empty()) {
+		auto e = intr->CurrentScope().FindElement(decl->BaseName());
+		if (e && ((e->Flags & ElementFlags::Class) == ElementFlags::Class))
+			baseType = reinterpret_cast<ObjectType*>(e->VarValue.AsObject());
+	}
+
+	auto type = new ObjectType(decl->Name(), baseType);
 	for (auto& m : decl->Methods()) {
 		auto mi = std::make_unique<MethodInfo>(m->Name());
 		mi->Arity = (int8_t)m->Parameters().size();

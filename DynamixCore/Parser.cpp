@@ -680,12 +680,14 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 	if (name.Type != TokenType::Identifier)
 		AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(name), "Expected: identifier"));
 
+	std::string baseType;
 	if (Match(TokenType::Colon)) {
-		auto baseType = Next();
+		baseType = Next().Lexeme;
 	}
 
 	Match(TokenType::OpenBrace, true, true);
 	auto decl = make_unique<ClassDeclaration>(move(name.Lexeme), parent);
+	decl->SetBaseType(move(baseType));
 	PushScope(decl.get());
 	vector<unique_ptr<FunctionDeclaration>> methods;
 	vector<unique_ptr<Statement>> fields;

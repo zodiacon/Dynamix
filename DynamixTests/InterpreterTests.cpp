@@ -87,7 +87,7 @@ TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
             }
             return n * fact(n - 1);
         }
-        fact(5);
+        fact(5)
     )";
 
     auto stmts = parser.Parse(code, true);
@@ -104,3 +104,4 @@ TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
     REQUIRE(val.IsInteger());
     REQUIRE(val.ToInteger() == 120);
 }
+

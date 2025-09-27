@@ -516,6 +516,10 @@ namespace Dynamix {
 		AstNodeType NodeType() const noexcept override {
 			return AstNodeType::ClassDeclaration;
 		}
+		void SetBaseType(std::string name) noexcept {
+			m_BaseName = std::move(name);
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		void SetMethods(std::vector<std::unique_ptr<FunctionDeclaration>> methods) noexcept {
 			m_Methods = std::move(methods);
@@ -538,12 +542,15 @@ namespace Dynamix {
 		std::vector<std::unique_ptr<ClassDeclaration>> const& Types() const noexcept {
 			return m_Types;
 		}
-		std::string const& Name() const {
+		std::string const& Name() const noexcept {
 			return m_Name;
+		}
+		std::string const& BaseName() const noexcept {
+			return m_BaseName;
 		}
 
 	private:
-		std::string m_Name;
+		std::string m_Name, m_BaseName;
 		std::vector<std::unique_ptr<FunctionDeclaration>> m_Methods;
 		std::vector<std::unique_ptr<Statement>> m_Fields;
 		std::vector<std::unique_ptr<ClassDeclaration>> m_Types;
