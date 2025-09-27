@@ -252,6 +252,11 @@ Value Value::InvokeIndexer(Value const& index) const {
 
 void Value::Free() noexcept {
 	switch (m_Type) {
+		case ValueType::Error:
+			if (strValue)
+				free(strValue);
+			break;
+
 		case ValueType::Object:
 			oValue->Release();
 			break;
@@ -350,9 +355,20 @@ Value Value::FromToken(Token const& token) {
 	return Value();
 }
 
-Value Value::Error(ValueErrorType type) {
+Value Value::Error(ValueErrorType type, const char* desc) {
 	Value err(ValueType::Error);
 	err.error = type;
+	if (desc) {
+		err.strValue = (char*)malloc((err.m_StrLen = (uint32_t)strlen(desc)) + 1);
+		if (!err.strValue)
+			err.error = ValueErrorType::OutOfMemory;
+		else
+			memcpy(err.strValue, desc, err.m_StrLen + 1);
+	}
+	else {
+		err.strValue = nullptr;
+		err.m_StrLen = 0;
+	}
 	return err;
 }
 

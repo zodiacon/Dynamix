@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
+#include <map>
 
 #include "Value.h"
 #include "CoreInterfaces.h"
@@ -56,7 +56,7 @@ namespace Dynamix {
 		virtual void AssignIndexer(Value const& index, Value const& value, TokenType assign);
 
 	protected:
-		std::unordered_map<std::string, Value> m_FieldValues;
+		std::map<std::string, Value> m_FieldValues;
 
 	private:
 		mutable int m_RefCount{ 1 };

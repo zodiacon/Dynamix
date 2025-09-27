@@ -21,7 +21,7 @@ namespace Dynamix {
 	using Int = long long;
 	using Bool = bool;
 
-	enum class ValueType : uint32_t {
+	enum class ValueType : uint16_t {
 		Error = 0,
 		Null = 1,
 		Integer = 2,
@@ -35,8 +35,9 @@ namespace Dynamix {
 		Callable = 0x200,
 	};
 
-	enum class ValueErrorType {
-		Unspecfied = 0,
+	enum class ValueErrorType : uint8_t {
+		None = 0,
+		Unspecfied = 1,
 		OutOfMemory,
 		DivideByZero,
 		UnsupportedBinaryOperator,
@@ -70,7 +71,6 @@ namespace Dynamix {
 		constexpr Value(ValueType t) noexcept : m_Type(t) {}
 		constexpr Value(AstNode const* node) : nValue(node), m_Type(ValueType::AstNode) {}
 		constexpr Value(NativeFunction f) : fValue(f), m_Type(ValueType::NativeFunction) {}
-		Value(Int value, ObjectType* enumType) : iValue(value), m_EnumType(enumType) {}
 
 		Value(const char* s) noexcept;
 		Value(RuntimeObject* o) noexcept;
@@ -82,11 +82,7 @@ namespace Dynamix {
 		Value& operator=(Value&& other) noexcept;
 
 		static Value FromToken(Token const& token);
-		static Value Error(ValueErrorType type = ValueErrorType::Unspecfied);
-
-		void SetEnumType(ObjectType* type) {
-			m_EnumType = type;
-		}
+		static Value Error(ValueErrorType type = ValueErrorType::Unspecfied, const char* desc = nullptr);
 
 		~Value() noexcept;
 
@@ -212,16 +208,15 @@ namespace Dynamix {
 			AstNode const* nValue;
 			NativeStruct* sValue;
 			Callable* cValue;
-			ValueErrorType error;
 			char* strValue;
 			NativeFunction fValue;
 		};
 		union {
 			struct {
 				ValueType m_Type;
+				ValueErrorType error;
 				uint32_t m_StrLen;
 			};
-			ObjectType* m_EnumType;
 		};
 	};
 

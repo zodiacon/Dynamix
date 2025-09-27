@@ -22,6 +22,7 @@ Value EnumType::ToString(ObjectType* type, Int value) {
 CustomEnumType::CustomEnumType(std::string name) : ObjectType(std::move(name), EnumType::Get()) {
 	BEGIN_METHODS(CustomEnumType)
 		METHOD(ToString, 1, return inst->ToString(args[1].ToInteger());),
+		METHOD(Parse, 1, return inst->Parse(args[1].ToString().c_str());),
 		END_METHODS()
 }
 
@@ -37,5 +38,11 @@ Value CustomEnumType::ToString(Int value) const {
 	if (auto it = m_RevFields.find(value); it != m_RevFields.end())
 		return it->second.c_str();
 	return std::to_string(value).c_str();
+}
+
+Value CustomEnumType::Parse(const char* name) const {
+	if (auto it = m_FieldValues.find(name); it != m_FieldValues.end())
+		return it->second;
+	return Value::Error(ValueErrorType::UndefinedSymbol);
 }
 

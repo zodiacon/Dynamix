@@ -3,7 +3,7 @@
 #include "Value.h"
 #include "NoCopyMove.h"
 #include <atomic>
-#include <unordered_map>
+#include <map>
 #include <string>
 #include "SymbolTable.h"
 #include "RuntimeObject.h"
@@ -127,11 +127,11 @@ namespace Dynamix {
 		void ObjectDestroyed(RuntimeObject* obj);
 
 		mutable unsigned m_ObjectCount{ 0 };
-		std::unordered_map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
-		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
-		std::unordered_map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;
-		std::unordered_map<std::string, ObjectPtr<ObjectType>> m_Types;
-		std::unordered_map<std::string, MemberInfo*> m_Members;
+		std::map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
+		std::map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
+		std::map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;
+		std::map<std::string, ObjectPtr<ObjectType>> m_Types;
+		std::map<std::string, MemberInfo*> m_Members;
 		ObjectType* m_Base;
 		bool m_ClassCtorRun{ false };
 	};
