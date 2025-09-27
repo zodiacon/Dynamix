@@ -22,6 +22,7 @@ namespace Dynamix {
 		IfThenElse,
 		Name,
 		InvokeFunction,
+		AnonymousFunction,
 
 		Statement = 0x400,
 		Statements,
@@ -567,6 +568,9 @@ namespace Dynamix {
 	class AnonymousFunctionExpression : public Expression {
 	public:
 		AnonymousFunctionExpression(std::vector<Parameter> args, std::unique_ptr<Expression> body);
+		AstNodeType NodeType() const noexcept override {
+			return AstNodeType::AnonymousFunction;
+		}
 		Value Accept(Visitor* visitor) const override;
 		std::vector<Parameter> const& Args() const noexcept;
 		Expression const* Body() const noexcept;

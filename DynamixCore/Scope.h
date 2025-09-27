@@ -6,20 +6,21 @@
 
 namespace Dynamix {
 	enum class ElementFlags : uint16_t {
-		None =				0x00,
-		Function =			0x01,
-		Const =				0x02,
-		Static =			0x04,
-		NativeFunction =	0x08,
-		Class =				0x10,
-		Enum =				0x20,
-		DefaultClass =		0x40,
-		Alias =				0x80,
+		None =					0x0000,
+		Function =				0x0000,
+		Const =					0x0002,
+		Static =				0x0004,
+		NativeFunction =		0x0008,
+		Class =					0x0010,
+		Enum =					0x0020,
+		DefaultClass =			0x0040,
+		Alias =					0x0080,
+		AnnonymousFunction =	0x0100,
 	};
 
 	struct Element {
 		Value VarValue;
-		ElementFlags Flags{ ElementFlags::Function };
+		ElementFlags Flags{ ElementFlags::None };
 		int8_t Arity{ -1 };
 	};
 

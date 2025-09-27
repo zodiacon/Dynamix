@@ -161,16 +161,29 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
 
 	if (node) {
-		assert(node->NodeType() == AstNodeType::FunctionDeclaration);
-		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
-		assert(!instance);
+		Expression const* body;
 		Scoper scoper(this);
-		for (size_t i = 0; i < expr->Arguments().size(); i++) {
-			Element v{ Eval(expr->Arguments()[i].get()) };
-			CurrentScope().AddElement(decl->Parameters()[i].Name, move(v));
+		if (node->NodeType() == AstNodeType::FunctionDeclaration) {
+			auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
+			assert(!instance);
+			for (size_t i = 0; i < expr->Arguments().size(); i++) {
+				Element v{ Eval(expr->Arguments()[i].get()) };
+				CurrentScope().AddElement(decl->Parameters()[i].Name, move(v));
+			}
+			body = decl->Body();
 		}
+		else {
+			assert(node->NodeType() == AstNodeType::AnonymousFunction);
+			auto decl = reinterpret_cast<AnonymousFunctionExpression const*>(node);
+			for (size_t i = 0; i < expr->Arguments().size(); i++) {
+				Element v{ Eval(expr->Arguments()[i].get()) };
+				CurrentScope().AddElement(decl->Args()[i].Name, move(v));
+			}
+			body = decl->Body();
+		}
+
 		try {
-			auto result = Eval(decl->Body());
+			auto result = Eval(body);
 			return result;
 		}
 		catch (ReturnStatementException const& ret) {
@@ -263,7 +276,8 @@ Value Interpreter::VisitStatements(Statements const* stmts) {
 }
 
 Value Interpreter::VisitAnonymousFunction(AnonymousFunctionExpression const* func) {
-	return Value();
+	//Element e{ func, ElementFlags::AnnonymousFunction };
+	return func;
 }
 
 Value Interpreter::VisitEnumDeclaration(EnumDeclaration const* decl) {
