@@ -108,9 +108,7 @@ unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<E
 }
 
 unique_ptr<Expression> IfThenElseParslet::Parse(Parser& parser, Token const& token) {
-	//parser.Match(TokenType::OpenParen, true, true);
 	auto cond = parser.ParseExpression();
-	//parser.Match(TokenType::CloseParen, true, true);
 	auto then = parser.ParseBlock();
 	unique_ptr<Statement> elseExpr;
 	if (parser.Match(TokenType::Else))
@@ -122,9 +120,7 @@ unique_ptr<Expression> AnonymousFunctionParslet::Parse(Parser& parser, Token con
 	assert(token.Type == TokenType::Fn);
 	parser.Match(TokenType::OpenParen, true, true);
 
-	//
 	// parse args
-	//
 	vector<Parameter> args;
 	while (parser.Peek().Type != TokenType::CloseParen) {
 		auto arg = parser.Next();

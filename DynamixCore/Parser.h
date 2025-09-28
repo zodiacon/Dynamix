@@ -62,6 +62,7 @@ namespace Dynamix {
 		bool SkipTo(TokenType type);
 		bool Match(TokenType type, bool consume = true, bool errorIfNotFound = false);
 		bool Match(std::string_view lexeme, bool consume = true, bool errorIfNotFound = false);
+		int AddConstSTring(std::string str);
 
 	protected:
 		virtual bool Init();
@@ -76,6 +77,7 @@ namespace Dynamix {
 		std::stack<SymbolTable*> m_Symbols;
 		std::stack<std::string> m_Namespaces;
 		std::string m_CurrentFile;
+		std::vector<std::string> m_ConstStrings;
 		int m_LoopCount{ 0 };
 		bool m_Repl{ false };
 	};

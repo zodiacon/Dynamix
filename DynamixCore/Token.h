@@ -10,7 +10,8 @@ namespace Dynamix {
 		Real = 2,
 		String = 4,	
 		Identifier = 8,
-		Error = 0x10,	
+		Error = 0x10,
+		StringIndex = 0x20,
 		End,
 		Comment,
 
@@ -108,6 +109,7 @@ namespace Dynamix {
 		std::string Lexeme;
 		int Line;
 		uint16_t Col;
+
 		std::string_view TypeToString() const;
 		static std::string_view TypeToString(TokenType type);
 		bool IsValid() const {

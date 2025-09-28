@@ -242,6 +242,11 @@ bool Parser::Match(string_view lexeme, bool consume, bool errorIfNotFound) {
 	return found;
 }
 
+int Parser::AddConstSTring(std::string str) {
+	m_ConstStrings.push_back(move(str));
+	return static_cast<int>(m_ConstStrings.size());;
+}
+
 unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 	auto token = Next();
 	if (token.Type == TokenType::End)
