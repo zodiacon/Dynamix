@@ -118,21 +118,20 @@ unique_ptr<Expression> IfThenElseParslet::Parse(Parser& parser, Token const& tok
 }
 
 unique_ptr<Expression> AnonymousFunctionParslet::Parse(Parser& parser, Token const& token) {
-	assert(token.Type == TokenType::Fn);
-	parser.Match(TokenType::OpenParen, true, true);
+	assert(token.Type == TokenType::BitwiseOr);
 
 	// parse args
 	vector<Parameter> args;
-	while (parser.Peek().Type != TokenType::CloseParen) {
+	while (parser.Peek().Type != TokenType::BitwiseOr) {
 		auto arg = parser.Next();
 		if (arg.Type != TokenType::Identifier)
 			parser.AddError(ParseError(ParseErrorType::IdentifierExpected, arg));
 		args.push_back(Parameter{ move(arg.Lexeme) });
-		if (parser.Match(TokenType::Comma) || parser.Match(TokenType::CloseParen, false))
+		if (parser.Match(TokenType::Comma) || parser.Match(TokenType::BitwiseOr, false))
 			continue;
-		parser.AddError(ParseError(ParseErrorType::CommaOrCloseParenExpected, parser.Peek()));
+		parser.AddError(ParseError(ParseErrorType::UnexpectedToken, parser.Peek(), "Expected: ',' or '|'"));
 	}
-	parser.Next();		// eat close paren
+	parser.Next();		// eat bar
 	if (parser.Match(TokenType::GoesTo)) {
 		auto expr = parser.ParseExpression();
 		return make_unique<AnonymousFunctionExpression>(move(args), move(expr));

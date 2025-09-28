@@ -5,11 +5,12 @@
 #include <cassert>
 #include "Interpreter.h"
 #include "RuntimeObject.h"
-#include "print.h"
+#include "General.h"
 #include "EnumType.h"
 #include "RangeType.h"
 #include "StringType.h"
 #include "MathType.h"
+#include "ComplexType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -123,5 +124,6 @@ void Runtime::InitStdLibrary() {
 	m_GlobalScope.AddElement("StringW", Element{ (RuntimeObject*)StringTypeW::Get(), ElementFlags::Class });
 	m_GlobalScope.AddElement("Enum", Element{ (RuntimeObject*)EnumType::Get(), ElementFlags::Class });
 	m_GlobalScope.AddElement("Math", Element{ (RuntimeObject*)MathType::Get(), ElementFlags::Class });
+	m_GlobalScope.AddElement("Complex", Element{ (RuntimeObject*)ComplexType::Get(), ElementFlags::Class });
 }
 

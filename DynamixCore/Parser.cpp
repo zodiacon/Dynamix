@@ -133,7 +133,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::BitwiseAnd, make_unique<BinaryOperatorParslet>(400));
 	AddParslet(TokenType::BitwiseOr, make_unique<BinaryOperatorParslet>(390));
 	AddParslet(TokenType::BitwiseXor, make_unique<BinaryOperatorParslet>(390));
-	AddParslet(TokenType::Fn, make_unique<AnonymousFunctionParslet>());
+	AddParslet(TokenType::BitwiseOr, make_unique<AnonymousFunctionParslet>());
 	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayExpressionParslet>());
 	AddParslet(TokenType::Dot, make_unique<GetMemberParslet>());

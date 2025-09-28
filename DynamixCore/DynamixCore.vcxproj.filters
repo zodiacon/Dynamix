@@ -33,7 +33,7 @@
     <ClInclude Include="EnumClassBitwise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="print.h">
+    <ClInclude Include="General.h">
       <Filter>StdLib</Filter>
     </ClInclude>
     <ClInclude Include="Parser.h">
@@ -114,12 +114,18 @@
     <ClInclude Include="Console.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="ComplexType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="StructObjectBase.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Print.cpp">
+    <ClCompile Include="General.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
     <ClCompile Include="Parser.cpp">
@@ -190,6 +196,9 @@
     </ClCompile>
     <ClCompile Include="Enumerable.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ComplexType.cpp">
+      <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

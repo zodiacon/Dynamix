@@ -2,7 +2,7 @@
 #include <thread>
 #include <chrono>
 
-#include "print.h"
+#include "General.h"
 #include "Value.h"
 #include "Interpreter.h"
 #include "AstNode.h"

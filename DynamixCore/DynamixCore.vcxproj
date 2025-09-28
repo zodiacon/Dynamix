@@ -136,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="ArrayType.h" />
     <ClInclude Include="AstNode.h" />
+    <ClInclude Include="ComplexType.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="CoreInterfaces.h" />
     <ClInclude Include="EnumClassBitwise.h" />
@@ -144,7 +145,7 @@
     <ClInclude Include="MathType.h" />
     <ClInclude Include="NoCopyMove.h" />
     <ClInclude Include="ObjectPtr.h" />
-    <ClInclude Include="print.h" />
+    <ClInclude Include="General.h" />
     <ClInclude Include="RangeType.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="RuntimeObject.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="SliceType.h" />
     <ClInclude Include="SmallString.h" />
     <ClInclude Include="StringType.h" />
+    <ClInclude Include="StructObjectBase.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Tokenizer.h" />
@@ -167,12 +169,13 @@
   <ItemGroup>
     <ClCompile Include="ArrayType.cpp" />
     <ClCompile Include="AstNode.cpp" />
+    <ClCompile Include="ComplexType.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Enumerable.cpp" />
     <ClCompile Include="EnumType.cpp" />
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="MathType.cpp" />
-    <ClCompile Include="Print.cpp" />
+    <ClCompile Include="General.cpp" />
     <ClCompile Include="RangeType.cpp" />
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="RuntimeObject.cpp" />
