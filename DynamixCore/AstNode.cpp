@@ -493,3 +493,7 @@ Value MatchExpression::Accept(Visitor* visitor) const {
 Value UseStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitUse(this);
 }
+
+Value InterfaceDeclaration::Accept(Visitor* visitor) const {
+	return Value();
+}

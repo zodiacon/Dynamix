@@ -32,6 +32,7 @@ namespace Dynamix {
 		GetMember,
 		ClassDeclaration,
 		EnumDeclararion,
+		InterfaceDeclaration,
 	};
 
 	class AstNode {
@@ -525,6 +526,38 @@ namespace Dynamix {
 	private:
 		std::string m_Name;
 		bool m_Method, m_Static;
+	};
+
+	class InterfaceDeclaration : public Statement {
+	public:
+		explicit InterfaceDeclaration(std::string name) noexcept : m_Name(std::move(name)) {}
+
+		AstNodeType NodeType() const noexcept override {
+			return AstNodeType::InterfaceDeclaration;
+		}
+		Value Accept(Visitor* visitor) const override;
+
+		void SetMethods(std::vector<std::unique_ptr<FunctionDeclaration>> methods) noexcept {
+			m_Methods = std::move(methods);
+		}
+		std::vector<std::unique_ptr<FunctionDeclaration>> const& Methods() const noexcept {
+			return m_Methods;
+		}
+		void AddBaseInterface(std::string name) noexcept {
+			m_BaseNames.push_back(std::move(name));
+		}
+
+		std::string const& Name() const noexcept {
+			return m_Name;
+		}
+		std::vector<std::string> const& BaseNames() const noexcept {
+			return m_BaseNames;
+		}
+
+	private:
+		std::string m_Name;
+		std::vector<std::string> m_BaseNames;
+		std::vector<std::unique_ptr<FunctionDeclaration>> m_Methods;
 	};
 
 	class ClassDeclaration : public Statement {

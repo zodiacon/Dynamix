@@ -16,6 +16,7 @@ namespace Dynamix {
 		Class,
 		Struct,
 		Method,
+		Interface,
 		UseClass,
 	};
 
@@ -26,6 +27,7 @@ namespace Dynamix {
 		Static = 4,
 		Ctor = 8,
 		Native = 0x10,
+		Abstract = 0x20,
 	};
 
 	class Interpreter;

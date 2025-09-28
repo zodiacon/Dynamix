@@ -37,6 +37,7 @@ namespace Dynamix {
 		StackOverflow,
 		Unexpected,
 		TooManyArguments,
+		InvalidType,
 	};
 
 	struct ReturnStatementException {

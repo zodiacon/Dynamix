@@ -39,8 +39,8 @@ MathType::MathType() : StaticObjectType("Math") {
         METHOD_EX(Log, 1, flags, return std::log10(args[0].ToReal());),
         METHOD_EX(Ln, 1, flags, return std::log(args[0].ToReal());),
         METHOD_EX(Floor, 1, flags, return std::floor(args[0].ToReal());),
-        METHOD_EX(Trunc, 1, flags, return std::floor(args[0].ToReal());),
-        METHOD_EX(Rounf, 1, flags, return std::round(args[0].ToReal());),
+        METHOD_EX(Trunc, 1, flags, return std::trunc(args[0].ToReal());),
+        METHOD_EX(Round, 1, flags, return std::round(args[0].ToReal());),
         METHOD_EX(ASinh, 1, flags, return std::asinh(args[0].ToReal());),
         METHOD_EX(ACosh, 1, flags, return std::acosh(args[0].ToReal());),
         METHOD_EX(ATanh, 1, flags, return std::atanh(args[0].ToReal());),
@@ -48,5 +48,7 @@ MathType::MathType() : StaticObjectType("Math") {
         METHOD_EX(Sqrt, 1, flags, return std::sqrt(args[0].ToReal());),
         METHOD_EX(Beta, 2, flags, return std::beta(args[0].ToReal(), args[1].ToReal());),
         METHOD_EX(Gamma, 1, flags, return std::tgamma(args[0].ToReal());),
+        METHOD_EX(Deg, 1, flags, return args[0].ToReal() * 180 / std::numbers::pi;),
+        METHOD_EX(Rad, 1, flags, return args[0].ToReal() * std::numbers::pi / 180;),
         END_METHODS()
 }

@@ -97,7 +97,8 @@ unique_ptr<Expression> InvokeFunctionParslet::Parse(Parser& parser, unique_ptr<E
 	vector<unique_ptr<Expression>> args;
 	while (next.Type != TokenType::CloseParen) {
 		auto arg = parser.ParseExpression();
-		assert(arg);
+		if (!arg)
+			return nullptr;
 		args.push_back(move(arg));
 		if (!parser.Match(TokenType::Comma) && !parser.Match(TokenType::CloseParen, false))
 			parser.AddError(ParseError(ParseErrorType::CommaExpected, next, "Expected , or )"));

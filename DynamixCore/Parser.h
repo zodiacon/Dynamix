@@ -53,6 +53,7 @@ namespace Dynamix {
 		std::unique_ptr<EnumDeclaration> ParseEnumDeclaration();
 		std::unique_ptr<ForStatement> ParseForStatement();
 		std::unique_ptr<ClassDeclaration> ParseClassDeclaration(ClassDeclaration const* parent = nullptr);
+		std::unique_ptr<InterfaceDeclaration> ParseInterfaceDeclaration();
 		std::unique_ptr<ForEachStatement> ParseForEachStatement();
 		std::unique_ptr<Statements> ParseStatementsForMatch(bool newScope = false);
 		std::unique_ptr<Statement> ParseUseStatement();

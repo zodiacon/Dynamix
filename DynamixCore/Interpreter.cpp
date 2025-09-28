@@ -342,8 +342,7 @@ Value Interpreter::Invoke(AstNode const* node, std::vector<Parameter> const* par
 	}
 
 	try {
-		auto result = Eval(body);
-		return result;
+		return Eval(body);
 	}
 	catch (ReturnStatementException const& ret) {
 		return ret.ReturnValue;
@@ -496,15 +495,10 @@ Value Interpreter::VisitForEach(ForEachStatement const* stmt) {
 }
 
 Value Interpreter::VisitRange(RangeExpression const* expr) {
-	auto start = Eval(expr->Start());
-	if (!start.IsInteger())
-		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Range start must be an Integer", expr->Start()->Location());
+	auto start = Eval(expr->Start()).ToInteger();
+	auto end = Eval(expr->End()).ToInteger();
 
-	auto end = Eval(expr->End());
-	if (!end.IsInteger())
-		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Range end must be an Integer", expr->End()->Location());
-
-	return RangeType::Get()->CreateRange(start.AsInteger(), end.AsInteger() + (expr->EndInclusive() ? 1 : 0));
+	return RangeType::Get()->CreateRange(start, end + (expr->EndInclusive() ? 1 : 0));
 }
 
 Value Interpreter::VisitMatch(MatchExpression const* expr) {
@@ -517,6 +511,8 @@ Value Interpreter::VisitUse(UseStatement const* use) {
 	auto e = CurrentScope().FindElement(use->Name());
 	if (e == nullptr)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown name '{}'", use->Name()), use->Location());
+	if((e->Flags & ElementFlags::Class) == ElementFlags::None)
+		throw RuntimeError(RuntimeErrorType::InvalidType, format("'{}' is not a class", use->Name()), use->Location());
 
 	CurrentScope().AddUse(use->Name());
 

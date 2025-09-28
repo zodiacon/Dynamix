@@ -43,6 +43,7 @@ bool Parser::Init() {
 		{ "struct", TokenType::Struct },
 		{ "and", TokenType::And },
 		{ "or", TokenType::Or },
+		{ "not", TokenType::Not },
 		{ "breakout", TokenType::BreakOut },
 		{ "match", TokenType::Match },
 		{ "this", TokenType::This },
@@ -576,11 +577,9 @@ unique_ptr<BreakOrContinueStatement> Parser::ParseBreakContinueStatement() {
 
 unique_ptr<WhileStatement> Parser::ParseWhileStatement() {
 	Next();	// eat "while"
-	Match(TokenType::OpenParen, true, true);
 	auto cond = ParseExpression();
 	if (cond == nullptr)
 		AddError(ParseError(ParseErrorType::ConditionExpressionExpected, Peek()));
-	Match(TokenType::CloseParen, true, true);
 	m_LoopCount++;
 	auto block = ParseBlock();
 	m_LoopCount--;
@@ -747,6 +746,32 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 	decl->SetFields(move(fields));
 	decl->SetTypes(move(types));
 	return move(decl);
+}
+
+unique_ptr<InterfaceDeclaration> Parser::ParseInterfaceDeclaration() {
+	Next();		// eat interface keyword
+	auto name = Next();
+	if (name.Type != TokenType::Identifier)
+		AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(name), "Expected: identifier"));
+	auto decl = make_unique<InterfaceDeclaration>(move(name.Lexeme));
+
+	if (Match(TokenType::Colon)) {
+		while (Peek().Type != TokenType::OpenBrace) {
+			auto next = Next();
+			if (next.Type != TokenType::Identifier) {
+				AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(next), "Expected: identifier"));
+				continue;
+			}
+			decl->AddBaseInterface(move(next.Lexeme));
+			if (!Match(TokenType::Comma) && !Match(TokenType::OpenBrace, false))
+				AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(Peek()), "Expected: ',' or '{'"));
+		}
+	}
+
+	Match(TokenType::OpenBrace, true, true);
+	while (Peek().Type != TokenType::CloseBrace) {
+	}
+	return decl;
 }
 
 unique_ptr<ForEachStatement> Parser::ParseForEachStatement() {

@@ -32,6 +32,7 @@ namespace Dynamix {
 
 	struct Enumerable : public IEnumerable {
 		virtual Value Filter(Interpreter& intr, Value predciate);
+		virtual Value Any(Interpreter& intr, Value predciate);
 	};
 
 	struct IClonable {
