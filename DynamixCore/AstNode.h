@@ -482,17 +482,35 @@ namespace Dynamix {
 		std::unique_ptr<Statements> m_Body;
 	};
 
-	class FunctionDeclaration : public Statement {
+	class FunctionEssentials {
+	public:
+		void SetBody(std::unique_ptr<Expression> body) noexcept {
+			m_Body = std::move(body);
+		}
+		Expression const* Body() const noexcept {
+			return m_Body.get();
+		}
+
+		void SetParameters(std::vector<Parameter> parameters) noexcept {
+			m_Parameters = std::move(parameters);
+		}
+
+		std::vector<Parameter> const& Parameters() const noexcept {
+			return m_Parameters;
+		}
+
+	protected:
+		std::vector<Parameter> m_Parameters;
+		std::unique_ptr<Expression> m_Body;
+	};
+
+	class FunctionDeclaration : public Statement, public FunctionEssentials {
 	public:
 		explicit FunctionDeclaration(std::string name, bool method = false, bool isStatic = false);
 		Value Accept(Visitor* visitor) const override;
 
 		std::string const& Name() const noexcept;
-		std::vector<Parameter> const& Parameters() const noexcept;
-		Expression const* Body() const noexcept;
 		std::string ToString() const override;
-		void SetParameters(std::vector<Parameter> parameters) noexcept;
-		void SetBody(std::unique_ptr<Expression> body) noexcept;
 		bool IsMethod() const noexcept {
 			return m_Method;
 		}
@@ -502,11 +520,10 @@ namespace Dynamix {
 		AstNodeType NodeType() const noexcept {
 			return AstNodeType::FunctionDeclaration;
 		}
+		void SetBody(std::unique_ptr<Expression> body) noexcept;
 
 	private:
 		std::string m_Name;
-		std::vector<Parameter> m_Parameters;
-		std::unique_ptr<Expression> m_Body;
 		bool m_Method, m_Static;
 	};
 
@@ -572,19 +589,13 @@ namespace Dynamix {
 		std::unordered_map<std::string, long long> m_Values;
 	};
 
-	class AnonymousFunctionExpression : public Expression {
+	class AnonymousFunctionExpression : public Expression, public FunctionEssentials {
 	public:
 		AnonymousFunctionExpression(std::vector<Parameter> args, std::unique_ptr<Expression> body);
 		AstNodeType NodeType() const noexcept override {
 			return AstNodeType::AnonymousFunction;
 		}
 		Value Accept(Visitor* visitor) const override;
-		std::vector<Parameter> const& Args() const noexcept;
-		Expression const* Body() const noexcept;
-
-	private:
-		std::vector<Parameter> m_Args;
-		std::unique_ptr<Expression> m_Body;
 	};
 
 	struct FieldInitializer {

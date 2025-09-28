@@ -14,6 +14,7 @@ namespace Dynamix {
 	class Runtime;
 	class AstNode;
 
+
 	class Interpreter final : public Visitor, NoCopy {
 	public:
 		Interpreter(Parser& p, Runtime& rt);
@@ -57,24 +58,15 @@ namespace Dynamix {
 
 		std::unique_ptr<AstNode> Parse(std::string_view code) const;
 
-		friend class Scoper;
+		friend struct Scoper;
 
 		CodeLocation Location() const noexcept;
+
+		Value Invoke(AstNode const* node, std::vector<Parameter> const* params = nullptr, std::vector<Value> const* args = nullptr);
 
 	protected:
 		void PushScope();
 		void PopScope();
-		struct Scoper {
-			Scoper(Interpreter* intr) : m_Intr(intr) {
-				intr->PushScope();
-			}
-			~Scoper() {
-				m_Intr->PopScope();
-			}
-
-		private:
-			Interpreter* m_Intr;
-		};
 
 	private:
 		Parser& m_Parser;
@@ -82,4 +74,17 @@ namespace Dynamix {
 		std::stack<Scope> m_Scopes;
 		AstNode const* m_CurrentNode{ nullptr };
 	};
+
+	struct Scoper {
+		Scoper(Interpreter* intr) : m_Intr(intr) {
+			intr->PushScope();
+		}
+		~Scoper() {
+			m_Intr->PopScope();
+		}
+
+	private:
+		Interpreter* m_Intr;
+	};
+
 }

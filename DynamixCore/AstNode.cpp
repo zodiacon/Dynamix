@@ -270,18 +270,6 @@ string const& FunctionDeclaration::Name() const noexcept {
 	return m_Name;
 }
 
-vector<Parameter> const& FunctionDeclaration::Parameters() const noexcept {
-	return m_Parameters;
-}
-
-void FunctionDeclaration::SetParameters(vector<Parameter> params) noexcept {
-	m_Parameters = move(params);
-}
-
-Expression const* FunctionDeclaration::Body() const noexcept {
-	return m_Body.get();
-}
-
 void FunctionDeclaration::SetBody(std::unique_ptr<Expression> body) noexcept {
 	m_Body = move(body);
 	m_Body->SetParent(this);
@@ -347,20 +335,13 @@ Statements const* ForStatement::Body() const noexcept {
 	return m_Body.get();
 }
 
-AnonymousFunctionExpression::AnonymousFunctionExpression(vector<Parameter> args, unique_ptr<Expression> body) :
-	m_Args(move(args)), m_Body(move(body)) {
+AnonymousFunctionExpression::AnonymousFunctionExpression(vector<Parameter> params, unique_ptr<Expression> body) {
+	m_Parameters = move(params);
+	m_Body = move(body);
 }
 
 Value AnonymousFunctionExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAnonymousFunction(this);
-}
-
-vector<Parameter> const& AnonymousFunctionExpression::Args() const noexcept {
-	return m_Args;
-}
-
-Expression const* AnonymousFunctionExpression::Body() const noexcept {
-	return m_Body.get();
 }
 
 EnumDeclaration::EnumDeclaration(std::string name, std::unordered_map<std::string, long long> values) : m_Name(move(name)), m_Values(move(values)) {

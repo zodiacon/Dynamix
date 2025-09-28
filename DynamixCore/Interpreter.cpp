@@ -144,7 +144,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 				args.push_back(instance);
 			for (auto& arg : expr->Arguments())
 				args.push_back(Eval(arg.get()));
-			if(!isType)
+			if (!isType)
 				instance->Type()->AddTypesToScope(CurrentScope());
 			try {
 				return instance->Invoke(*this, callable->Method->Name(), args, callable->Method->IsStatic() ? InvokeFlags::Static : InvokeFlags::Instance);
@@ -163,28 +163,23 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	if (node) {
 		Expression const* body;
 		Scoper scoper(this);
+		FunctionEssentials const* decl = nullptr;
 		if (node->NodeType() == AstNodeType::FunctionDeclaration) {
-			auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
+			decl = static_cast<FunctionEssentials const*>(reinterpret_cast<FunctionDeclaration const*>(node));
 			assert(!instance);
-			for (size_t i = 0; i < expr->Arguments().size(); i++) {
-				Element v{ Eval(expr->Arguments()[i].get()) };
-				CurrentScope().AddElement(decl->Parameters()[i].Name, move(v));
-			}
-			body = decl->Body();
 		}
 		else {
 			assert(node->NodeType() == AstNodeType::AnonymousFunction);
-			auto decl = reinterpret_cast<AnonymousFunctionExpression const*>(node);
-			for (size_t i = 0; i < expr->Arguments().size(); i++) {
-				Element v{ Eval(expr->Arguments()[i].get()) };
-				CurrentScope().AddElement(decl->Args()[i].Name, move(v));
-			}
-			body = decl->Body();
+			decl = static_cast<FunctionEssentials const*>(reinterpret_cast<AnonymousFunctionExpression const*>(node));
 		}
+		for (size_t i = 0; i < expr->Arguments().size(); i++) {
+			Element v{ Eval(expr->Arguments()[i].get()) };
+			CurrentScope().AddElement(decl->Parameters()[i].Name, move(v));
+		}
+		body = decl->Body();
 
 		try {
-			auto result = Eval(body);
-			return result;
+			return Eval(body);
 		}
 		catch (ReturnStatementException const& ret) {
 			return ret.ReturnValue;
@@ -276,7 +271,6 @@ Value Interpreter::VisitStatements(Statements const* stmts) {
 }
 
 Value Interpreter::VisitAnonymousFunction(AnonymousFunctionExpression const* func) {
-	//Element e{ func, ElementFlags::AnnonymousFunction };
 	return func;
 }
 
@@ -328,6 +322,36 @@ CodeLocation Dynamix::Interpreter::Location() const noexcept {
 	return m_CurrentNode ? m_CurrentNode->Location() : CodeLocation();
 }
 
+Value Interpreter::Invoke(AstNode const* node, std::vector<Parameter> const* params, std::vector<Value> const* args) {
+	Expression const* body;
+	Scoper scoper(this);
+	if (node->NodeType() == AstNodeType::FunctionDeclaration) {
+		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
+		body = decl->Body();
+	}
+	else {
+		assert(node->NodeType() == AstNodeType::AnonymousFunction);
+		auto decl = reinterpret_cast<AnonymousFunctionExpression const*>(node);
+		body = decl->Body();
+	}
+	if (params && args) {
+		for (size_t i = 0; i < args->size(); i++) {
+			Element v{ (*args)[i] };
+			CurrentScope().AddElement((*params)[i].Name, move(v));
+		}
+	}
+
+	try {
+		auto result = Eval(body);
+		return result;
+	}
+	catch (ReturnStatementException const& ret) {
+		return ret.ReturnValue;
+	}
+	catch (BreakoutStatementException const&) {
+	}
+}
+
 void Interpreter::PushScope() {
 	if (m_Scopes.size() > 100)
 		throw RuntimeError(RuntimeErrorType::StackOverflow, "Call stack is too deep");
@@ -362,7 +386,7 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 		else if (isStatic && !member->IsStatic())
 			throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access instance method '{}' via class",
 				member->Name()), expr->Location());
-	};
+		};
 
 	switch (member->Type()) {
 		case MemberType::Field:
@@ -491,7 +515,7 @@ Value Interpreter::VisitMatch(MatchExpression const* expr) {
 
 Value Interpreter::VisitUse(UseStatement const* use) {
 	auto e = CurrentScope().FindElement(use->Name());
-	if(e == nullptr)
+	if (e == nullptr)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown name '{}'", use->Name()), use->Location());
 
 	CurrentScope().AddUse(use->Name());
