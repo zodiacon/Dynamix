@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include "SymbolTable.h"
 
 namespace Dynamix {
@@ -21,12 +22,15 @@ namespace Dynamix {
 { #name, arity, flags,	\
 [](auto& intr, auto& args) -> Value {	\
 	auto isStatic = (flags & SymbolFlags::Static) == SymbolFlags::Static;	\
-	assert(args.size() == arity + (isStatic ? 0 : 1));	\
+	if(arity >= 0) {	\
+		assert(args.size() == arity + (isStatic ? 0 : 1));	\
+	}	\
 	auto inst = isStatic ? nullptr : GetInstance<Type>(args[0]);	\
 	body	\
 	} }
 
 #define METHOD(name, arity, body)	METHOD_EX(name, arity, SymbolFlags::Native, body)
+#define METHOD_STATIC(name, arity, body)	METHOD_EX(name, arity, (SymbolFlags::Native | SymbolFlags::Static), body)
 #define CTOR(arity) { "new", arity, SymbolFlags::Native | SymbolFlags::Ctor }
 #define ENUMERABLE_METHODS	\
 	METHOD(Filter, 1, return inst->Filter(intr, args[1]);),	\

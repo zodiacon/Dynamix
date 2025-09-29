@@ -16,6 +16,8 @@ Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string
 	if (!method && m_Base)
 		return m_Base->Invoke(intr, instance, name, args, flags);
 	if (!method)
+		method = GetMethod(name, -1);
+	if (!method)
 		throw RuntimeError(RuntimeErrorType::MethodNotFound,
 			std::format("Method {} with {} args not found in type {}", name, args.size(), Name()));
 
@@ -73,11 +75,12 @@ bool ObjectType::AddMethod(std::unique_ptr<MethodInfo> method) {
 	}
 	auto clone = std::make_unique<MethodInfo>(method->Name());
 	clone->Flags = method->Flags;
+	clone->Code = method->Code;
 	m_Members.insert({ method->Name(), clone.get() });
 	m_Methods.insert({ method->Name(), std::move(clone) });
 
 	if (method->Arity >= 0)
-		return m_Methods.insert({ method->Arity < 0 ? method->Name() : std::format("{}/{}", method->Name(), method->Arity), std::move(method) }).second;
+		return m_Methods.insert({ std::format("{}/{}", method->Name(), method->Arity), std::move(method) }).second;
 	return false;
 }
 

@@ -111,7 +111,7 @@
     <ClInclude Include="MathType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
-    <ClInclude Include="Console.h">
+    <ClInclude Include="ConsoleType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
     <ClInclude Include="ComplexType.h">
@@ -191,7 +191,7 @@
     <ClCompile Include="MathType.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
-    <ClCompile Include="Console.cpp">
+    <ClCompile Include="ConsoleType.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
     <ClCompile Include="Enumerable.cpp">

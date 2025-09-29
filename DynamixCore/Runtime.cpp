@@ -11,6 +11,7 @@
 #include "StringType.h"
 #include "MathType.h"
 #include "ComplexType.h"
+#include "ConsoleType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -125,5 +126,6 @@ void Runtime::InitStdLibrary() {
 	m_GlobalScope.AddElement("Enum", Element{ (RuntimeObject*)EnumType::Get(), ElementFlags::Class });
 	m_GlobalScope.AddElement("Math", Element{ (RuntimeObject*)MathType::Get(), ElementFlags::Class });
 	m_GlobalScope.AddElement("Complex", Element{ (RuntimeObject*)ComplexType::Get(), ElementFlags::Class });
+	m_GlobalScope.AddElement("Console", Element{ (RuntimeObject*)ConsoleType::Get(), ElementFlags::Class });
 }
 
