@@ -3,7 +3,7 @@
 #include "ObjectType.h"
 
 namespace Dynamix {
-	class MathType : StaticObjectType {
+	class MathType : public StaticObjectType {
 	public:
 		static MathType* Get();
 

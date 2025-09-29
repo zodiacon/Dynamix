@@ -4,7 +4,7 @@
 #include "ObjectType.h"
 
 namespace Dynamix {
-	class ConsoleType : StaticObjectType {
+	class ConsoleType : public StaticObjectType {
 	public:
 		static ConsoleType* Get();
 

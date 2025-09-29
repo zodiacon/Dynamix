@@ -15,8 +15,11 @@ Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string
 	auto method = GetMethod(name, count);
 	if (!method && m_Base)
 		return m_Base->Invoke(intr, instance, name, args, flags);
-	if (!method)
+	if (!method) {
 		method = GetMethod(name, -1);
+		if (method && method->Arity != -1 && method->Arity != args.size())
+			method = nullptr;
+	}
 	if (!method)
 		throw RuntimeError(RuntimeErrorType::MethodNotFound,
 			std::format("Method {} with {} args not found in type {}", name, args.size(), Name()));
@@ -76,6 +79,8 @@ bool ObjectType::AddMethod(std::unique_ptr<MethodInfo> method) {
 	auto clone = std::make_unique<MethodInfo>(method->Name());
 	clone->Flags = method->Flags;
 	clone->Code = method->Code;
+	clone->Arity = method->Arity;
+
 	m_Members.insert({ method->Name(), clone.get() });
 	m_Methods.insert({ method->Name(), std::move(clone) });
 
@@ -97,7 +102,7 @@ FieldInfo const* ObjectType::GetField(std::string const& name) const noexcept {
 
 MethodInfo const* ObjectType::GetMethod(std::string const& name, int8_t arity) const noexcept {
 	if (arity < 0)
-		if (auto it = m_Methods.find(name); it != m_Methods.end())
+		if (auto it = m_Methods.find(name); it != m_Methods.end() && it->second->Arity == -1)
 			return it->second.get();
 
 	if (auto it = m_Methods.find(std::format("{}/{}", name, arity)); it != m_Methods.end())

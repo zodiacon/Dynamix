@@ -5,13 +5,13 @@
 #include <cassert>
 #include "Interpreter.h"
 #include "RuntimeObject.h"
-#include "General.h"
 #include "EnumType.h"
 #include "RangeType.h"
 #include "StringType.h"
 #include "MathType.h"
 #include "ComplexType.h"
 #include "ConsoleType.h"
+#include "RuntimeType.h"
 
 using namespace Dynamix;
 using namespace std;
@@ -97,35 +97,17 @@ Runtime::Runtime(Parser& parser) : m_Parser(parser) {
 }
 
 void Runtime::InitStdLibrary() {
-	struct {
-		const char* Name;
-		NativeFunction Code;
-		SymbolFlags Flags{ SymbolFlags::VarArg };
-		int Arity{ -1 };
-	} functions[] = {
-		{ "Print", Print },
-		{ "PrintLine", PrintLine },
-		{ "Eval", Eval, SymbolFlags::None, 1 },
-		{ "Sleep", Sleep, SymbolFlags::None, 1 },
-	};
 
-	for (auto& f : functions) {
-		Symbol s;
-		s.Type = SymbolType::NativeFunction;
-		s.Name = f.Name;
-		s.Flags = f.Flags;
-		m_Parser.AddSymbol(std::move(s));
-		Element v{ f.Code };
-		v.Arity = f.Arity;
-		m_GlobalScope.AddElement(f.Name, move(v));
-	}
+#define ADD_TYPE(name) m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(name##Type::Get()), ElementFlags::Class })
+#define ADD_TYPE2(name, typeName) m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(typeName::Get()), ElementFlags::Class })
 
-	m_GlobalScope.AddElement("Range", Element{ (RuntimeObject*)RangeType::Get(), ElementFlags::Class });
-	m_GlobalScope.AddElement("String", Element{ (RuntimeObject*)StringTypeA::Get(), ElementFlags::Class });
-	m_GlobalScope.AddElement("StringW", Element{ (RuntimeObject*)StringTypeW::Get(), ElementFlags::Class });
-	m_GlobalScope.AddElement("Enum", Element{ (RuntimeObject*)EnumType::Get(), ElementFlags::Class });
-	m_GlobalScope.AddElement("Math", Element{ (RuntimeObject*)MathType::Get(), ElementFlags::Class });
-	m_GlobalScope.AddElement("Complex", Element{ (RuntimeObject*)ComplexType::Get(), ElementFlags::Class });
-	m_GlobalScope.AddElement("Console", Element{ (RuntimeObject*)ConsoleType::Get(), ElementFlags::Class });
+	ADD_TYPE(Range);
+	ADD_TYPE2(String, StringTypeA);
+	ADD_TYPE2(StringW, StringTypeW);
+	ADD_TYPE(Enum);
+	ADD_TYPE(Math);
+	ADD_TYPE(Complex);
+	ADD_TYPE(Console);
+	ADD_TYPE(Runtime);
 }
 

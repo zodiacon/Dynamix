@@ -363,8 +363,8 @@ void Interpreter::PopScope() {
 	assert(!m_Scopes.empty());
 }
 
-std::unique_ptr<AstNode> Interpreter::Parse(std::string_view code) const {
-	return m_Parser.Parse(code);
+unique_ptr<AstNode> Interpreter::Parse(std::string_view code, bool repl) const {
+	return m_Parser.Parse(code, repl);
 }
 
 Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {

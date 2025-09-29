@@ -145,7 +145,6 @@
     <ClInclude Include="MathType.h" />
     <ClInclude Include="NoCopyMove.h" />
     <ClInclude Include="ObjectPtr.h" />
-    <ClInclude Include="General.h" />
     <ClInclude Include="RangeType.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="RuntimeObject.h" />
@@ -153,6 +152,7 @@
     <ClInclude Include="ParseError.h" />
     <ClInclude Include="Parselets.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="RuntimeType.h" />
     <ClInclude Include="Scope.h" />
     <ClInclude Include="SliceType.h" />
     <ClInclude Include="SmallString.h" />
@@ -175,7 +175,6 @@
     <ClCompile Include="EnumType.cpp" />
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="MathType.cpp" />
-    <ClCompile Include="General.cpp" />
     <ClCompile Include="RangeType.cpp" />
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="RuntimeObject.cpp" />
@@ -183,6 +182,7 @@
     <ClCompile Include="ParseError.cpp" />
     <ClCompile Include="Parselets.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="RuntimeType.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="SliceType.cpp" />
     <ClCompile Include="SmallString.cpp" />
