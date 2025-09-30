@@ -53,6 +53,10 @@ bool Parser::Init() {
 		{ "as", TokenType::As },
 		{ "with", TokenType::With },
 		{ "typeof", TokenType::TypeOf },
+		{ "public", TokenType::Public },
+		{ "private", TokenType::Private },
+		{ "module", TokenType::Module },
+		{ "unuse", TokenType::Unuse },
 
 		{ "$include", TokenType::MetaInclude },
 		{ "$default", TokenType::MetaDefault },
@@ -317,6 +321,8 @@ unique_ptr<Statement> Parser::ParseVarValStatement(bool constant, SymbolFlags ex
 		unique_ptr<Expression> init;
 		if (Match(TokenType::Assign)) {
 			init = ParseExpression();
+			if (!init)
+				continue;
 		}
 		else if (constant) {
 			AddError(ParseError(ParseErrorType::MissingInitExpression, Peek()));

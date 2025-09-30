@@ -56,6 +56,10 @@ namespace Dynamix {
 		As,
 		With,
 		TypeOf,
+		Public,
+		Private,
+		Module,
+		Unuse,
 
 		Plus = Operator,
 		Minus,

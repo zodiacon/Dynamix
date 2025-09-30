@@ -31,9 +31,14 @@ Value RuntimeType::Eval(Interpreter& intr, std::vector<Value> const& args) {
 	return node->Accept(&intr);
 }
 
+Value RuntimeType::Ticks() {
+	return std::chrono::high_resolution_clock::now().time_since_epoch().count();
+}
+
 RuntimeType::RuntimeType() : StaticObjectType("Runtime") {
 	BEGIN_METHODS(RuntimeType)
 		METHOD_STATIC(Sleep, 1, RuntimeType::Sleep(args[0].ToInteger()); return Value();),
 		METHOD_STATIC(Eval, 1, return RuntimeType::Eval(intr, args);),
+		METHOD_STATIC(Ticks, 0, return RuntimeType::Ticks();),
 		END_METHODS()
 }

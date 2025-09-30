@@ -34,7 +34,7 @@ namespace Dynamix {
 		explicit Scope(Scope* parent = nullptr);
 		bool AddElement(std::string name, Element var);
 		Element* FindElement(std::string const& name, int arity = -1, bool localOnly = false);
-		std::vector<Element*> FindElements(std::string const& name, bool localOnly = false);
+		std::vector<Element*> FindElements(std::string const& name, bool localOnly = false, bool withUse = false);
 		Element* FindElementWithUse(std::string const& name);
 		bool AddUse(std::string name, ElementFlags type = ElementFlags::DefaultClass);
 		Scope Clone() const;

@@ -12,6 +12,7 @@ namespace Dynamix {
 
 		static void Sleep(Int msec);
 		static Value Eval(Interpreter& intr, std::vector<Value> const& args);
+		static Value Ticks();
 
 	private:
 		RuntimeType();

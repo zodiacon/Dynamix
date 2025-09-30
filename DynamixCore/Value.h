@@ -109,6 +109,8 @@ namespace Dynamix {
 		bool IsObject() const noexcept {
 			return m_Type == ValueType::Object;
 		}
+		bool IsObjectType() const noexcept;
+
 		bool IsAstNode() const noexcept {
 			return m_Type == ValueType::AstNode;
 		}

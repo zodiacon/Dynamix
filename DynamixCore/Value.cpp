@@ -6,6 +6,7 @@
 #include <stacktrace>
 #include "Runtime.h"
 #include "ObjectType.h"
+#include "StringType.h"
 
 using namespace Dynamix;
 
@@ -379,13 +380,17 @@ Value::~Value() {
 ObjectType const* Value::GetObjectType() const {
 	switch (m_Type) {
 		case ValueType::Object: return oValue->Type();
-		//case ValueType::String: return &StringType::Get();
+		case ValueType::String: return StringTypeA::Get();
 		//case ValueType::Integer: return &IntegerType::Get();
 		//case ValueType::Real: return &RealType::Get();
 		//case ValueType::Boolean: return &BooleanType::Get();
 		//case ValueType::AstNode: return &FunctionType::Get();
 	}
 	return nullptr;
+}
+
+bool Value::IsObjectType() const noexcept {
+	return IsObject() && AsObject()->IsObjectType();
 }
 
 Value Value::Equal(Value const& rhs) const {

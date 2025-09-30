@@ -30,16 +30,22 @@ Element* Scope::FindElement(std::string const& name, int arity, bool localOnly) 
 	return m_Parent && !localOnly ? m_Parent->FindElement(name, arity) : nullptr;
 }
 
-std::vector<Element*> Scope::FindElements(std::string const& name, bool localOnly) {
+std::vector<Element*> Scope::FindElements(std::string const& name, bool localOnly, bool withUse) {
 	if (auto it = m_Elements.find(name); it != m_Elements.end()) {
 		std::vector<Element*> v;
 		v.reserve(it->second.size());
 		for (auto& e : it->second)
 			v.push_back(&e);
+		if (withUse) {
+			auto element = FindElementWithUse(name);
+			if (element)
+				v.push_back(element);
+		}
+
 		return v;
 	}
 
-	return m_Parent && !localOnly ? m_Parent->FindElements(name) : std::vector<Element*>();
+	return m_Parent && !localOnly ? m_Parent->FindElements(name, false, withUse) : std::vector<Element*>();
 }
 
 Element* Scope::FindElementWithUse(std::string const& name) {
@@ -51,7 +57,7 @@ Element* Scope::FindElementWithUse(std::string const& name) {
 				return cls;
 		}
 	}
-	return nullptr;
+	return m_Parent ? m_Parent->FindElementWithUse(name) : nullptr;
 }
 
 bool Scope::AddUse(std::string name, ElementFlags type) {
