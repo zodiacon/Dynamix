@@ -20,11 +20,7 @@ void ShowErrors(Parser const& p, bool repl = false) {
 	}
 }
 
-int RunRepl(Parser& p, Interpreter& intr, std::unique_ptr<AstNode> node) {
-	std::vector<std::unique_ptr<AstNode>> nodes;
-	if(node)
-		nodes.push_back(move(node));
-
+int RunRepl(Parser& p, Interpreter& intr) {
 	char text[256]{};
 	for (;;) {
 		print(">> ");
@@ -35,10 +31,9 @@ int RunRepl(Parser& p, Interpreter& intr, std::unique_ptr<AstNode> node) {
 		auto n = p.Parse(text, true);
 		if(n) {
 			try {
-				auto result = intr.Eval(n.get());
+				auto result = intr.Eval(n);
 				if(!result.IsNull())
 					println("{}", result.ToString());
-				nodes.push_back(move(n));
 			}
 			catch (RuntimeError err) {
 				println("Runtime error: {}", err.Message());
@@ -51,25 +46,62 @@ int RunRepl(Parser& p, Interpreter& intr, std::unique_ptr<AstNode> node) {
 	return 0;
 }
 
-int main(int argc, const char* argv[]) {
+void Usage() {
+	println("Dynamix v0.1");
+	println("Usage: dynamix run <file> [file]... ( parse files and run Main function)");
+	println("       dynamix load [file]...       ( parse files and run REPL)");
+}
+
+int main(int argc, const char* argv[], const char* envp[]) {
+	if (argc <= 1) {
+		Usage();
+		return 0;
+	}
+
+	enum Command {
+		Invalid,
+		Run,
+		Load
+	};
+
+	auto cmd = Command::Invalid;
+
+	if (_stricmp(argv[1], "run") == 0)
+		cmd = Command::Run;
+	else if(_stricmp(argv[1], "load") == 0)
+		cmd = Command::Load;
+	else {
+		println("Unknown command: {}", argv[1]);
+		Usage();
+		return 1;
+	}
+
 	Tokenizer t;
 	Parser p(t);
 	Runtime rt(p);
 	Interpreter intr(p, rt);
 
 	std::unique_ptr<AstNode> program;
-	if (argc > 1) {
-		program = p.ParseFile(argv[1]);
-		if (program) {
-			auto result = program->Accept(&intr);
-			println("{}", result.ToString());
-		}
-		else {
+	bool error = false;
+	for (int i = 2; i < argc; i++) {
+		auto code = p.ParseFile(argv[i]);
+		if (!code) {
 			ShowErrors(p);
-			return 1;
+			error = true;
 		}
 	}
 
-	return RunRepl(p, intr, move(program));
+	if (error)
+		return 0;
+
+	switch (cmd) {
+	case Command::Load:
+		auto result = p.Program()->Accept(&intr);
+		if (!result.IsNull())
+			println("{}", result.ToString());
+		return RunRepl(p, intr);
+	}
+
+	return 0;
 }
 

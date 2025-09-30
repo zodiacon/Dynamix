@@ -62,7 +62,7 @@ TEST_CASE("Interpreter instantiates class and calls method", "[class]") {
     auto& stmtsVec = stmts->Get();
     REQUIRE(stmtsVec.size() == 3);
 
-    auto val = interpreter.Eval(stmts.get());
+    auto val = interpreter.Eval(stmts);
 
     REQUIRE(val.IsInteger());
     REQUIRE(val.ToInteger() == 7);
@@ -117,7 +117,7 @@ TEST_CASE("Interpreter supports inheritance", "[class][inheritance]") {
     auto& stmtsVec = stmts->Get();
     REQUIRE(stmtsVec.size() == 4);
 
-    auto val = interpreter.Eval(stmts.get());
+    auto val = interpreter.Eval(stmts);
     REQUIRE(val.IsInteger());
     REQUIRE(val.ToInteger() == 123);
 }

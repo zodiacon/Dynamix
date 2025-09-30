@@ -57,6 +57,7 @@ bool Parser::Init() {
 		{ "private", TokenType::Private },
 		{ "module", TokenType::Module },
 		{ "unuse", TokenType::Unuse },
+		{ "empty", TokenType::Empty },
 
 		{ "$include", TokenType::MetaInclude },
 		{ "$default", TokenType::MetaDefault },
@@ -110,6 +111,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::Mod, make_unique<BinaryOperatorParslet>(200));
 	AddParslet(TokenType::Minus, make_unique<PrefixOperatorParslet>(300));
 	AddParslet(TokenType::Integer, make_unique<LiteralParslet>());
+	AddParslet(TokenType::Empty, make_unique<LiteralParslet>());
 	AddParslet(TokenType::String, make_unique<LiteralParslet>());
 	AddParslet(TokenType::True, make_unique<LiteralParslet>());
 	AddParslet(TokenType::False, make_unique<LiteralParslet>());
@@ -152,16 +154,28 @@ bool Parser::Init() {
 	return true;
 }
 
-std::unique_ptr<Statements> Parser::Parse(string_view text, bool repl, int line) {
+Statements const* Parser::Parse(string_view text, bool repl, int line) {
 	m_Repl = repl;
 	if (!m_Tokenizer.Tokenize(text, line))
 		return nullptr;
 
 	m_Errors.clear();
-	return DoParse();
+	auto node = DoParse();
+	if (!node)
+		return nullptr;
+
+	if (m_Program == nullptr) {
+		m_Program = move(node);
+		return m_Program.get();
+	}
+	else {
+		auto p = node.get();
+		m_Program->Add(move(node));
+		return p;
+	}
 }
 
-std::unique_ptr<Statements> Parser::ParseFile(std::string_view filename) {
+Statements const* Parser::ParseFile(std::string_view filename) {
 	error_code ec;
 	auto len = filesystem::file_size(filename, ec);
 	if (ec.value())
@@ -179,14 +193,14 @@ std::unique_ptr<Statements> Parser::ParseFile(std::string_view filename) {
 	return node;
 }
 
-unique_ptr<Statements> Parser::ParseFiles(std::initializer_list<std::string_view> filenames) {
+bool Parser::ParseFiles(std::initializer_list<std::string_view> filenames) {
 	auto stmts = make_unique<Statements>();
 	for (auto& file : filenames) {
 		auto ast = ParseFile(file);
-		if (ast)
-			stmts->Append(move(ast));
+		if (!ast)
+			return false;
 	}
-	return stmts;
+	return true;
 }
 
 unique_ptr<Statements> Parser::DoParse() {
@@ -368,14 +382,14 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 	}
 
 	Next();		// eat close paren
-	if(staticCtor && !parameters.empty())
+	if (staticCtor && !parameters.empty())
 		AddError(ParseError(ParseErrorType::TooManyFunctionArgs, Peek(), "Class constructor cannot have any parameters"));
 	if (parameters.size() > 63)
 		AddError(ParseError(ParseErrorType::TooManyFunctionArgs, Peek(), "Too many parameters to function/method"));
 
 	auto sym = FindSymbol(format("{}/{}", ident.Lexeme, parameters.size() + isInst), true);
 	if (sym)
-		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident, format("Duplicate definition of '{}'", sym->Name) ));
+		AddError(ParseError(ParseErrorType::DuplicateDefinition, ident, format("Duplicate definition of '{}'", sym->Name)));
 
 	auto decl = make_unique<FunctionDeclaration>(move(ident.Lexeme), method, (extraFlags & SymbolFlags::Static) == SymbolFlags::Static);
 
@@ -418,7 +432,7 @@ bool Parser::AddSymbol(Symbol sym) noexcept {
 	return m_Symbols.top()->AddSymbol(move(sym));
 }
 
-Symbol const* Parser::FindSymbol(string const& name, bool localOnly) const noexcept{
+Symbol const* Parser::FindSymbol(string const& name, bool localOnly) const noexcept {
 	return m_Symbols.top()->FindSymbol(name, localOnly);
 }
 
@@ -471,7 +485,7 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool ne
 	Match(TokenType::OpenBrace, true, true);
 
 	auto block = make_unique<Statements>();
-	if(newscope)
+	if (newscope)
 		PushScope(block.get());
 
 	for (auto& arg : args) {
@@ -511,62 +525,62 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 		return nullptr;
 
 	switch (peek.Type) {
-		case TokenType::Use: return ParseUseStatement();
-		case TokenType::Var: return ParseVarValStatement(false);
-		case TokenType::Val: return ParseVarValStatement(true);
-		case TokenType::Repeat:
-			if (!topLevel)
-				return ParseRepeatStatement();
-			break;
-		case TokenType::ForEach:
-			if (!topLevel)
-				return ParseForEachStatement();
-			break;
+	case TokenType::Use: return ParseUseStatement();
+	case TokenType::Var: return ParseVarValStatement(false);
+	case TokenType::Val: return ParseVarValStatement(true);
+	case TokenType::Repeat:
+		if (!topLevel)
+			return ParseRepeatStatement();
+		break;
+	case TokenType::ForEach:
+		if (!topLevel)
+			return ParseForEachStatement();
+		break;
 
-		case TokenType::While:
-			if (!topLevel)
-				return ParseWhileStatement();
-			break;
+	case TokenType::While:
+		if (!topLevel)
+			return ParseWhileStatement();
+		break;
 
-		case TokenType::Fn: return ParseFunctionDeclaration();
-		case TokenType::Return:
-			if (!topLevel)
-				return ParseReturnStatement();
-			break;
-		case TokenType::Break:
-		case TokenType::Continue:
-		case TokenType::BreakOut:
-			if (!topLevel)
-				return ParseBreakContinueStatement();
-			break;
+	case TokenType::Fn: return ParseFunctionDeclaration();
+	case TokenType::Return:
+		if (!topLevel)
+			return ParseReturnStatement();
+		break;
+	case TokenType::Break:
+	case TokenType::Continue:
+	case TokenType::BreakOut:
+		if (!topLevel)
+			return ParseBreakContinueStatement();
+		break;
 
-		case TokenType::Class: return ParseClassDeclaration();
-		case TokenType::For:
-			if (!topLevel)
-				return ParseForStatement();
-			break;
-		case TokenType::Enum: return ParseEnumDeclaration();
-		case TokenType::OpenBrace:
-			if (!topLevel)
-				return ParseBlock();
-			break;
-		case TokenType::Semicolon:
-			if (!topLevel) {
-				Next();		// eat semicolon empty statement
-				return ParseStatement();
+	case TokenType::Class: return ParseClassDeclaration();
+	case TokenType::For:
+		if (!topLevel)
+			return ParseForStatement();
+		break;
+	case TokenType::Enum: return ParseEnumDeclaration();
+	case TokenType::OpenBrace:
+		if (!topLevel)
+			return ParseBlock();
+		break;
+	case TokenType::Semicolon:
+		if (!topLevel) {
+			Next();		// eat semicolon empty statement
+			return ParseStatement();
+		}
+		break;
+	default:
+		if (!topLevel) {
+			auto expr = ParseExpression();
+			if (expr) {
+				bool semi = Match(TokenType::Semicolon);
+				return std::make_unique<ExpressionStatement>(move(expr), semi);
 			}
-			break;
-		default:
-			if (!topLevel) {
-				auto expr = ParseExpression();
-				if (expr) {
-					bool semi = Match(TokenType::Semicolon);
-					return std::make_unique<ExpressionStatement>(move(expr), semi);
-				}
-			}
-			break;
+		}
+		break;
 	}
-	if(errorIfNotFound)
+	if (errorIfNotFound)
 		AddError(ParseError(ParseErrorType::InvalidStatement, peek));
 	return nullptr;
 }
@@ -668,7 +682,7 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	Match(TokenType::Semicolon, true, true);
 
 	auto inc = ParseExpression();
-	if(open)
+	if (open)
 		Match(TokenType::CloseParen, true, true);
 
 	m_LoopCount++;
@@ -684,7 +698,7 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 }
 
 unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration const* parent) {
-	if(!parent)
+	if (!parent)
 		Next();		// eat class keyword
 	auto name = Next();
 	if (name.Type != TokenType::Identifier)
@@ -707,43 +721,43 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 	while (Peek().Type != TokenType::CloseBrace) {
 		bool val = false;
 		switch (Peek().Type) {
-			case TokenType::New:	// ctor
-			case TokenType::Fn:
-			{
-				auto method = ParseFunctionDeclaration(true, extraFlags);
-				if (method) {
-					methods.push_back(move(method));
-				}
-				extraFlags = SymbolFlags::None;
-				break;
+		case TokenType::New:	// ctor
+		case TokenType::Fn:
+		{
+			auto method = ParseFunctionDeclaration(true, extraFlags);
+			if (method) {
+				methods.push_back(move(method));
 			}
+			extraFlags = SymbolFlags::None;
+			break;
+		}
 
-			case TokenType::Val:
-				val = true;
-				[[fallthrough]];
-			case TokenType::Var:
-			{
-				auto stmt = ParseVarValStatement(val, extraFlags);
-				fields.push_back(move(stmt));
-				extraFlags = SymbolFlags::None;
-				break;
+		case TokenType::Val:
+			val = true;
+			[[fallthrough]];
+		case TokenType::Var:
+		{
+			auto stmt = ParseVarValStatement(val, extraFlags);
+			fields.push_back(move(stmt));
+			extraFlags = SymbolFlags::None;
+			break;
+		}
+		case TokenType::Class:
+			Next();		// eat class keyword
+			if (Peek().Type == TokenType::Identifier) {
+				auto nested = ParseClassDeclaration(decl.get());
+				if (nested)
+					types.push_back(move(nested));
 			}
-			case TokenType::Class:
-				Next();		// eat class keyword
-				if (Peek().Type == TokenType::Identifier) {
-					auto nested = ParseClassDeclaration(decl.get());
-					if (nested)
-						types.push_back(move(nested));
-				}
-				else {
-					extraFlags = SymbolFlags::Static;
-				}
-				break;
+			else {
+				extraFlags = SymbolFlags::Static;
+			}
+			break;
 
-			default:
-				AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(Peek()), format("Unexpected token: '{}'", Peek().Lexeme)));
-				Next();
-				break;
+		default:
+			AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(Peek()), format("Unexpected token: '{}'", Peek().Lexeme)));
+			Next();
+			break;
 		}
 	}
 	Next();		// eat close brance

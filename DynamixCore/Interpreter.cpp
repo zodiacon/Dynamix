@@ -364,7 +364,7 @@ void Interpreter::PopScope() {
 	assert(!m_Scopes.empty());
 }
 
-unique_ptr<AstNode> Interpreter::Parse(std::string_view code, bool repl) const {
+AstNode const* Interpreter::Parse(std::string_view code, bool repl) const {
 	return m_Parser.Parse(code, repl);
 }
 

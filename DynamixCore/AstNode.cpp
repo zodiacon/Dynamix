@@ -381,8 +381,11 @@ void Statements::Add(unique_ptr<Statement> stmt) {
 	m_Stmts.push_back(move(stmt));
 }
 
-void Statements::Append(std::unique_ptr<Statements> stmts) {
-	std::move(stmts->m_Stmts.begin(), stmts->m_Stmts.end(), m_Stmts.end());
+Statement const* Statements::Append(std::unique_ptr<Statements> stmts) {
+	auto count = m_Stmts.size();
+	m_Stmts.resize(m_Stmts.size() + stmts->Count());
+	std::move(stmts->m_Stmts.begin(), stmts->m_Stmts.end(), m_Stmts.begin() + count);
+	return m_Stmts.data()->get() + count;
 }
 
 Statement const* Statements::GetAt(int i) const {

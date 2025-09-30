@@ -60,6 +60,7 @@ namespace Dynamix {
 		Private,
 		Module,
 		Unuse,
+		Empty,
 
 		Plus = Operator,
 		Minus,

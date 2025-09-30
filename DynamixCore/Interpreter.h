@@ -56,7 +56,7 @@ namespace Dynamix {
 
 		Scope& CurrentScope();
 
-		std::unique_ptr<AstNode> Parse(std::string_view code, bool repl = false) const;
+		AstNode const* Parse(std::string_view code, bool repl = false) const;
 
 		friend struct Scoper;
 

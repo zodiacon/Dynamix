@@ -21,9 +21,9 @@ namespace Dynamix {
 		explicit Parser(Tokenizer& t);
 		virtual ~Parser() noexcept = default;
 
-		std::unique_ptr<Statements> Parse(std::string_view text, bool repl = false, int line = 1);
-		std::unique_ptr<Statements> ParseFile(std::string_view filename);
-		std::unique_ptr<Statements> ParseFiles(std::initializer_list<std::string_view> filenames);
+		Statements const* Parse(std::string_view text, bool repl = false, int line = 1);
+		Statements const* ParseFile(std::string_view filename);
+		bool ParseFiles(std::initializer_list<std::string_view> filenames);
 
 		bool AddParslet(TokenType type, std::unique_ptr<InfixParslet> parslet);
 		bool AddParslet(TokenType type, std::unique_ptr<PrefixParslet> parslet);
@@ -32,6 +32,9 @@ namespace Dynamix {
 		std::span<const ParseError> Errors() const;
 		void PushScope(AstNode* node);
 		void PopScope();
+		auto const& Program() const {
+			return m_Program;
+		}
 
 		CodeLocation Location() const noexcept;
 
@@ -75,6 +78,7 @@ namespace Dynamix {
 		std::unordered_map<TokenType, std::unique_ptr<PrefixParslet>> m_PrefixParslets;
 		std::vector<ParseError> m_Errors;
 		SymbolTable m_GlobalSymbols;
+		std::unique_ptr<Statements> m_Program;
 		std::stack<SymbolTable*> m_Symbols;
 		std::stack<std::string> m_Namespaces;
 		std::string m_CurrentFile;

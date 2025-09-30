@@ -210,7 +210,7 @@ namespace Dynamix {
 
 		Value Accept(Visitor* visitor) const override;
 		void Add(std::unique_ptr<Statement> stmt);
-		void Append(std::unique_ptr<Statements> stmts);
+		Statement const* Append(std::unique_ptr<Statements> stmts);
 		std::vector<std::unique_ptr<Statement>> const& Get() const;
 		std::unique_ptr<Statement> RemoveAt(int index);
 		Statement const* GetAt(int i) const;

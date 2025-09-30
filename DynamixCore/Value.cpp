@@ -118,7 +118,7 @@ Value& Value::AssignArrayIndex(Value const& index, Value const& right, TokenType
 std::string Value::ToString() const noexcept {
 	switch (m_Type) {
 		case ValueType::Null:
-			return "";
+			return "<empty>";
 		case ValueType::Integer:
 			return std::format("{}", iValue);
 		case ValueType::Real:
@@ -351,6 +351,7 @@ Value Value::FromToken(Token const& token) {
 		case TokenType::True: return Value(true);
 		case TokenType::False: return Value(false);
 		case TokenType::String: return Value(token.Lexeme.c_str());
+		case TokenType::Empty: return Value();
 	}
 	assert(false);
 	return Value();
