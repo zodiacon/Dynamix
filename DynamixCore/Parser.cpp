@@ -665,7 +665,7 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 		sym.Name = decl->Name();
 		sym.Type = SymbolType::Enum;
 		sym.Flags = SymbolFlags::None;
-		AddSymbol(sym);
+		AddSymbol(move(sym));
 	}
 
 	return decl;

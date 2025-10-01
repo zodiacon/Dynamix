@@ -19,8 +19,8 @@ void AstNode::operator delete(void* p, size_t size) {
 	return ::operator delete(p);
 }
 
-BinaryExpression::BinaryExpression(unique_ptr<Expression> left, Token op, unique_ptr<Expression> right)
-	: m_Left(move(left)), m_Right(move(right)), m_Operator(move(op)) {
+BinaryExpression::BinaryExpression(unique_ptr<Expression> left, TokenType op, unique_ptr<Expression> right)
+	: m_Left(move(left)), m_Right(move(right)), m_Operator(op) {
 	m_Left->SetParent(this);
 	m_Right->SetParent(this);
 }
@@ -30,11 +30,11 @@ Value BinaryExpression::Accept(Visitor* visitor) const {
 }
 
 string BinaryExpression::ToString() const {
-	return format("({} {} {})", m_Left->ToString(), m_Operator.Lexeme, m_Right->ToString());
+	return format("({} {} {})", m_Left->ToString(), Token::TypeToString(m_Operator), m_Right->ToString());
 }
 
-GetMemberExpression::GetMemberExpression(unique_ptr<Expression> left, string member, Token op) noexcept 
-	: m_Left(move(left)), m_Member(move(member)), m_Operator(move(op)) {
+GetMemberExpression::GetMemberExpression(unique_ptr<Expression> left, string member, TokenType op) noexcept 
+	: m_Left(move(left)), m_Member(move(member)), m_Operator(op) {
 }
 
 Expression const* GetMemberExpression::Left() const noexcept {
@@ -79,7 +79,7 @@ Value NameExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitName(this);
 }
 
-Token const& BinaryExpression::Operator() const noexcept {
+TokenType BinaryExpression::Operator() const noexcept {
 	return m_Operator;
 }
 
@@ -91,7 +91,7 @@ string NameExpression::ToString() const {
 	return m_Name;
 }
 
-UnaryExpression::UnaryExpression(Token op, unique_ptr<Expression> arg) noexcept : m_Arg(move(arg)), m_Operator(move(op)) {
+UnaryExpression::UnaryExpression(TokenType op, unique_ptr<Expression> arg) noexcept : m_Operator(op), m_Arg(move(arg)) {
 	m_Arg->SetParent(this);
 }
 
@@ -100,10 +100,10 @@ Value UnaryExpression::Accept(Visitor* visitor) const {
 }
 
 string UnaryExpression::ToString() const {
-	return format("({}{})", m_Operator.Lexeme, m_Arg->ToString());
+	return format("({}{})", Token::TypeToString(m_Operator), m_Arg->ToString());
 }
 
-Token const& UnaryExpression::Operator() const noexcept {
+TokenType UnaryExpression::Operator() const noexcept {
 	return m_Operator;
 }
 
@@ -141,7 +141,7 @@ bool VarValStatement::IsStatic() const noexcept {
 	return (m_Flags & SymbolFlags::Static) == SymbolFlags::Static;
 }
 
-AssignExpression::AssignExpression(string lhs, unique_ptr<Expression> rhs, Token assignType) noexcept
+AssignExpression::AssignExpression(string lhs, unique_ptr<Expression> rhs, TokenType assignType) noexcept
 	: m_Lhs(move(lhs)), m_Value(move(rhs)), m_AssignType(assignType) {
 	m_Value->SetParent(this);
 }
@@ -173,12 +173,12 @@ Expression const* AssignExpression::Value() const noexcept {
 	return m_Value.get();
 }
 
-Token const& AssignExpression::AssignType() const noexcept {
+TokenType AssignExpression::AssignType() const noexcept {
 	return m_AssignType;
 }
 
 string AssignExpression::ToString() const {
-	return format("{} {} {}", Lhs(), AssignType().Lexeme, Value()->ToString());
+	return format("{} {} {}", Lhs(), Token::TypeToString(AssignType()), Value()->ToString());
 }
 
 InvokeFunctionExpression::InvokeFunctionExpression(unique_ptr<Expression> callable, vector<unique_ptr<Expression>> args) :
@@ -447,8 +447,8 @@ Value ClassDeclaration::Accept(Visitor* visitor) const {
 	return visitor->VisitClassDeclaration(this);
 }
 
-AssignArrayIndexExpression::AssignArrayIndexExpression(unique_ptr<Expression> arrayAccess, unique_ptr<Expression> rhs, Token assignType) noexcept 
-: m_ArrayAccess(move(arrayAccess)), m_Value(move(rhs)), m_AssignType(move(assignType)) {
+AssignArrayIndexExpression::AssignArrayIndexExpression(unique_ptr<Expression> arrayAccess, unique_ptr<Expression> rhs, TokenType assignType) noexcept 
+: m_ArrayAccess(move(arrayAccess)), m_Value(move(rhs)), m_AssignType(assignType) {
 }
 
 Value AssignArrayIndexExpression::Accept(Visitor* visitor) const {
@@ -459,7 +459,7 @@ Value NewObjectExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitNewObjectExpression(this);
 }
 
-AssignFieldExpression::AssignFieldExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, Token assignType) noexcept 
+AssignFieldExpression::AssignFieldExpression(unique_ptr<Expression> lhs, unique_ptr<Expression> rhs, TokenType assignType) noexcept 
 	: m_Lhs(move(lhs)), m_Value(move(rhs)), m_AssignType(assignType) {
 }
 

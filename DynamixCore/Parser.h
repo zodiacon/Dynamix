@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 #include <string>
-
+#include <span>
 #include "Tokenizer.h"
 #include "ParseError.h"
 #include "Parselets.h"

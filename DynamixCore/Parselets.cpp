@@ -47,7 +47,7 @@ unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
 }
 
 unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
-	return make_unique<UnaryExpression>(token, parser.ParseExpression(m_Precedence));
+	return make_unique<UnaryExpression>(token.Type, parser.ParseExpression(m_Precedence));
 }
 
 unique_ptr<Expression> LiteralParslet::Parse(Parser& parser, Token const& token) {
@@ -58,7 +58,7 @@ unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, unique_ptr<E
 	auto right = parser.ParseExpression(m_Precedence - (m_RightAssoc ? 1 : 0));
 	if (!right)
 		return nullptr;
-	return make_unique<BinaryExpression>(move(left), token, move(right));
+	return make_unique<BinaryExpression>(move(left), token.Type, move(right));
 }
 
 int GroupParslet::Precedence() const noexcept {
@@ -74,13 +74,13 @@ unique_ptr<Expression> GroupParslet::Parse(Parser& parser, Token const& token) {
 unique_ptr<Expression> AssignParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	auto right = parser.ParseExpression(Precedence() - 1);
 	if (left->NodeType() == AstNodeType::Name)
-		return make_unique<AssignExpression>(reinterpret_cast<NameExpression const*>(left.get())->Name(), move(right), token);
+		return make_unique<AssignExpression>(reinterpret_cast<NameExpression const*>(left.get())->Name(), move(right), token.Type);
 
 	if (left->NodeType() == AstNodeType::ArrayAccess) {
-		return make_unique<AssignArrayIndexExpression>(move(left), move(right), token);
+		return make_unique<AssignArrayIndexExpression>(move(left), move(right), token.Type);
 	}
 	if (left->NodeType() == AstNodeType::GetMember) {
-		return make_unique<AssignFieldExpression>(move(left), move(right), token);
+		return make_unique<AssignFieldExpression>(move(left), move(right), token.Type);
 	}
 
 	parser.AddError(ParseError(ParseErrorType::InvalidLhs, left->Location(), "Illegal Left handl side of an assignment"));
@@ -161,7 +161,7 @@ unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token const
 unique_ptr<Expression> GetMemberParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
 	assert(token.Type == TokenType::Dot || token.Type == TokenType::DoubleColon);
 	auto next = parser.Next();
-	return std::make_unique<GetMemberExpression>(move(left), next.Lexeme, token);
+	return std::make_unique<GetMemberExpression>(move(left), next.Lexeme, token.Type);
 }
 
 unique_ptr<Expression> ArrayAccessParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
@@ -178,12 +178,14 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 		parser.AddError(ParseError(ParseErrorType::IllegalExpression, CodeLocation::FromToken(ident), "Class name expected after 'new'"));
 		return nullptr;
 	}
+
+	string name = ident.Lexeme;
 	while (parser.Peek().Type == TokenType::DoubleColon) {
-		ident.Lexeme += "::";
+		name += "::";
 		parser.Next();
 		if (!parser.Match(TokenType::Identifier, false, true))
 			break;
-		ident.Lexeme += parser.Next().Lexeme;
+		name += parser.Next().Lexeme;
 	}
 
 	vector<unique_ptr<Expression>> args;
@@ -226,7 +228,7 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 		parser.Next();
 	}
 
-	return make_unique<NewObjectExpression>(move(ident.Lexeme), move(args), move(inits));
+	return make_unique<NewObjectExpression>(move(name), move(args), move(inits));
 }
 
 unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
@@ -296,5 +298,5 @@ unique_ptr<Expression> TypeOfParslet::Parse(Parser& parser, Token const& token) 
 	parser.Match(TokenType::OpenParen, true, true);
 	auto expr = parser.ParseExpression();
 	parser.Match(TokenType::CloseParen, true, true);
-	return make_unique<UnaryExpression>(token, move(expr));
+	return make_unique<UnaryExpression>(token.Type, move(expr));
 }

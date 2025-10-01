@@ -346,11 +346,11 @@ Value& Value::operator=(Value&& other) noexcept {
 
 Value Value::FromToken(Token const& token) {
 	switch (token.Type) {
-		case TokenType::Integer: return Value(strtoll(token.Lexeme.c_str(), nullptr, 0));
-		case TokenType::Real: return Value(strtod(token.Lexeme.c_str(), nullptr));
+		case TokenType::Integer: return token.Integer;
+		case TokenType::Real: return token.Real;
 		case TokenType::True: return Value(true);
 		case TokenType::False: return Value(false);
-		case TokenType::String: return Value(token.Lexeme.c_str());
+		case TokenType::String: return Value(token.Lexeme);
 		case TokenType::Empty: return Value();
 	}
 	assert(false);

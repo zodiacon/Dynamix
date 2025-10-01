@@ -73,7 +73,7 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
 
         auto* binExpr = reinterpret_cast<const BinaryExpression*>(retStmt->ReturnValue());
         REQUIRE(binExpr != nullptr);
-        REQUIRE(binExpr->Operator().Type == TokenType::Mul);
+        REQUIRE(binExpr->Operator() == TokenType::Mul);
 
         // Left: n
         auto* left = reinterpret_cast<const NameExpression*>(binExpr->Left());
@@ -87,7 +87,7 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
 
         auto* argExpr = reinterpret_cast<const BinaryExpression*>(callExpr->Arguments()[0].get());
         REQUIRE(argExpr != nullptr);
-        REQUIRE(argExpr->Operator().Type == TokenType::Minus);
+        REQUIRE(argExpr->Operator() == TokenType::Minus);
 
         auto* argLeft = reinterpret_cast<const NameExpression*>(argExpr->Left());
         auto* argRight = reinterpret_cast<const LiteralExpression*>(argExpr->Right());

@@ -111,12 +111,17 @@ namespace Dynamix {
 
 	struct Token final {
 		TokenType Type{ TokenType::Invalid };
-		std::string Lexeme;
+		union {
+			const char* Lexeme;
+			long long Integer;
+			double Real;
+		};
 		int Line;
 		uint16_t Col;
 
 		std::string_view TypeToString() const;
 		static std::string_view TypeToString(TokenType type);
+
 		bool IsValid() const {
 			return Type != TokenType::Invalid;
 		}

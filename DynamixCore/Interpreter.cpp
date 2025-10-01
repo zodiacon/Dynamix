@@ -49,7 +49,7 @@ Value Interpreter::VisitLiteral(LiteralExpression const* expr) {
 
 Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 	auto left = Eval(expr->Left());
-	switch (expr->Operator().Type) {
+	switch (expr->Operator()) {
 		case TokenType::And:
 			if (!left.ToBoolean())
 				return false;
@@ -60,11 +60,11 @@ Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 			break;
 	}
 
-	return left.BinaryOperator(expr->Operator().Type, Eval(expr->Right()));
+	return left.BinaryOperator(expr->Operator(), Eval(expr->Right()));
 }
 
 Value Interpreter::VisitUnary(UnaryExpression const* expr) {
-	return Eval(expr->Arg()).UnaryOperator(expr->Operator().Type);
+	return Eval(expr->Arg()).UnaryOperator(expr->Operator());
 }
 
 Value Interpreter::VisitName(NameExpression const* expr) {
@@ -80,7 +80,7 @@ Value Interpreter::VisitName(NameExpression const* expr) {
 	auto e = CurrentScope().FindElementWithUse(expr->Name());
 	if (e) {
 		assert(e->VarValue.IsObjectType());
-		GetMemberExpression gme(make_unique<NameExpression>(e->VarValue.AsObject()->Type()->Name(), ""), expr->Name(), Token{ TokenType::DoubleColon });
+		GetMemberExpression gme(make_unique<NameExpression>(e->VarValue.AsObject()->Type()->Name(), ""), expr->Name(), TokenType::DoubleColon);
 		return VisitGetMember(&gme);
 	}
 	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: '{}'", expr->Name()), expr->Location());
@@ -105,7 +105,7 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: {}", expr->Lhs()), expr->Location());
 
 	auto rhs = Eval(expr->Value());
-	return lhs->VarValue.Assign(rhs, expr->AssignType().Type);
+	return lhs->VarValue.Assign(rhs, expr->AssignType());
 }
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
@@ -403,7 +403,7 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	FieldInfo const* field;
 	auto obj = value.ToObject();
 	ObjectType* type = nullptr;
-	bool isStatic = expr->Operator().Type == TokenType::DoubleColon;
+	bool isStatic = expr->Operator() == TokenType::DoubleColon;
 	type = obj->Type();
 	auto member = type->GetMember(expr->Member());
 	if (!member)
@@ -448,7 +448,7 @@ Value Interpreter::VisitAssignArrayIndex(AssignArrayIndexExpression const* expr)
 	auto arr = Eval(expr->ArrayAccess()->Left());
 	auto index = Eval(expr->ArrayAccess()->Index());
 
-	return arr.AssignArrayIndex(index, Eval(expr->Value()), expr->AssignType().Type);
+	return arr.AssignArrayIndex(index, Eval(expr->Value()), expr->AssignType());
 }
 
 Value Interpreter::VisitClassDeclaration(ClassDeclaration const* decl) {
@@ -495,7 +495,7 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 Value Interpreter::VisitAssignField(AssignFieldExpression const* expr) {
 	auto obj = Eval(expr->Lhs()->Left());
 	assert(obj.IsObject());
-	obj.AsObject()->AssignField(expr->Lhs()->Member(), Eval(expr->Value()), expr->AssignType().Type);
+	obj.AsObject()->AssignField(expr->Lhs()->Member(), Eval(expr->Value()), expr->AssignType());
 	return Eval(expr->Lhs());
 }
 

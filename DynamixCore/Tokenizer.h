@@ -2,7 +2,7 @@
 
 #include <string_view>
 #include <string>
-#include <span>
+#include <set>
 #include "Token.h"
 #include <unordered_map>
 
@@ -32,6 +32,12 @@ namespace Dynamix {
 			return *m_Current != 0;
 		}
 
+		const char* AddLiteralString(std::string str) {
+			if (auto it = m_LiteralStrings.find(str); it != m_LiteralStrings.end())
+				return it->c_str();
+			return m_LiteralStrings.emplace(str).first->c_str();
+		}
+
 	private:
 		bool IsNextChars(std::string_view chars);
 		bool ProcessSingleLineComment();
@@ -51,6 +57,7 @@ namespace Dynamix {
 		std::string m_CommentToEndOfLine{ "//" };
 		std::string m_MultiLineCommentStart{ "/*" }, m_MultiLineCommentEnd{ "*/" };
 		int m_MultiLineCommentNesting;
+		std::set<std::string> m_LiteralStrings;
 	};
 }
 

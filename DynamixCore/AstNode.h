@@ -99,7 +99,7 @@ namespace Dynamix {
 
 	class GetMemberExpression : public Expression {
 	public:
-		GetMemberExpression(std::unique_ptr<Expression> left, std::string member, Token op) noexcept;
+		GetMemberExpression(std::unique_ptr<Expression> left, std::string member, TokenType op) noexcept;
 		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Left() const noexcept;
@@ -107,14 +107,14 @@ namespace Dynamix {
 		AstNodeType NodeType() const noexcept {
 			return AstNodeType::GetMember;
 		}
-		Token const& Operator() const noexcept {
+		TokenType const& Operator() const noexcept {
 			return m_Operator;
 		}
 
 	private:
 		std::unique_ptr<Expression> m_Left;
 		std::string m_Member;
-		Token m_Operator;
+		TokenType m_Operator;
 	};
 
 	class MatchCaseExpression {
@@ -252,24 +252,24 @@ namespace Dynamix {
 
 	class AssignExpression : public Expression {
 	public:
-		AssignExpression(std::string lhs, std::unique_ptr<Expression> rhs, Token assignType) noexcept;
+		AssignExpression(std::string lhs, std::unique_ptr<Expression> rhs, TokenType assignType) noexcept;
 		Value Accept(Visitor* visitor) const override;
 		std::string const& Lhs() const noexcept;
 		Expression const* Value() const noexcept;
-		Token const& AssignType() const noexcept;
+		TokenType AssignType() const noexcept;
 		std::string ToString() const override;
 
 	private:
 		std::string m_Lhs;
 		std::unique_ptr<Expression> m_Value;
-		Token m_AssignType;
+		TokenType m_AssignType;
 	};
 
 	class AssignFieldExpression : public Expression {
 	public:
-		AssignFieldExpression(std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs, Token assignType) noexcept;
+		AssignFieldExpression(std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs, TokenType assignType) noexcept;
 		Value Accept(Visitor* visitor) const override;
-		Token const& AssignType() const noexcept {
+		TokenType AssignType() const noexcept {
 			return m_AssignType;
 		}
 		GetMemberExpression const* Lhs() const noexcept {
@@ -282,12 +282,12 @@ namespace Dynamix {
 	private:
 		std::unique_ptr<Expression> m_Lhs;
 		std::unique_ptr<Expression> m_Value;
-		Token m_AssignType;
+		TokenType m_AssignType;
 	};
 
 	class AssignArrayIndexExpression : public Expression {
 	public:
-		AssignArrayIndexExpression(std::unique_ptr<Expression> arrayAccess, std::unique_ptr<Expression> rhs, Token assignType) noexcept;
+		AssignArrayIndexExpression(std::unique_ptr<Expression> arrayAccess, std::unique_ptr<Expression> rhs, TokenType assignType) noexcept;
 		Value Accept(Visitor* visitor) const override;
 
 		AccessArrayExpression const* ArrayAccess() const noexcept {
@@ -296,14 +296,14 @@ namespace Dynamix {
 		Expression const* Value() const noexcept {
 			return m_Value.get();
 		}
-		Token const& AssignType() const noexcept {
+		TokenType AssignType() const noexcept {
 			return m_AssignType;
 		}
 
 	private:
 		std::unique_ptr<Expression> m_ArrayAccess;
 		std::unique_ptr<Expression> m_Value;
-		Token m_AssignType;
+		TokenType m_AssignType;
 	};
 
 	//class PostfixExpression : public Expression {
@@ -321,18 +321,18 @@ namespace Dynamix {
 
 	class BinaryExpression : public Expression {
 	public:
-		BinaryExpression(std::unique_ptr<Expression> left, Token op, std::unique_ptr<Expression> right);
+		BinaryExpression(std::unique_ptr<Expression> left, TokenType op, std::unique_ptr<Expression> right);
 		Value Accept(Visitor* visitor) const override;
 
 		std::string ToString() const override;
 
 		Expression* Left() const noexcept;
 		Expression* Right() const noexcept;
-		Token const& Operator() const noexcept;
+		TokenType Operator() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Left, m_Right;
-		Token m_Operator;
+		TokenType m_Operator;
 	};
 
 	class NameExpression : public Expression {
@@ -352,15 +352,15 @@ namespace Dynamix {
 
 	class UnaryExpression : public Expression {
 	public:
-		UnaryExpression(Token op, std::unique_ptr<Expression> arg) noexcept;
+		UnaryExpression(TokenType op, std::unique_ptr<Expression> arg) noexcept;
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
-		Token const& Operator() const noexcept;
+		TokenType Operator() const noexcept;
 		Expression* Arg() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Arg;
-		Token m_Operator;
+		TokenType m_Operator;
 	};
 
 	class LiteralExpression : public Expression {

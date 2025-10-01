@@ -127,7 +127,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(right != nullptr);
         REQUIRE(left->Literal().ToInteger() == 1);
         REQUIRE(right->Literal().ToInteger() == 2);
-        REQUIRE(binExpr->Operator().Type == TokenType::Plus);
+        REQUIRE(binExpr->Operator() == TokenType::Plus);
     }
 }
 

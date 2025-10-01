@@ -154,7 +154,7 @@ Token Tokenizer::ParseIdentifier() {
 	auto type = TokenType::Identifier;
 	if (auto it = m_TokenTypes.find(lexeme); it != m_TokenTypes.end())
 		type = it->second;
-	return Token{ .Type = type, .Lexeme = lexeme, .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()), };
+	return Token{ .Type = type, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()), };
 }
 
 Token Tokenizer::ParseNumber() {
@@ -182,8 +182,11 @@ Token Tokenizer::ParseNumber() {
 	auto len = int(type == TokenType::Real ? pd - m_Current : pi - m_Current);
 	m_Col += (int)len + startLen;
 	m_Current += len;
-	auto token = Token{ .Type = type, .Lexeme = string(m_Current - len - startLen, m_Current), .Line = m_Line, .Col = uint16_t(m_Col - len) };
-
+	auto token = Token{ .Type = type, .Line = m_Line, .Col = uint16_t(m_Col - len) };
+	if (type == TokenType::Integer)
+		token.Integer = ivalue;
+	else
+		token.Real = dvalue;
 	if (*m_Current == '\n') {
 		m_Col = 1;
 		m_Line++;
@@ -220,14 +223,14 @@ Token Tokenizer::ParseOperator() {
 	} while (!lexeme.empty());
 
 	if (type == TokenType::Invalid)
-		return Token{ .Type = TokenType::Invalid, .Lexeme = temp, .Line = m_Line, .Col = uint16_t(m_Col - temp.length()) };
+		return Token{ .Type = TokenType::Invalid, .Lexeme = AddLiteralString(std::move(temp)), .Line = m_Line, .Col = uint16_t(m_Col - temp.length()) };
 
 	m_Current -= (temp.length() - lexeme.length());
 	if (lexeme.empty()) {
 		lexeme = temp;
-		return Token{ .Type = TokenType::Operator, .Lexeme = move(lexeme), .Line = m_Line, .Col = uint16_t(m_Col - (int)temp.length()) };
+		return Token{ .Type = TokenType::Operator, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - (int)temp.length()) };
 	}
-	return Token{ .Type = type, .Lexeme = lexeme, .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()) };
+	return Token{ .Type = type, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()) };
 }
 
 Token Tokenizer::ParseString(bool raw) {
@@ -267,5 +270,5 @@ Token Tokenizer::ParseString(bool raw) {
 		return Token{ .Type = TokenType::Error, .Lexeme = "Unterminated string", .Line = m_Line, .Col = m_Col };
 
 	m_Current++;
-	return Token{ .Type = TokenType::String, .Lexeme = lexeme, .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()), };
+	return Token{ .Type = TokenType::String, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()), };
 }
