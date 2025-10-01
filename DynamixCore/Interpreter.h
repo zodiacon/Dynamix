@@ -62,7 +62,9 @@ namespace Dynamix {
 
 		CodeLocation Location() const noexcept;
 
-		Value Invoke(AstNode const* node, std::vector<Parameter> const* params = nullptr, std::vector<Value> const* args = nullptr);
+		Value Invoke(AstNode const* node, std::vector<Value> const* args = nullptr);
+		Value RunMain(int argc, const char* argv[], const char* envp[]);
+		Value RunFunction(const char* name, std::vector<Value> const* args = nullptr);
 
 	protected:
 		void PushScope();

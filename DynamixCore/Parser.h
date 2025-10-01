@@ -32,8 +32,8 @@ namespace Dynamix {
 		std::span<const ParseError> Errors() const;
 		void PushScope(AstNode* node);
 		void PopScope();
-		auto const& Program() const {
-			return m_Program;
+		auto const Program() const {
+			return m_Program.get();
 		}
 
 		CodeLocation Location() const noexcept;

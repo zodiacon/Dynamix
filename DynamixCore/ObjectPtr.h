@@ -5,7 +5,7 @@
 namespace Dynamix {
 	template<typename T = RuntimeObject>
 	class ObjectPtr {
-		static_assert(std::is_base_of_v<RuntimeObject, T>, "T must derive from RuntimeObject");
+		//static_assert(std::is_base_of_v<RuntimeObject, T>, "T must derive from RuntimeObject");
 	public:
 		ObjectPtr(T* obj = nullptr) : p(obj) {
 			if (p)
@@ -27,11 +27,11 @@ namespace Dynamix {
 			return *this;
 		}
 
-		ObjectPtr(ObjectPtr&& other) : p(other.p) {
+		ObjectPtr(ObjectPtr&& other) noexcept : p(other.p) {
 			other.p = nullptr;
 		}
 
-		ObjectPtr& operator=(ObjectPtr&& other) {
+		ObjectPtr& operator=(ObjectPtr&& other) noexcept {
 			if (this != &other) {
 				Release();
 				p = other.p;

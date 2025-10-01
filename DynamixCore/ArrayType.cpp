@@ -1,7 +1,7 @@
+#include "RuntimeObject.h"
 #include "ArrayType.h"
 #include "Runtime.h"
 #include "VectorEnumerator.h"
-#include "RuntimeObject.h"
 #include "TypeHelper.h"
 #include "SliceType.h"
 

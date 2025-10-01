@@ -214,8 +214,13 @@ namespace Dynamix {
 		std::vector<std::unique_ptr<Statement>> const& Get() const;
 		std::unique_ptr<Statement> RemoveAt(int index);
 		Statement const* GetAt(int i) const;
-		int Count() const;
+		int Count() const noexcept {
+			return static_cast<int>(m_Stmts.size());
+		}
 		std::string ToString() const override;
+		std::vector<std::unique_ptr<Statement>> const& All() const noexcept {
+			return m_Stmts;
+		}
 
 	private:
 		std::vector<std::unique_ptr<Statement>> m_Stmts;

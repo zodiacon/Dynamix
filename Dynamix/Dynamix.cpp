@@ -10,10 +10,10 @@ using namespace Dynamix;
 using namespace std;
 
 void ShowErrors(Parser const& p, bool repl = false) {
-	if(!repl)
+	if (!repl)
 		println("{} Errors:", p.Errors().size());
 	for (auto& e : p.Errors()) {
-		if(repl)
+		if (repl)
 			println("{}", e.Description());
 		else
 			println("({},{}): {}", e.Location().Line, e.Location().Col, e.Description());
@@ -29,10 +29,10 @@ int RunRepl(Parser& p, Interpreter& intr) {
 			break;
 
 		auto n = p.Parse(text, true);
-		if(n) {
+		if (n) {
 			try {
 				auto result = intr.Eval(n);
-				if(!result.IsNull())
+				if (!result.IsNull())
 					println("{}", result.ToString());
 			}
 			catch (RuntimeError err) {
@@ -48,8 +48,8 @@ int RunRepl(Parser& p, Interpreter& intr) {
 
 void Usage() {
 	println("Dynamix v0.1");
-	println("Usage: dynamix run <file> [file]... ( parse files and run Main function)");
-	println("       dynamix load [file]...       ( parse files and run REPL)");
+	println("Usage: dynamix run <file> [file]...[-- params] (parse files and run Main function)");
+	println("       dynamix load [file]...					(parse files and run REPL)");
 }
 
 int main(int argc, const char* argv[], const char* envp[]) {
@@ -68,7 +68,7 @@ int main(int argc, const char* argv[], const char* envp[]) {
 
 	if (_stricmp(argv[1], "run") == 0)
 		cmd = Command::Run;
-	else if(_stricmp(argv[1], "load") == 0)
+	else if (_stricmp(argv[1], "load") == 0)
 		cmd = Command::Load;
 	else {
 		println("Unknown command: {}", argv[1]);
@@ -83,7 +83,12 @@ int main(int argc, const char* argv[], const char* envp[]) {
 
 	std::unique_ptr<AstNode> program;
 	bool error = false;
+	int params = 0;
 	for (int i = 2; i < argc; i++) {
+		if (_stricmp(argv[i], "--") == 0) {
+			params = i + 1;
+			break;
+		}
 		auto code = p.ParseFile(argv[i]);
 		if (!code) {
 			ShowErrors(p);
@@ -94,12 +99,23 @@ int main(int argc, const char* argv[], const char* envp[]) {
 	if (error)
 		return 0;
 
+	auto result = intr.Eval(p.Program());
+
 	switch (cmd) {
-	case Command::Load:
-		auto result = p.Program()->Accept(&intr);
-		if (!result.IsNull())
-			println("{}", result.ToString());
-		return RunRepl(p, intr);
+		case Command::Load:
+		{
+			if (!result.IsNull())
+				println("{}", result.ToString());
+			return RunRepl(p, intr);
+		}
+
+		case Command::Run:
+		{
+			result = intr.RunMain(params > 0 ? argc - params : 0, params > 0 ? argv + params : nullptr, envp);
+			if (!result.IsNull())
+				println("{}", result.ToString());
+			break;
+		}
 	}
 
 	return 0;

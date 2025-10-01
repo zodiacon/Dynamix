@@ -1,5 +1,6 @@
 #include <cassert>
 #include <format>
+#include <algorithm>
 
 #include "Interpreter.h"
 #include "AstNode.h"
@@ -319,26 +320,28 @@ Scope& Interpreter::CurrentScope() {
 	return m_Scopes.top();
 }
 
-CodeLocation Dynamix::Interpreter::Location() const noexcept {
+CodeLocation Interpreter::Location() const noexcept {
 	return m_CurrentNode ? m_CurrentNode->Location() : CodeLocation();
 }
 
-Value Interpreter::Invoke(AstNode const* node, std::vector<Parameter> const* params, std::vector<Value> const* args) {
+Value Interpreter::Invoke(AstNode const* node, std::vector<Value> const* args) {
 	Expression const* body;
-	Scoper scoper(this);
+	FunctionEssentials const* decl = nullptr;
+
 	if (node->NodeType() == AstNodeType::FunctionDeclaration) {
-		auto decl = reinterpret_cast<FunctionDeclaration const*>(node);
-		body = decl->Body();
+		decl = static_cast<FunctionEssentials const*>(reinterpret_cast<FunctionDeclaration const*>(node));
 	}
 	else {
 		assert(node->NodeType() == AstNodeType::AnonymousFunction);
-		auto decl = reinterpret_cast<AnonymousFunctionExpression const*>(node);
-		body = decl->Body();
+		decl = static_cast<FunctionEssentials const*>(reinterpret_cast<AnonymousFunctionExpression const*>(node));
 	}
-	if (params && args) {
+	body = decl->Body();
+	auto& params = decl->Parameters();
+	Scoper scoper(this);
+	if (args) {
 		for (size_t i = 0; i < args->size(); i++) {
 			Element v{ (*args)[i] };
-			CurrentScope().AddElement((*params)[i].Name, move(v));
+			CurrentScope().AddElement(params[i].Name, move(v));
 		}
 	}
 
@@ -350,6 +353,31 @@ Value Interpreter::Invoke(AstNode const* node, std::vector<Parameter> const* par
 	}
 	catch (BreakoutStatementException const&) {
 	}
+}
+
+Value Interpreter::RunMain(int argc, const char* argv[], const char* envp[]) {
+	AstNode const* main = nullptr;
+	for (auto& node : m_Parser.Program()->All()) {
+		if (node->NodeType() == AstNodeType::FunctionDeclaration) {
+			auto decl = reinterpret_cast<FunctionDeclaration const*>(node.get());
+			if (decl->Name() == "Main") {
+				main = decl;
+				break;
+			}
+		}
+	}
+	if (main) {
+		std::vector<Value> args;
+		std::vector<Value> items;
+		items.reserve(argc);
+		for (int i = 0; i < argc; i++)
+			items.push_back(argv[i]);
+		auto sargs = ArrayType::Get()->CreateArray(move(items));
+		args.push_back(move(sargs));
+		return Invoke(main, &args);
+	}
+
+	return Value::Error();
 }
 
 void Interpreter::PushScope() {
@@ -512,7 +540,7 @@ Value Interpreter::VisitUse(UseStatement const* use) {
 	auto e = CurrentScope().FindElement(use->Name());
 	if (e == nullptr)
 		throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown name '{}'", use->Name()), use->Location());
-	if((e->Flags & ElementFlags::Class) == ElementFlags::None)
+	if ((e->Flags & ElementFlags::Class) == ElementFlags::None)
 		throw RuntimeError(RuntimeErrorType::InvalidType, format("'{}' is not a class", use->Name()), use->Location());
 
 	CurrentScope().AddUse(use->Name());

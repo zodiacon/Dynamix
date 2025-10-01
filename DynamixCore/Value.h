@@ -8,6 +8,7 @@
 
 #include "Token.h"
 #include "EnumClassBitwise.h"
+#include "ObjectPtr.h"
 
 namespace Dynamix {
 	class RuntimeObject;
@@ -55,7 +56,7 @@ namespace Dynamix {
 	using NativeFunction = Value(*)(Interpreter&, std::vector<Value>&);
 
 	struct Callable {
-		RuntimeObject* Instance{ nullptr };
+		ObjectPtr<RuntimeObject> Instance;
 		AstNode const* Node{ nullptr };
 		NativeFunction Native{ nullptr };
 		MethodInfo const* Method{ nullptr };

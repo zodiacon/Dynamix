@@ -392,10 +392,6 @@ Statement const* Statements::GetAt(int i) const {
 	return i < 0 || i >= m_Stmts.size() ? nullptr : m_Stmts[i].get();
 }
 
-int Statements::Count() const {
-	return static_cast<int>(m_Stmts.size());
-}
-
 vector<unique_ptr<Statement>> const& Statements::Get() const {
 	return m_Stmts;
 }
