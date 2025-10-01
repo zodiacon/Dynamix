@@ -32,7 +32,7 @@ namespace Dynamix {
 
 		virtual void Construct(std::vector<Value> const& args);
 		virtual void Destruct();
-		virtual bool IsObjectType() const {
+		virtual bool IsObjectType() const noexcept {
 			return false;
 		}
 		void AssignField(std::string const& name, Value value, TokenType assignType = TokenType::Assign);
@@ -57,6 +57,9 @@ namespace Dynamix {
 
 	protected:
 		std::map<std::string, Value> m_FieldValues;
+		unsigned RefCount() const noexcept {
+			return m_RefCount;
+		}
 
 	private:
 		mutable int m_RefCount{ 1 };
@@ -64,4 +67,3 @@ namespace Dynamix {
 	};
 
 }
-

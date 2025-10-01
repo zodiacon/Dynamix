@@ -18,7 +18,9 @@ Interpreter::Interpreter(Parser& p, Runtime& rt) : m_Parser(p), m_Runtime(rt) {
 }
 
 Value Interpreter::Eval(AstNode const* root) {
-	assert(root);
+	if (!root)
+		return Value();
+
 	m_CurrentNode = root;
 	try {
 		return root->Accept(this);

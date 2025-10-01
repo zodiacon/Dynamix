@@ -20,13 +20,6 @@ RuntimeError::RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation 
 	m_Type(type), m_Message(std::move(msg)), m_Location(std::move(location)) {
 }
 
-ObjectType* Runtime::GetObjectType(AstNode const* classNode, Interpreter* intr) {
-	assert(classNode->NodeType() == AstNodeType::ClassDeclaration);
-	auto decl = reinterpret_cast<ClassDeclaration const*>(classNode);
-	auto type = BuildType(decl, intr);
-	return type.Get();
-}
-
 ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpreter* intr) const {
 	ObjectType* baseType = nullptr;
 	if (!decl->BaseName().empty()) {
@@ -70,6 +63,7 @@ ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpret
 			assert(f->NodeType() == AstNodeType::Statements);
 			auto stmts = reinterpret_cast<Statements const*>(f.get());
 			for (auto& s : stmts->Get()) {
+				assert(s->NodeType() == AstNodeType::VarValStatement);
 				auto vv = reinterpret_cast<VarValStatement const*>(s.get());
 				addField(vv);
 			}
@@ -92,7 +86,26 @@ ObjectPtr<ObjectType> Runtime::BuildEnum(EnumDeclaration const* decl) const {
 	return ObjectPtr<ObjectType>(type);
 }
 
+std::vector<ObjectType*> Runtime::GetTypes() {
+	return std::vector(m_Types.begin(), m_Types.end());
+}
+
+void Runtime::RegisterType(ObjectType* type) {
+	assert(!m_Types.contains(type));
+	m_Types.insert(type);
+}
+
+void Runtime::RevokeType(ObjectType* type) {
+	assert(m_Types.contains(type));
+	m_Types.erase(type);
+}
+
+Runtime* Runtime::Get() {
+	return s_Runtime;
+}
+
 Runtime::Runtime(Parser& parser) : m_Parser(parser) {
+	s_Runtime = this;
 	InitStdLibrary();
 }
 

@@ -60,7 +60,7 @@ void ObjectType::RunClassConstructor(Interpreter& intr) {
 	}
 }
 
-unsigned ObjectType::GetObjectCount() const {
+unsigned ObjectType::GetObjectCount() const noexcept {
 	return m_ObjectCount;
 }
 
@@ -149,9 +149,16 @@ void ObjectType::ObjectDestroyed(RuntimeObject* obj) {
 
 ObjectType::ObjectType(std::string name, ObjectType* base)
 	: RuntimeObject(this), MemberInfo(move(name), MemberType::Class), m_Base(base) {
+	Runtime::Get()->RegisterType(this);
+
 	BEGIN_METHODS(ObjectType)
 		METHOD(ObjectCount, 0, return Value((Int)inst->GetObjectCount());),
 	END_METHODS()
+}
+
+ObjectType::~ObjectType() noexcept {
+	if(RefCount() == 0)
+		Runtime::Get()->RevokeType(this);
 }
 
 RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {

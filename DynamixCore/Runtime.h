@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <unordered_set>
+
 #include "AstNode.h"
 #include "Scope.h"
 
@@ -71,11 +73,10 @@ namespace Dynamix {
 		CodeLocation m_Location;
 	};
 
-	class Runtime {
+	class Runtime : NoCopy {
 	public:
 		explicit Runtime(Parser& parser);
 		void InitStdLibrary();
-		[[maybe_unused]] ObjectType* GetObjectType(AstNode const* classNode, Interpreter* intr = nullptr);
 
 		ObjectPtr<ObjectType> BuildType(ClassDeclaration const* decl, Interpreter* intr) const;
 		ObjectPtr<ObjectType> BuildEnum(EnumDeclaration const* decl) const;
@@ -84,9 +85,18 @@ namespace Dynamix {
 			return &m_GlobalScope;
 		}
 
+		std::vector<ObjectType*> GetTypes();
+
+		void RegisterType(ObjectType* type);
+		void RevokeType(ObjectType* type);
+
+		static Runtime* Get();
+
 	private:
+		inline static thread_local Runtime* s_Runtime;
 		Parser& m_Parser;
 		Scope m_GlobalScope;
+		std::unordered_set<ObjectType*> m_Types;
 	};
 }
 

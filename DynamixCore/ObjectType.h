@@ -76,10 +76,14 @@ namespace Dynamix {
 	class ObjectType : public RuntimeObject, public MemberInfo {
 	public:
 		explicit ObjectType(std::string name, ObjectType* base = nullptr);
+		virtual ~ObjectType() noexcept;
 
 		virtual RuntimeObject* CreateObject(Interpreter& intr, std::vector<Value> const& args);
-		bool IsObjectType() const override {
+		bool IsObjectType() const noexcept override {
 			return true;
+		}
+		virtual bool IsStaticObjectType() const noexcept {
+			return false;
 		}
 
 		// instance 
@@ -89,7 +93,7 @@ namespace Dynamix {
 
 		void RunClassConstructor(Interpreter& intr);
 
-		unsigned GetObjectCount() const;
+		unsigned GetObjectCount() const noexcept;
 
 		virtual bool AddField(std::unique_ptr<FieldInfo> field, Value value = Value());
 		bool AddMethod(std::unique_ptr<MethodInfo> method);
@@ -138,6 +142,10 @@ namespace Dynamix {
 	class StaticObjectType : public ObjectType {
 	public:
 		StaticObjectType(std::string name, ObjectType* baseType = nullptr);
+
+		bool IsStaticObjectType() const noexcept override {
+			return true;
+		}
 
 		int AddRef() const noexcept override {
 			return 2;

@@ -66,6 +66,10 @@ namespace Dynamix {
 		Value RunMain(int argc, const char* argv[], const char* envp[]);
 		Value RunFunction(const char* name, std::vector<Value> const* args = nullptr);
 
+		Runtime& GetRuntime() {
+			return m_Runtime;
+		}
+
 	protected:
 		void PushScope();
 		void PopScope();

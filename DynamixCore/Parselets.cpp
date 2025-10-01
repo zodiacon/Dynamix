@@ -56,6 +56,8 @@ unique_ptr<Expression> LiteralParslet::Parse(Parser& parser, Token const& token)
 
 unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
 	auto right = parser.ParseExpression(m_Precedence - (m_RightAssoc ? 1 : 0));
+	if (!right)
+		return nullptr;
 	return make_unique<BinaryExpression>(move(left), token, move(right));
 }
 

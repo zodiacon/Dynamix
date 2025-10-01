@@ -677,11 +677,21 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 
 	auto stmt = make_unique<ForStatement>();
 	PushScope(stmt.get());
-	auto init = ParseStatement();
-	auto whileExpr = ParseExpression();
-	Match(TokenType::Semicolon, true, true);
+	std::unique_ptr<Statement> init;
+	if(Peek().Type != TokenType::Semicolon)
+		init = ParseStatement();
+	Match(TokenType::Semicolon);
 
-	auto inc = ParseExpression();
+	std::unique_ptr<Expression> whileExpr;
+	if (Peek().Type != TokenType::Semicolon)
+		whileExpr = ParseExpression();
+	else
+		whileExpr = std::make_unique<LiteralExpression>(true);
+	Match(TokenType::Semicolon);
+	std::unique_ptr<Expression> inc;
+	if (Peek().Type != TokenType::OpenBrace) {
+		inc = ParseExpression();
+	}
 	if (open)
 		Match(TokenType::CloseParen, true, true);
 

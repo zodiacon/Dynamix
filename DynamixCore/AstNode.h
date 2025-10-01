@@ -468,14 +468,18 @@ namespace Dynamix {
 		}
 		void SetInit(std::unique_ptr<Statement> init) noexcept {
 			m_Init = move(init);
+			if (m_Init)
+				m_Init->SetParent(this);
 		}
 		void SetWhile(std::unique_ptr<Expression> expr) noexcept {
 			m_While = move(expr);
-			m_While->SetParent(this);
+			if(m_While)
+				m_While->SetParent(this);
 		}
 		void SetInc(std::unique_ptr<Expression> expr) noexcept {
 			m_Inc = move(expr);
-			m_Inc->SetParent(this);
+			if(m_Inc)
+				m_Inc->SetParent(this);
 		}
 		Statement const* Init() const noexcept;
 		Expression const* While() const noexcept;
