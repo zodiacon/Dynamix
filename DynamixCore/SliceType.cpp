@@ -1,4 +1,6 @@
 #include "SliceType.h"
+#include "RangeType.h"
+#include "Runtime.h"
 
 using namespace Dynamix;
 
@@ -7,14 +9,38 @@ SliceType* SliceType::Get() {
 	return &type;
 }
 
-SliceType::SliceType() : ObjectType("Slice") {
+SliceObject* SliceType::CreateSlice(RuntimeObject* target, Value const& range) const {
+	assert(range.AsObject()->Type() == RangeType::Get());
+	auto r = reinterpret_cast<RangeObject*>(range.ToObject());
+	return new SliceObject(target, r->Start(), r->End() - r->Start());
 }
 
-SliceObject::SliceObject(RuntimeObject const* target, Int start, Int count) noexcept
-	: RuntimeObject(SliceType::Get()), m_Target(target), m_Start(start), m_Count(count) {
+SliceType::SliceType() : StaticObjectType("Slice") {
+}
+
+SliceObject::SliceObject(RuntimeObject* target, Int start, Int size) noexcept
+	: RuntimeObject(SliceType::Get()), m_Target(target), m_Start(start), m_Size(size) {
 	target->AddRef();
 }
 
 SliceObject::~SliceObject() noexcept {
 	m_Target->Release();
+}
+
+std::string SliceObject::ToString() const {
+	std::string text("[ ");
+	for (Int i = 0; i < Size(); i++)
+		text += m_Target->InvokeIndexer(Value(i)).ToString() + ", ";
+	return text + " ]";
+}
+
+Value SliceObject::InvokeIndexer(Value const& index) {
+	if (index.ToInteger() < 0 || index.ToInteger() >= Size())
+		throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} out of range in slice", index.ToInteger()));
+
+	return m_Target->InvokeIndexer(Value(index.ToInteger() + Start()));
+}
+
+void SliceObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
+	m_Target->AssignIndexer(Value(index.ToInteger() + Start()), value, assign);
 }

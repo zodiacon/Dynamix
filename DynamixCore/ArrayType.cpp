@@ -4,6 +4,7 @@
 #include "VectorEnumerator.h"
 #include "TypeHelper.h"
 #include "SliceType.h"
+#include "RangeType.h"
 
 using namespace Dynamix;
 
@@ -17,6 +18,10 @@ ArrayObject* ArrayType::CreateArray(std::vector<Value> args) {
 }
 
 Value ArrayObject::InvokeIndexer(Value const& index) {
+	if (index.IsObject() && index.ToObject()->Type() == RangeType::Get()) {
+		// slicing
+		return SliceType::Get()->CreateSlice(this, index);
+	}
 	if (!index.IsInteger())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Array index must be an integer");
 	auto i = ValidateIndex(index.ToInteger());
@@ -40,7 +45,7 @@ Int ArrayObject::ValidateIndex(Int i) const {
 	return i;
 }
 
-SliceObject const* ArrayObject::Slice(Int start, Int count) const {
+SliceObject* ArrayObject::Slice(Int start, Int count) {
 	return new SliceObject(this, start, count);
 }
 

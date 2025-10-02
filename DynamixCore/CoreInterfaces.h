@@ -40,7 +40,12 @@ namespace Dynamix {
 	};
 
 	struct ISliceable {
-		virtual SliceObject const* Slice(Int start, Int count = -1) const = 0;
+		virtual SliceObject* Slice(Int start, Int count = -1) = 0;
+	};
+
+	struct IIndexable {
+		virtual Value GetIndex(Value index) = 0;
+		virtual void SetIndex(Value index, Value value) = 0;
 	};
 }
 

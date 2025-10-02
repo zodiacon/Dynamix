@@ -39,7 +39,7 @@
 		Type* SubString(int64_t start, int64_t length = -1) const {	\
 			return new Type(m_String.substr(start, length));	\
 		}	\
-		SliceObject* Slice(Int start, Int length = -1) const {	\
+		SliceObject* Slice(Int start, Int length = -1) {	\
 			return new SliceObject(this, start, length < 0 ? Length() - start : length);	\
 		}	\
 		Type* Clone() const { return new StringObject##Suffix(m_String); }	\
