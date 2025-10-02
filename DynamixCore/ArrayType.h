@@ -35,6 +35,10 @@ namespace Dynamix {
 			return Int(m_Items.size());
 		}
 
+		bool HasValue(Int index) const noexcept override {
+			return index >= 0 && index < static_cast<Int>(m_Items.size());
+		}
+
 		Int Add(Value item);
 		Int RemoveAt(Int index);
 		Int Insert(Int index, Value item);

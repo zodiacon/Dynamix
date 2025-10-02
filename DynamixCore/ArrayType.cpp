@@ -22,8 +22,6 @@ Value ArrayObject::InvokeIndexer(Value const& index) {
 		// slicing
 		return SliceType::Get()->CreateSlice(this, index);
 	}
-	if (!index.IsInteger())
-		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Array index must be an integer");
 	auto i = ValidateIndex(index.ToInteger());
 	return m_Items[i];
 }

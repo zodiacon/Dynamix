@@ -286,7 +286,11 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 
 unique_ptr<Expression> RangeParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
 	assert(token.Type == TokenType::DotDot || token.Type == TokenType::DotDotInclusive);
-	auto end = parser.ParseExpression();
+	std::unique_ptr<Expression> end;
+	if (parser.Peek().Type == TokenType::CloseBracket)
+		end = make_unique<LiteralExpression>(-1);
+	else
+		end = parser.ParseExpression();
 	if (!end)
 		return nullptr;
 

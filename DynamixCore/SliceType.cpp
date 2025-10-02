@@ -12,7 +12,7 @@ SliceType* SliceType::Get() {
 SliceObject* SliceType::CreateSlice(RuntimeObject* target, Value const& range) const {
 	assert(range.AsObject()->Type() == RangeType::Get());
 	auto r = reinterpret_cast<RangeObject*>(range.ToObject());
-	return new SliceObject(target, r->Start(), r->End() - r->Start());
+	return new SliceObject(target, r->Start(), r->End() < 0 ? -1 : r->End() - r->Start());
 }
 
 SliceType::SliceType() : StaticObjectType("Slice") {
@@ -29,9 +29,12 @@ SliceObject::~SliceObject() noexcept {
 
 std::string SliceObject::ToString() const {
 	std::string text("[ ");
-	for (Int i = 0; i < Size(); i++)
-		text += m_Target->InvokeIndexer(Value(i)).ToString() + ", ";
-	return text + " ]";
+	for (Int i = 0; Size() < 0 ? true : (i < Size()); i++) {
+		if (!m_Target->HasValue(i + Start()))
+			break;
+		text += m_Target->InvokeIndexer(Value(i + Start())).ToString() + ", ";
+	}
+	return text.substr(0, text.length() - 2) + " ]";
 }
 
 Value SliceObject::InvokeIndexer(Value const& index) {
