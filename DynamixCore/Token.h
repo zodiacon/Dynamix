@@ -61,6 +61,7 @@ namespace Dynamix {
 		Module,
 		Unuse,
 		Empty,
+		ReadOnly,
 
 		Plus = Operator,
 		Minus,
@@ -109,6 +110,12 @@ namespace Dynamix {
 		MetaDefault,
 	};
 
+	struct CodeLocation {
+		int Line;
+		int Col;
+		std::string FileName;
+	};
+
 	struct Token final {
 		TokenType Type{ TokenType::Invalid };
 		union {
@@ -116,8 +123,7 @@ namespace Dynamix {
 			long long Integer;
 			double Real;
 		};
-		int Line;
-		uint16_t Col;
+		CodeLocation Location;
 
 		std::string_view TypeToString() const;
 		static std::string_view TypeToString(TokenType type);

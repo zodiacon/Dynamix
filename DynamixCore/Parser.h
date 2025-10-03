@@ -70,7 +70,7 @@ namespace Dynamix {
 
 	protected:
 		virtual bool Init();
-		virtual std::unique_ptr<Statements> DoParse();
+		virtual Statements const* DoParse();
 
 	private:
 		Tokenizer& m_Tokenizer;
@@ -84,6 +84,7 @@ namespace Dynamix {
 		std::string m_CurrentFile;
 		std::vector<std::string> m_ConstStrings;
 		int m_LoopCount{ 0 };
+		int m_InClass{ 0 };
 		bool m_Repl{ false };
 	};
 }

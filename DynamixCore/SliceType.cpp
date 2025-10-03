@@ -18,6 +18,22 @@ SliceObject* SliceType::CreateSlice(RuntimeObject* target, Value const& range) c
 SliceType::SliceType() : StaticObjectType("Slice") {
 }
 
+std::unique_ptr<IEnumerator> SliceObject::GetEnumerator() const {
+	return std::make_unique<Enumerator>(this);
+}
+
+RuntimeObject* SliceObject::Clone() const {
+	return new SliceObject(m_Target, Start(), Size());
+}
+
+void* SliceObject::QueryService(ServiceId id) {
+	switch (id) {
+		case ServiceId::Enumerable: return static_cast<IEnumerable*>(this);
+		case ServiceId::Clonable: return static_cast<IClonable*>(this);
+	}
+	return nullptr;
+}
+
 SliceObject::SliceObject(RuntimeObject* target, Int start, Int size) noexcept
 	: RuntimeObject(SliceType::Get()), m_Target(target), m_Start(start), m_Size(size) {
 	target->AddRef();
@@ -46,4 +62,19 @@ Value SliceObject::InvokeIndexer(Value const& index) {
 
 void SliceObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
 	m_Target->AssignIndexer(Value(index.ToInteger() + Start()), value, assign);
+}
+
+Value SliceObject::GetByIndex(Int index) const {
+	return m_Target->InvokeIndexer(Value(index + Start()));
+}
+
+SliceObject::Enumerator::Enumerator(SliceObject const* slice) : m_Slice(slice), m_Current(0), m_End(slice->Size()) {
+	slice->AddRef();
+}
+
+Value SliceObject::Enumerator::GetNextValue() {
+	if (m_Current == m_End)
+		return Value::Error(ValueErrorType::CollectionEnd);
+
+	return m_Slice->GetByIndex(m_Current++);
 }

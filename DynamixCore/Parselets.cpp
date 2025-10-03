@@ -152,7 +152,7 @@ unique_ptr<Expression> ArrayExpressionParslet::Parse(Parser& parser, Token const
 		auto expr = parser.ParseExpression();
 		array->Add(move(expr));
 		if (!parser.Match(TokenType::Comma) && parser.Peek().Type != TokenType::CloseBracket)
-			parser.AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(parser.Peek()), "Expected: ,"));
+			parser.AddError(ParseError(ParseErrorType::Expected, parser.Peek().Location, "Expected: ,"));
 	}
 	parser.Next();
 	return array;
@@ -175,7 +175,7 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 	assert(token.Type == TokenType::New);
 	auto ident = parser.Next();
 	if (ident.Type != TokenType::Identifier) {
-		parser.AddError(ParseError(ParseErrorType::IllegalExpression, CodeLocation::FromToken(ident), "Class name expected after 'new'"));
+		parser.AddError(ParseError(ParseErrorType::IllegalExpression, ident.Location, "Class name expected after 'new'"));
 		return nullptr;
 	}
 
@@ -274,7 +274,7 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 			}
 
 			default:
-				parser.AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(next), "Expected 'case' or 'default'"));
+				parser.AddError(ParseError(ParseErrorType::UnexpectedToken, next.Location, "Expected 'case' or 'default'"));
 				parser.Next();
 				break;
 		}

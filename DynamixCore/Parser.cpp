@@ -58,6 +58,7 @@ bool Parser::Init() {
 		{ "module", TokenType::Module },
 		{ "unuse", TokenType::Unuse },
 		{ "empty", TokenType::Empty },
+		{ "readonly", TokenType::ReadOnly },
 
 		{ "$include", TokenType::MetaInclude },
 		{ "$default", TokenType::MetaDefault },
@@ -159,38 +160,14 @@ Statements const* Parser::Parse(string_view text, bool repl, int line) {
 	if (!m_Tokenizer.Tokenize(text, line))
 		return nullptr;
 
-	m_Errors.clear();
-	auto node = DoParse();
-	if (!node)
-		return nullptr;
-
-	if (m_Program == nullptr) {
-		m_Program = move(node);
-		return m_Program.get();
-	}
-	else {
-		auto p = node.get();
-		m_Program->Add(move(node));
-		return p;
-	}
+	return DoParse();
 }
 
 Statements const* Parser::ParseFile(std::string_view filename) {
-	error_code ec;
-	auto len = filesystem::file_size(filename, ec);
-	if (ec.value())
-		return nullptr;
-	ifstream stm(filename.data());
-	if (!stm.good())
+	if (!m_Tokenizer.TokenizeFile(filename))
 		return nullptr;
 
-	auto text = std::make_unique<char[]>(len);
-	stm.read(text.get(), len);
-	auto file = m_CurrentFile;
-	m_CurrentFile = filename;
-	auto node = Parse(text.get());
-	m_CurrentFile = file;
-	return node;
+	return DoParse();
 }
 
 bool Parser::ParseFiles(std::initializer_list<std::string_view> filenames) {
@@ -203,7 +180,9 @@ bool Parser::ParseFiles(std::initializer_list<std::string_view> filenames) {
 	return true;
 }
 
-unique_ptr<Statements> Parser::DoParse() {
+Statements const* Parser::DoParse() {
+	m_Errors.clear();
+
 	auto block = make_unique<Statements>();
 	block->SetParentSymbols(m_Symbols.top());
 	while (true) {
@@ -213,7 +192,16 @@ unique_ptr<Statements> Parser::DoParse() {
 		block->Add(move(stmt));
 	}
 
-	return HasErrors() ? nullptr : move(block);
+	if (HasErrors())
+		return nullptr;
+
+	if (m_Program == nullptr) {
+		m_Program = move(block);
+		return m_Program.get();
+	}
+	auto p = block.get();
+	m_Program->Add(move(block));
+	return p;
 }
 
 Token Parser::Next() {
@@ -225,7 +213,7 @@ Token const& Parser::Peek() const {
 }
 
 CodeLocation Parser::Location() const noexcept {
-	return CodeLocation{ .FileName = m_CurrentFile, .Line = m_Tokenizer.Line(), .Col = m_Tokenizer.Column() };
+	return CodeLocation{ m_Tokenizer.Line(), m_Tokenizer.Column(), m_Tokenizer.FileName() };
 }
 
 bool Parser::SkipTo(TokenType type) {
@@ -338,7 +326,7 @@ unique_ptr<Statement> Parser::ParseVarValStatement(bool constant, SymbolFlags ex
 			if (!init)
 				continue;
 		}
-		else if (constant) {
+		else if (constant && m_InClass == 0) {
 			AddError(ParseError(ParseErrorType::MissingInitExpression, Peek()));
 		}
 
@@ -363,7 +351,7 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 	if (!ctor) {
 		ident = Next();
 		if (ident.Type != TokenType::Identifier)
-			AddError(ParseError(ParseErrorType::IdentifierExpected, CodeLocation::FromToken(ident), "Expected: identifier"));
+			AddError(ParseError(ParseErrorType::IdentifierExpected, ident.Location, "Expected: identifier"));
 	}
 
 	Match(TokenType::OpenParen, true, true);
@@ -457,7 +445,7 @@ unique_ptr<Statements> Parser::ParseStatementsForMatch(bool newScope) {
 		auto stmt = ParseStatement(false, false);
 		if (!stmt)
 			break;
-		stmt->SetLocation(CodeLocation{ m_CurrentFile, next.Line, next.Col });
+		stmt->SetLocation(next.Location);
 		stmt->SetParent(block.get());
 		block->Add(move(stmt));
 
@@ -505,7 +493,7 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool ne
 			break;
 		if (!stmt)
 			continue;
-		stmt->SetLocation(CodeLocation{ m_CurrentFile, peek.Line, peek.Col });
+		stmt->SetLocation(peek.Location);
 		stmt->SetParent(block.get());
 		block->Add(move(stmt));
 	}
@@ -525,60 +513,60 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 		return nullptr;
 
 	switch (peek.Type) {
-	case TokenType::Use: return ParseUseStatement();
-	case TokenType::Var: return ParseVarValStatement(false);
-	case TokenType::Val: return ParseVarValStatement(true);
-	case TokenType::Repeat:
-		if (!topLevel)
-			return ParseRepeatStatement();
-		break;
-	case TokenType::ForEach:
-		if (!topLevel)
-			return ParseForEachStatement();
-		break;
+		case TokenType::Use: return ParseUseStatement();
+		case TokenType::Var: return ParseVarValStatement(false);
+		case TokenType::Val: return ParseVarValStatement(true);
+		case TokenType::Repeat:
+			if (!topLevel)
+				return ParseRepeatStatement();
+			break;
+		case TokenType::ForEach:
+			if (!topLevel)
+				return ParseForEachStatement();
+			break;
 
-	case TokenType::While:
-		if (!topLevel)
-			return ParseWhileStatement();
-		break;
+		case TokenType::While:
+			if (!topLevel)
+				return ParseWhileStatement();
+			break;
 
-	case TokenType::Fn: return ParseFunctionDeclaration();
-	case TokenType::Return:
-		if (!topLevel)
-			return ParseReturnStatement();
-		break;
-	case TokenType::Break:
-	case TokenType::Continue:
-	case TokenType::BreakOut:
-		if (!topLevel)
-			return ParseBreakContinueStatement();
-		break;
+		case TokenType::Fn: return ParseFunctionDeclaration();
+		case TokenType::Return:
+			if (!topLevel)
+				return ParseReturnStatement();
+			break;
+		case TokenType::Break:
+		case TokenType::Continue:
+		case TokenType::BreakOut:
+			if (!topLevel)
+				return ParseBreakContinueStatement();
+			break;
 
-	case TokenType::Class: return ParseClassDeclaration();
-	case TokenType::For:
-		if (!topLevel)
-			return ParseForStatement();
-		break;
-	case TokenType::Enum: return ParseEnumDeclaration();
-	case TokenType::OpenBrace:
-		if (!topLevel)
-			return ParseBlock();
-		break;
-	case TokenType::Semicolon:
-		if (!topLevel) {
-			Next();		// eat semicolon empty statement
-			return ParseStatement();
-		}
-		break;
-	default:
-		if (!topLevel) {
-			auto expr = ParseExpression();
-			if (expr) {
-				bool semi = Match(TokenType::Semicolon);
-				return std::make_unique<ExpressionStatement>(move(expr), semi);
+		case TokenType::Class: return ParseClassDeclaration();
+		case TokenType::For:
+			if (!topLevel)
+				return ParseForStatement();
+			break;
+		case TokenType::Enum: return ParseEnumDeclaration();
+		case TokenType::OpenBrace:
+			if (!topLevel)
+				return ParseBlock();
+			break;
+		case TokenType::Semicolon:
+			if (!topLevel) {
+				Next();		// eat semicolon empty statement
+				return ParseStatement();
 			}
-		}
-		break;
+			break;
+		default:
+			if (!topLevel) {
+				auto expr = ParseExpression();
+				if (expr) {
+					bool semi = Match(TokenType::Semicolon);
+					return std::make_unique<ExpressionStatement>(move(expr), semi);
+				}
+			}
+			break;
 	}
 	if (errorIfNotFound)
 		AddError(ParseError(ParseErrorType::InvalidStatement, peek));
@@ -678,7 +666,7 @@ unique_ptr<ForStatement> Parser::ParseForStatement() {
 	auto stmt = make_unique<ForStatement>();
 	PushScope(stmt.get());
 	std::unique_ptr<Statement> init;
-	if(Peek().Type != TokenType::Semicolon)
+	if (Peek().Type != TokenType::Semicolon)
 		init = ParseStatement();
 	Match(TokenType::Semicolon);
 
@@ -712,7 +700,7 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 		Next();		// eat class keyword
 	auto name = Next();
 	if (name.Type != TokenType::Identifier)
-		AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(name), "Expected: identifier"));
+		AddError(ParseError(ParseErrorType::Expected, name.Location, "Expected: identifier"));
 
 	std::string baseType;
 	if (Match(TokenType::Colon)) {
@@ -728,48 +716,64 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 	vector<unique_ptr<ClassDeclaration>> types;
 	auto extraFlags = SymbolFlags::None;
 
+	m_InClass++;
 	while (Peek().Type != TokenType::CloseBrace) {
 		bool val = false;
 		switch (Peek().Type) {
-		case TokenType::New:	// ctor
-		case TokenType::Fn:
-		{
-			auto method = ParseFunctionDeclaration(true, extraFlags);
-			if (method) {
-				methods.push_back(move(method));
-			}
-			extraFlags = SymbolFlags::None;
-			break;
-		}
+			case TokenType::Public:
+				if ((extraFlags & SymbolFlags::Private) == SymbolFlags::Private)
+					AddError(ParseError(ParseErrorType::ModifierConflict, Peek().Location, "Member already marked 'private'"));
+				else
+					extraFlags = extraFlags | SymbolFlags::Public;
+				break;
 
-		case TokenType::Val:
-			val = true;
-			[[fallthrough]];
-		case TokenType::Var:
-		{
-			auto stmt = ParseVarValStatement(val, extraFlags);
-			fields.push_back(move(stmt));
-			extraFlags = SymbolFlags::None;
-			break;
-		}
-		case TokenType::Class:
-			Next();		// eat class keyword
-			if (Peek().Type == TokenType::Identifier) {
-				auto nested = ParseClassDeclaration(decl.get());
-				if (nested)
-					types.push_back(move(nested));
-			}
-			else {
-				extraFlags = SymbolFlags::Static;
-			}
-			break;
+			case TokenType::Private:
+				if ((extraFlags & SymbolFlags::Public) == SymbolFlags::Public)
+					AddError(ParseError(ParseErrorType::ModifierConflict, Peek().Location, "Member already marked 'public'"));
+				else
+					extraFlags = extraFlags | SymbolFlags::Private;
+				break;
 
-		default:
-			AddError(ParseError(ParseErrorType::UnexpectedToken, CodeLocation::FromToken(Peek()), format("Unexpected token: '{}'", Peek().Lexeme)));
-			Next();
-			break;
+			case TokenType::New:	// ctor
+			case TokenType::Fn:
+			{
+				auto method = ParseFunctionDeclaration(true, extraFlags);
+				if (method) {
+					methods.push_back(move(method));
+				}
+				extraFlags = SymbolFlags::None;
+				break;
+			}
+
+			case TokenType::Val:
+				val = true;
+				[[fallthrough]];
+			case TokenType::Var:
+			{
+				auto stmt = ParseVarValStatement(val, extraFlags);
+				fields.push_back(move(stmt));
+				extraFlags = SymbolFlags::None;
+				break;
+			}
+			case TokenType::Class:
+				Next();		// eat class keyword
+				if (Peek().Type == TokenType::Identifier) {
+					auto nested = ParseClassDeclaration(decl.get());
+					if (nested)
+						types.push_back(move(nested));
+				}
+				else {
+					extraFlags = SymbolFlags::Static;
+				}
+				break;
+
+			default:
+				AddError(ParseError(ParseErrorType::UnexpectedToken, Peek().Location, format("Unexpected token: '{}'", Peek().Lexeme)));
+				Next();
+				break;
 		}
 	}
+	m_InClass--;
 	Next();		// eat close brance
 	PopScope();
 	decl->SetMethods(move(methods));
@@ -782,19 +786,19 @@ unique_ptr<InterfaceDeclaration> Parser::ParseInterfaceDeclaration() {
 	Next();		// eat interface keyword
 	auto name = Next();
 	if (name.Type != TokenType::Identifier)
-		AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(name), "Expected: identifier"));
+		AddError(ParseError(ParseErrorType::Expected, name.Location, "Expected: identifier"));
 	auto decl = make_unique<InterfaceDeclaration>(move(name.Lexeme));
 
 	if (Match(TokenType::Colon)) {
 		while (Peek().Type != TokenType::OpenBrace) {
 			auto next = Next();
 			if (next.Type != TokenType::Identifier) {
-				AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(next), "Expected: identifier"));
+				AddError(ParseError(ParseErrorType::Expected, next.Location, "Expected: identifier"));
 				continue;
 			}
 			decl->AddBaseInterface(move(next.Lexeme));
 			if (!Match(TokenType::Comma) && !Match(TokenType::OpenBrace, false))
-				AddError(ParseError(ParseErrorType::Expected, CodeLocation::FromToken(Peek()), "Expected: ',' or '{'"));
+				AddError(ParseError(ParseErrorType::Expected, Peek().Location, "Expected: ',' or '{'"));
 		}
 	}
 
@@ -809,7 +813,7 @@ unique_ptr<ForEachStatement> Parser::ParseForEachStatement() {
 	bool openParen = Match(TokenType::OpenParen);	// optional
 	auto ident = Next();
 	if (ident.Type != TokenType::Identifier)
-		AddError(ParseError(ParseErrorType::IdentifierExpected, CodeLocation::FromToken(ident), "Expected identifier after 'foreach'"));
+		AddError(ParseError(ParseErrorType::IdentifierExpected, ident.Location, "Expected identifier after 'foreach'"));
 
 	Match(TokenType::In, true, true);
 	auto collection = ParseExpression();

@@ -1,17 +1,33 @@
 #include "Tokenizer.h"
 #include <assert.h>
+#include <filesystem>
+#include <fstream>
 
 using namespace std;
 using namespace Dynamix;
 
 bool Tokenizer::Tokenize(string_view text, int line) {
-	m_Text = text;
 	m_Line = line;
 	m_Col = 1;
-	m_Current = m_Text.data();
+	m_Current = text.data();
 	m_Next.Clear();
 	m_MultiLineCommentNesting = 0;
 	return true;
+}
+
+bool Tokenizer::TokenizeFile(std::string_view filename) {
+	error_code ec;
+	auto len = filesystem::file_size(filename, ec);
+	if (ec.value())
+		return false;
+	ifstream stm(filename.data());
+	if (!stm.good())
+		return false;
+
+	m_Text = std::make_unique<char[]>(len);
+	stm.read(m_Text.get(), len);
+	m_FileName = filename;
+	return Tokenize(m_Text.get(), 1);
 }
 
 void Tokenizer::SetCommentToEndOfLine(std::string_view chars) {
@@ -154,7 +170,7 @@ Token Tokenizer::ParseIdentifier() {
 	auto type = TokenType::Identifier;
 	if (auto it = m_TokenTypes.find(lexeme); it != m_TokenTypes.end())
 		type = it->second;
-	return Token{ .Type = type, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()), };
+	return Token{ .Type = type, .Lexeme = AddLiteralString(std::move(lexeme)), .Location { m_Line, m_Col - (int)lexeme.length(), m_FileName } };
 }
 
 Token Tokenizer::ParseNumber() {
@@ -182,7 +198,7 @@ Token Tokenizer::ParseNumber() {
 	auto len = int(type == TokenType::Real ? pd - m_Current : pi - m_Current);
 	m_Col += (int)len + startLen;
 	m_Current += len;
-	auto token = Token{ .Type = type, .Line = m_Line, .Col = uint16_t(m_Col - len) };
+	auto token = Token{ .Type = type, .Location { m_Line, (int)m_Col - len, m_FileName } };
 	if (type == TokenType::Integer)
 		token.Integer = ivalue;
 	else
@@ -223,14 +239,14 @@ Token Tokenizer::ParseOperator() {
 	} while (!lexeme.empty());
 
 	if (type == TokenType::Invalid)
-		return Token{ .Type = TokenType::Invalid, .Lexeme = AddLiteralString(std::move(temp)), .Line = m_Line, .Col = uint16_t(m_Col - temp.length()) };
+		return Token{ .Type = TokenType::Invalid, .Lexeme = AddLiteralString(std::move(temp)), .Location { m_Line, m_Col - (int)temp.length(), m_FileName } };
 
 	m_Current -= (temp.length() - lexeme.length());
 	if (lexeme.empty()) {
 		lexeme = temp;
-		return Token{ .Type = TokenType::Operator, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - (int)temp.length()) };
+		return Token{ .Type = TokenType::Operator, .Lexeme = AddLiteralString(std::move(lexeme)), .Location { m_Line, m_Col - (int)temp.length(), m_FileName} };
 	}
-	return Token{ .Type = type, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()) };
+	return Token{ .Type = type, .Lexeme = AddLiteralString(std::move(lexeme)), .Location{ m_Line, m_Col - (int)lexeme.length(), m_FileName} };
 }
 
 Token Tokenizer::ParseString(bool raw) {
@@ -250,7 +266,7 @@ Token Tokenizer::ParseString(bool raw) {
 				//
 				// unknown escape sequence
 				//
-				Token token{ .Type = TokenType::Error, .Lexeme = "Unknown escape character", .Line = m_Line, .Col = m_Col };
+				Token token{ .Type = TokenType::Error, .Lexeme = "Unknown escape character", .Location {m_Line, m_Col, m_FileName} };
 				return token;
 			}
 			continue;
@@ -261,14 +277,14 @@ Token Tokenizer::ParseString(bool raw) {
 			m_Col = 1;
 			m_Line++;
 			if (!raw) {
-				Token token{ .Type = TokenType::Error, .Lexeme = "Missing closing quote", .Line = m_Line, .Col = m_Col };
+				Token token{ .Type = TokenType::Error, .Lexeme = "Missing closing quote", .Location {m_Line, m_Col, m_FileName} };
 				return token;
 			}
 		}
 	}
 	if(*m_Current == 0)
-		return Token{ .Type = TokenType::Error, .Lexeme = "Unterminated string", .Line = m_Line, .Col = m_Col };
+		return Token{ .Type = TokenType::Error, .Lexeme = "Unterminated string", .Location {m_Line, m_Col, m_FileName} };
 
 	m_Current++;
-	return Token{ .Type = TokenType::String, .Lexeme = AddLiteralString(std::move(lexeme)), .Line = m_Line, .Col = uint16_t(m_Col - lexeme.length()), };
+	return Token{ .Type = TokenType::String, .Lexeme = AddLiteralString(std::move(lexeme)), .Location{ m_Line, m_Col - (int)lexeme.length(), m_FileName} };
 }

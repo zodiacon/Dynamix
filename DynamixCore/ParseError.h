@@ -4,14 +4,6 @@
 #include "Token.h"
 
 namespace Dynamix {
-	struct CodeLocation {
-		std::string FileName;
-		int Line;
-		uint16_t Col;
-
-		static CodeLocation FromToken(Token const&);
-	};
-
 	enum class ParseErrorType {
 		NoError,
 		Syntax,
@@ -39,6 +31,7 @@ namespace Dynamix {
 		InvalidLhs,
 		UnexpectedToken,
 		IllegalThis,
+		ModifierConflict,
 	};
 
 	struct ParseError {

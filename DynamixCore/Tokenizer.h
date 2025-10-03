@@ -3,6 +3,7 @@
 #include <string_view>
 #include <string>
 #include <set>
+#include <memory>
 #include "Token.h"
 #include <unordered_map>
 
@@ -10,6 +11,8 @@ namespace Dynamix {
 	class Tokenizer {
 	public:
 		bool Tokenize(std::string_view text, int line = 1);
+		bool TokenizeFile(std::string_view filename);
+
 		void SetCommentToEndOfLine(std::string_view chars);
 
 		bool AddToken(std::string_view lexeme, TokenType type);
@@ -22,8 +25,12 @@ namespace Dynamix {
 			return m_Line;
 		}
 
-		uint16_t Column() const noexcept {
+		int Column() const noexcept {
 			return m_Col;
+		}
+
+		std::string const& FileName() const noexcept {
+			return m_FileName;
 		}
 
 		std::string_view TokenTypeToString(TokenType type) const;
@@ -47,12 +54,12 @@ namespace Dynamix {
 		Token ParseOperator();
 		Token ParseString(bool raw);
 
+		std::unique_ptr<char[]> m_Text;
 		Token m_Next;
-		int m_Line;
-		uint16_t m_Col{ 1 };
+		int m_Col{ 1 }, m_Line{ 1 };
+		std::string m_FileName;
 		std::unordered_map<std::string_view, TokenType> m_TokenTypes;
 		std::unordered_map<TokenType, std::string_view> m_TokenTypesRev;
-		std::string_view m_Text;
 		const char* m_Current{ nullptr };
 		std::string m_CommentToEndOfLine{ "//" };
 		std::string m_MultiLineCommentStart{ "/*" }, m_MultiLineCommentEnd{ "*/" };

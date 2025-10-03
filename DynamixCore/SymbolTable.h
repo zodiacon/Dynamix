@@ -20,7 +20,7 @@ namespace Dynamix {
 		UseClass,
 	};
 
-	enum class SymbolFlags : uint8_t {
+	enum class SymbolFlags : uint16_t {
 		None = 0,
 		Const = 1,
 		VarArg = 2,
@@ -28,6 +28,9 @@ namespace Dynamix {
 		Ctor = 8,
 		Native = 0x10,
 		Abstract = 0x20,
+		Public = 0x40,
+		Private = 0x80,
+		ReadOnly = 0x100,
 	};
 
 	class Interpreter;
