@@ -10,7 +10,7 @@ using namespace Dynamix;
 TEST_CASE("Memory") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
-    Runtime rt(parser);
+    Runtime rt;
     Interpreter interpreter(parser, rt);
 
     SECTION("Lots of objects") {

@@ -75,7 +75,7 @@ namespace Dynamix {
 
 	class Runtime : NoCopy {
 	public:
-		explicit Runtime(Parser& parser);
+		Runtime();
 		void InitStdLibrary();
 
 		ObjectPtr<ObjectType> BuildType(ClassDeclaration const* decl, Interpreter* intr) const;
@@ -94,7 +94,6 @@ namespace Dynamix {
 
 	private:
 		inline static thread_local Runtime* s_Runtime;
-		Parser& m_Parser;
 		Scope m_GlobalScope;
 		std::unordered_set<ObjectType*> m_Types;
 	};

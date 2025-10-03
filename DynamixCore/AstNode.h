@@ -79,7 +79,7 @@ namespace Dynamix {
 	};
 
 	enum class ParameterFlags {
-		None = 0,
+		In = 0,
 		Ref = 1,
 		Out = 3,
 	};
@@ -93,7 +93,7 @@ namespace Dynamix {
 
 	struct Parameter {
 		std::string Name;
-		ParameterFlags Flags{ ParameterFlags::None };
+		ParameterFlags Flags{ ParameterFlags::In };
 		std::unique_ptr<Expression> DefaultValue;
 	};
 

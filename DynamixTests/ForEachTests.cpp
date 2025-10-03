@@ -27,7 +27,7 @@ TEST_CASE("Parser parses foreach statement", "[foreach]") {
 TEST_CASE("Interpreter executes foreach over array", "[foreach]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
-    Runtime rt(parser);
+    Runtime rt;
     Interpreter interpreter(parser, rt);
 
     // Sum all items in array using foreach
@@ -58,7 +58,7 @@ TEST_CASE("Interpreter executes foreach over array", "[foreach]") {
 TEST_CASE("Interpreter throws on foreach with non-array", "[foreach]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
-    Runtime rt(parser);
+    Runtime rt;
     Interpreter interpreter(parser, rt);
 
     // Try to foreach over an integer (should throw)

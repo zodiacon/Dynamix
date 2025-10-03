@@ -104,7 +104,7 @@ Runtime* Runtime::Get() {
 	return s_Runtime;
 }
 
-Runtime::Runtime(Parser& parser) : m_Parser(parser) {
+Runtime::Runtime() {
 	s_Runtime = this;
 	InitStdLibrary();
 }

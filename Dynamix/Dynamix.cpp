@@ -78,7 +78,7 @@ int main(int argc, const char* argv[], const char* envp[]) {
 
 	Tokenizer t;
 	Parser p(t);
-	Runtime rt(p);
+	Runtime rt;
 	Interpreter intr(p, rt);
 
 	std::unique_ptr<AstNode> program;
