@@ -12,6 +12,10 @@
 #include "ComplexType.h"
 #include "ConsoleType.h"
 #include "RuntimeType.h"
+#ifdef _WIN32
+#include <Windows.h>
+extern "C" int WINAPI InitModule(Dynamix::Runtime&);
+#endif
 
 using namespace Dynamix;
 using namespace std;
@@ -20,7 +24,7 @@ RuntimeError::RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation 
 	m_Type(type), m_Message(std::move(msg)), m_Location(std::move(location)) {
 }
 
-ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpreter* intr) const {
+ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpreter* intr) {
 	ObjectType* baseType = nullptr;
 	if (!decl->BaseName().empty()) {
 		auto e = intr->CurrentScope().FindElement(decl->BaseName());
@@ -73,6 +77,7 @@ ObjectPtr<ObjectType> Runtime::BuildType(ClassDeclaration const* decl, Interpret
 	for (auto& t : decl->Types()) {
 		type->AddType(BuildType(t.get(), intr));
 	}
+	RegisterType(type);
 	return type;
 }
 
@@ -84,6 +89,24 @@ ObjectPtr<ObjectType> Runtime::BuildEnum(EnumDeclaration const* decl) const {
 		type->AddField(std::move(field), value);
 	}
 	return ObjectPtr<ObjectType>(type);
+}
+
+int Runtime::LoadModule(std::string_view file) {
+#ifdef _WIN32
+	auto hDll = ::LoadLibraryA(file.data());
+	if (!hDll)
+		return HRESULT_FROM_WIN32(::GetLastError());
+	auto init = (decltype(InitModule)*)::GetProcAddress(hDll, "InitModule");
+	if (!init)
+		return HRESULT_FROM_WIN32(::GetLastError());
+	int err = init(*this);
+	if (err) {
+		::FreeLibrary(hDll);
+		return err;
+	}
+	return 0;
+#endif
+	return false;
 }
 
 Runtime& Runtime::AddCode(std::unique_ptr<Statements> code) noexcept {
@@ -104,6 +127,7 @@ std::vector<ObjectType*> Runtime::GetTypes() {
 
 void Runtime::RegisterType(ObjectType* type) {
 	assert(!m_Types.contains(type));
+	m_GlobalScope.AddElement(type->Name(), Element{ static_cast<RuntimeObject*>(type), ElementFlags::Class });
 	m_Types.insert(type);
 }
 
@@ -127,8 +151,8 @@ Runtime::Runtime() {
 
 void Runtime::InitStdLibrary() {
 
-#define ADD_TYPE(name) m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(name##Type::Get()), ElementFlags::Class })
-#define ADD_TYPE2(name, typeName) m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(typeName::Get()), ElementFlags::Class })
+#define ADD_TYPE(name) RegisterType(name##Type::Get());// m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(name##Type::Get()), ElementFlags::Class })
+#define ADD_TYPE2(name, typeName) RegisterType(typeName::Get()); // m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(typeName::Get()), ElementFlags::Class })
 
 	ADD_TYPE(Range);
 	ADD_TYPE2(String, StringTypeA);

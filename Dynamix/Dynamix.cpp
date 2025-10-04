@@ -29,7 +29,7 @@ bool ParseMetaCommand(std::string const& text, Parser& p, Interpreter& intr) {
 		space = text.length();
 
 	auto word = text.substr(0, space);
-	if (_stricmp(word.c_str(), "$load") == 0) {
+	if (_stricmp(word.c_str(), "$loadfile") == 0) {
 		auto node = p.ParseFile(text.substr(space + 1));
 		if (!node) {
 			ShowErrors(p);
@@ -38,6 +38,12 @@ bool ParseMetaCommand(std::string const& text, Parser& p, Interpreter& intr) {
 		intr.Eval(node.get());
 		intr.GetRuntime().AddCode(move(node));
 		return true;
+	}
+	if (_stricmp(word.c_str(), "$loadmod") == 0) {
+		auto err = intr.GetRuntime().LoadModule(text.substr(space + 1));
+		if (err)
+			println("Error loading module ({})", err);
+		return err == 0;
 	}
 	if (_stricmp(word.c_str(), "$erase") == 0) {
 		intr.GetRuntime().ClearCode();

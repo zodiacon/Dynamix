@@ -150,7 +150,6 @@ void ObjectType::ObjectDestroyed(RuntimeObject* obj) {
 
 ObjectType::ObjectType(std::string name, ObjectType* base)
 	: RuntimeObject(this), MemberInfo(move(name), MemberType::Class), m_Base(base) {
-	Runtime::Get()->RegisterType(this);
 
 	BEGIN_METHODS(ObjectType)
 		METHOD(ObjectCount, 0, return Value((Int)inst->GetObjectCount());),

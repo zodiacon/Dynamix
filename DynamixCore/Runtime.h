@@ -76,12 +76,14 @@ namespace Dynamix {
 		Runtime();
 		void InitStdLibrary();
 
-		ObjectPtr<ObjectType> BuildType(ClassDeclaration const* decl, Interpreter* intr) const;
+		ObjectPtr<ObjectType> BuildType(ClassDeclaration const* decl, Interpreter* intr);
 		ObjectPtr<ObjectType> BuildEnum(EnumDeclaration const* decl) const;
 
 		Scope* GetGlobalScope() {
 			return &m_GlobalScope;
 		}
+
+		int LoadModule(std::string_view file);
 
 		Runtime& AddCode(std::unique_ptr<Statements> code) noexcept;
 		Runtime& AddCode(std::vector<std::unique_ptr<Statements>> code) noexcept;
