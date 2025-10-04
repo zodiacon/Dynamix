@@ -7,6 +7,7 @@
 
 #include "AstNode.h"
 #include "Scope.h"
+#include "CoreInterfaces.h"
 
 namespace Dynamix {
 	class RuntimeObject;
@@ -71,7 +72,7 @@ namespace Dynamix {
 		CodeLocation m_Location;
 	};
 
-	class Runtime : NoCopy {
+	class Runtime : public IRuntime, NoCopy {
 	public:
 		Runtime();
 		void InitStdLibrary();
@@ -95,7 +96,7 @@ namespace Dynamix {
 
 		std::vector<ObjectType*> GetTypes();
 
-		void RegisterType(ObjectType* type);
+		void RegisterType(ObjectType* type) override;
 		void RevokeType(ObjectType* type);
 
 		static Runtime* Get();

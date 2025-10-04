@@ -6,6 +6,7 @@
 
 namespace Dynamix {
 	class RuntimeObject;
+	class ObjectType;
 
 	enum class ServiceId {
 		Invalid,
@@ -15,6 +16,10 @@ namespace Dynamix {
 	};
 
 	class SliceObject;
+
+	struct IRuntime {
+		virtual void RegisterType(ObjectType* type) = 0;
+	};
 
 	struct IServices {
 		virtual void* QueryService(ServiceId id) {

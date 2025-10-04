@@ -12,9 +12,10 @@
 #include "ComplexType.h"
 #include "ConsoleType.h"
 #include "RuntimeType.h"
+
 #ifdef _WIN32
 #include <Windows.h>
-extern "C" int WINAPI InitModule(Dynamix::Runtime&);
+extern "C" int WINAPI InitModule(Dynamix::IRuntime*);
 #endif
 
 using namespace Dynamix;
@@ -95,11 +96,13 @@ int Runtime::LoadModule(std::string_view file) {
 #ifdef _WIN32
 	auto hDll = ::LoadLibraryA(file.data());
 	if (!hDll)
+		::LoadLibraryA((file.data() + std::string(".dll")).c_str());
+	if (!hDll)
 		return HRESULT_FROM_WIN32(::GetLastError());
 	auto init = (decltype(InitModule)*)::GetProcAddress(hDll, "InitModule");
 	if (!init)
 		return HRESULT_FROM_WIN32(::GetLastError());
-	int err = init(*this);
+	int err = init(this);
 	if (err) {
 		::FreeLibrary(hDll);
 		return err;

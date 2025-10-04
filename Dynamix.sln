@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dynamix", "Dynamix\Dynamix.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DynamixTests", "DynamixTests\DynamixTests.vcxproj", "{32EEC86A-EC57-47FE-A0D2-29EE71C0F5AE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dynamix.Graphics", "Dynamix.Graphics\Dynamix.Graphics.vcxproj", "{E64568EB-69E1-42F8-9C5B-F8D9C07BAC6E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SFMLGraphics", "SFMLGraphics\SFMLGraphics.vcxproj", "{E64568EB-69E1-42F8-9C5B-F8D9C07BAC6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

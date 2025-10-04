@@ -5,6 +5,11 @@
 #include <Windows.h>
 #include <SFML/Graphics.hpp>
 
+namespace Dynamix {
+	class Value;
+	class Interpreter;
+};
+
 class WindowObject;
 
 enum class WindowCreateStyle {
@@ -20,6 +25,7 @@ class WindowType : public Dynamix::StaticObjectType {
 public:
 	static WindowType* Get();
 
+	RuntimeObject* CreateObject(Dynamix::Interpreter& intr, std::vector<Dynamix::Value> const& args) override;
 
 private:
 	WindowType();

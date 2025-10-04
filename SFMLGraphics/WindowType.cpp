@@ -6,6 +6,7 @@ using namespace Dynamix;
 
 WindowType::WindowType() : StaticObjectType("Window") {
 	BEGIN_METHODS(WindowObject)
+		CTOR(3),
 		METHOD(Title, 0, return inst->Title();),
 		METHOD(Title, 1, inst->Window().setTitle(args[1].ToString()); return inst;),
 		END_METHODS()
@@ -14,6 +15,10 @@ WindowType::WindowType() : StaticObjectType("Window") {
 WindowType* WindowType::Get() {
 	static WindowType type;
 	return &type;
+}
+
+RuntimeObject* WindowType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {
+	return new WindowObject(static_cast<int>(args[0].ToInteger()), static_cast<int>(args[1].ToInteger()), args[2].ToString().c_str(), WindowCreateStyle::Default);
 }
 
 WindowObject::WindowObject(int width, int height, const char* title, WindowCreateStyle style) : RuntimeObject(WindowType::Get()) {
