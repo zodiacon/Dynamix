@@ -20,6 +20,7 @@ namespace Dynamix {
 	public:
 		explicit Parser(Tokenizer& t);
 		virtual ~Parser() noexcept = default;
+		void Clear();
 
 		std::unique_ptr<Statements> Parse(std::string_view text, bool repl = false, int line = 1);
 		std::unique_ptr<Statements> ParseFile(std::string_view filename);

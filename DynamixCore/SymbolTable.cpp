@@ -27,3 +27,6 @@ std::vector<Symbol const*> SymbolTable::EnumSymbols() const {
 	return symbols;
 }
 
+void SymbolTable::Clear() {
+	m_Symbols.clear();
+}

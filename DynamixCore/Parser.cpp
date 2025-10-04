@@ -13,6 +13,10 @@ Parser::Parser(Tokenizer& t) : m_Tokenizer(t) {
 	Init();
 }
 
+void Parser::Clear() {
+	m_GlobalSymbols.Clear();
+}
+
 bool Parser::Init() {
 	if (!m_InfixParslets.empty())
 		return true;
@@ -349,7 +353,8 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 			AddError(ParseError(ParseErrorType::IdentifierExpected, ident.Location, "Expected: identifier"));
 	}
 
-	Match(TokenType::OpenParen, true, true);
+	if (!Match(TokenType::OpenParen, true, true))
+		return nullptr;
 
 	bool staticCtor = ctor && ((extraFlags & SymbolFlags::Static) == SymbolFlags::Static);
 	int isInst = method && (extraFlags & SymbolFlags::Static) == SymbolFlags::None ? 1 : 0;

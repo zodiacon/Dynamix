@@ -25,7 +25,8 @@ void ShowErrors(Parser const& p, bool repl = false) {
 
 bool ParseMetaCommand(std::string const& text, Parser& p, Interpreter& intr) {
 	auto space = text.find_first_of(" \t\n");
-	assert(space != string::npos);
+	if (space == string::npos)
+		space = text.length();
 
 	auto word = text.substr(0, space);
 	if (_stricmp(word.c_str(), "$load") == 0) {
@@ -40,6 +41,7 @@ bool ParseMetaCommand(std::string const& text, Parser& p, Interpreter& intr) {
 	}
 	if (_stricmp(word.c_str(), "$erase") == 0) {
 		intr.GetRuntime().ClearCode();
+		p.Clear();
 		return true;
 	}
 	std::println("Unknown command");

@@ -9,8 +9,6 @@
 #include "Scope.h"
 
 namespace Dynamix {
-	struct Allocator;
-	class Parser;
 	class RuntimeObject;
 	class ObjectType;
 	class Value;

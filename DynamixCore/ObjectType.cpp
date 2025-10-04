@@ -10,7 +10,7 @@
 using namespace Dynamix;
 
 Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string const& name, std::vector<Value>& args, InvokeFlags flags) const {
-	auto count = (int8_t)args.size() - ((flags & InvokeFlags::Static) == InvokeFlags::Static ? 0 : 1);
+	auto count = (int8_t)args.size();// -((flags & InvokeFlags::Static) == InvokeFlags::Static ? 0 : 1);
 	assert(count >= 0);
 	auto method = GetMethod(name, count);
 	if (!method && m_Base)
@@ -24,10 +24,11 @@ Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string
 		throw RuntimeError(RuntimeErrorType::MethodNotFound,
 			std::format("Method {} with {} args not found in type {}", name, args.size(), Name()));
 
+	Scoper scope(&intr);
 	if ((method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
-		//if (instance && !instance->IsObjectType()) {
-		//	args.insert(args.begin(), instance);
-		//}
+		if (instance && !instance->IsObjectType()) {
+			args.insert(args.begin(), instance);
+		}
 		return (*method->Code.Native)(intr, args);
 	}
 	if (instance && !instance->IsObjectType())

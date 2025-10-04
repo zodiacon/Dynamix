@@ -51,6 +51,7 @@ namespace Dynamix {
 			return m_Parent;
 		}
 		std::vector<Symbol const*> EnumSymbols() const;
+		void Clear();
 
 	protected:
 		void SetParent(SymbolTable* parent) {

@@ -144,8 +144,8 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		if (callable->Method) {
 			Scoper scoper(this);
 			vector<Value> args;
-			if (!callable->Method->IsStatic())
-				args.push_back(instance);
+			//if (!callable->Method->IsStatic())
+			//	args.push_back(instance);
 			for (auto& arg : expr->Arguments())
 				args.push_back(Eval(arg.get()));
 			if (!isType)
