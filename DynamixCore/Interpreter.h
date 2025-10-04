@@ -17,7 +17,7 @@ namespace Dynamix {
 
 	class Interpreter final : public Visitor, NoCopy {
 	public:
-		Interpreter(Parser& p, Runtime& rt);
+		Interpreter(Runtime& rt);
 
 		Value Eval(AstNode const* root);
 
@@ -56,8 +56,6 @@ namespace Dynamix {
 
 		Scope& CurrentScope();
 
-		AstNode const* Parse(std::string_view code, bool repl = false) const;
-
 		friend struct Scoper;
 
 		CodeLocation Location() const noexcept;
@@ -75,7 +73,6 @@ namespace Dynamix {
 		void PopScope();
 
 	private:
-		Parser& m_Parser;
 		Runtime& m_Runtime;
 		std::stack<Scope> m_Scopes;
 		AstNode const* m_CurrentNode{ nullptr };

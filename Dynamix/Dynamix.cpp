@@ -22,6 +22,7 @@ void ShowErrors(Parser const& p, bool repl = false) {
 
 int RunRepl(Parser& p, Interpreter& intr) {
 	char text[256]{};
+	vector<unique_ptr<Statements>> program;
 	for (;;) {
 		print(">> ");
 		gets_s(text);
@@ -31,9 +32,10 @@ int RunRepl(Parser& p, Interpreter& intr) {
 		auto n = p.Parse(text, true);
 		if (n) {
 			try {
-				auto result = intr.Eval(n);
+				auto result = intr.Eval(n.get());
 				if (!result.IsNull())
 					println("{}", result.ToString());
+				program.push_back(move(n));
 			}
 			catch (RuntimeError err) {
 				println("Runtime error: {}", err.Message());
@@ -79,9 +81,9 @@ int main(int argc, const char* argv[], const char* envp[]) {
 	Tokenizer t;
 	Parser p(t);
 	Runtime rt;
-	Interpreter intr(p, rt);
+	Interpreter intr(rt);
 
-	std::unique_ptr<AstNode> program;
+	vector<unique_ptr<Statements>> program;
 	bool error = false;
 	int params = 0;
 	for (int i = 2; i < argc; i++) {
@@ -94,12 +96,20 @@ int main(int argc, const char* argv[], const char* envp[]) {
 			ShowErrors(p);
 			error = true;
 		}
+		else {
+			program.push_back(move(code));
+		}
 	}
 
 	if (error)
 		return 0;
 
-	auto result = intr.Eval(p.Program());
+	Value result;
+	rt.AddCode(move(program));
+
+	for (auto& code : program) {
+		result = intr.Eval(code.get());
+	}
 
 	switch (cmd) {
 		case Command::Load:

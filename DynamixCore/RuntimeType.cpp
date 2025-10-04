@@ -6,6 +6,8 @@
 #include "TypeHelper.h"
 #include "Runtime.h"
 #include "Interpreter.h"
+#include "Parser.h"
+#include "Tokenizer.h"
 
 using namespace Dynamix;
 
@@ -25,7 +27,9 @@ Value RuntimeType::Eval(Interpreter& intr, std::vector<Value> const& args) {
 	if (args.empty())
 		return Value();
 
-	auto node = intr.Parse(args[0].ToString(), true);
+	thread_local Tokenizer tokenizer;
+	thread_local Parser parser(tokenizer);
+	auto node = parser.Parse(args[0].ToString(), true);
 	if (!node)
 		return Value::Error(ValueErrorType::Parse);
 

@@ -85,6 +85,13 @@ namespace Dynamix {
 			return &m_GlobalScope;
 		}
 
+		Runtime& AddCode(std::unique_ptr<Statements> code) noexcept;
+		Runtime& AddCode(std::vector<std::unique_ptr<Statements>> code) noexcept;
+
+		std::vector<std::unique_ptr<Statements>> const& Code() const noexcept {
+			return m_Code;
+		}
+
 		std::vector<ObjectType*> GetTypes();
 
 		void RegisterType(ObjectType* type);
@@ -93,6 +100,7 @@ namespace Dynamix {
 		static Runtime* Get();
 
 	private:
+		std::vector<std::unique_ptr<Statements>> m_Code;
 		inline static thread_local Runtime* s_Runtime;
 		Scope m_GlobalScope;
 		std::unordered_set<ObjectType*> m_Types;

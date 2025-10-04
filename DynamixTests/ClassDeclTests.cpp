@@ -14,7 +14,7 @@ TEST_CASE("Parser parses class with fields and methods", "[class]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     auto stmts = parser.Parse(R"(
         class Foo {
@@ -47,7 +47,7 @@ TEST_CASE("Interpreter instantiates class and calls method", "[class]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     const char* code = R"(
         class Bar {
@@ -62,7 +62,7 @@ TEST_CASE("Interpreter instantiates class and calls method", "[class]") {
     auto& stmtsVec = stmts->Get();
     REQUIRE(stmtsVec.size() == 3);
 
-    auto val = interpreter.Eval(stmts);
+    auto val = interpreter.Eval(stmts.get());
 
     REQUIRE(val.IsInteger());
     REQUIRE(val.ToInteger() == 7);
@@ -72,7 +72,7 @@ TEST_CASE("Interpreter supports constructor and field initialization", "[class]"
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     const char* code = R"(
         class Baz {
@@ -101,7 +101,7 @@ TEST_CASE("Interpreter supports inheritance", "[class][inheritance]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     const char* code = R"(
         class Base {
@@ -117,7 +117,7 @@ TEST_CASE("Interpreter supports inheritance", "[class][inheritance]") {
     auto& stmtsVec = stmts->Get();
     REQUIRE(stmtsVec.size() == 4);
 
-    auto val = interpreter.Eval(stmts);
+    auto val = interpreter.Eval(stmts.get());
     REQUIRE(val.IsInteger());
     REQUIRE(val.ToInteger() == 123);
 }

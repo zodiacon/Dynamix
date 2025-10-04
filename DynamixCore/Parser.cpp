@@ -155,7 +155,7 @@ bool Parser::Init() {
 	return true;
 }
 
-Statements const* Parser::Parse(string_view text, bool repl, int line) {
+unique_ptr<Statements> Parser::Parse(string_view text, bool repl, int line) {
 	m_Repl = repl;
 	if (!m_Tokenizer.Tokenize(text, line))
 		return nullptr;
@@ -163,24 +163,25 @@ Statements const* Parser::Parse(string_view text, bool repl, int line) {
 	return DoParse();
 }
 
-Statements const* Parser::ParseFile(std::string_view filename) {
+unique_ptr<Statements> Parser::ParseFile(std::string_view filename) {
 	if (!m_Tokenizer.TokenizeFile(filename))
 		return nullptr;
 
 	return DoParse();
 }
 
-bool Parser::ParseFiles(std::initializer_list<std::string_view> filenames) {
-	auto stmts = make_unique<Statements>();
+vector<unique_ptr<Statements>> Parser::ParseFiles(std::initializer_list<std::string_view> filenames) {
+	vector<unique_ptr<Statements>> stmts;
 	for (auto& file : filenames) {
 		auto ast = ParseFile(file);
 		if (!ast)
-			return false;
+			return stmts;
+		stmts.emplace_back(move(ast));
 	}
-	return true;
+	return stmts;
 }
 
-Statements const* Parser::DoParse() {
+unique_ptr<Statements> Parser::DoParse() {
 	m_Errors.clear();
 
 	auto block = make_unique<Statements>();
@@ -195,13 +196,7 @@ Statements const* Parser::DoParse() {
 	if (HasErrors())
 		return nullptr;
 
-	if (m_Program == nullptr) {
-		m_Program = move(block);
-		return m_Program.get();
-	}
-	auto p = block.get();
-	m_Program->Add(move(block));
-	return p;
+	return block;
 }
 
 Token Parser::Next() {

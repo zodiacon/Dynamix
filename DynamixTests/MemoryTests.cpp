@@ -11,7 +11,7 @@ TEST_CASE("Memory") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     SECTION("Lots of objects") {
         auto code = parser.Parse(R"(
@@ -26,7 +26,7 @@ TEST_CASE("Memory") {
     )", true);
 
         REQUIRE(code != nullptr);
-        CHECK(interpreter.Eval(code).ToInteger() == 1);
+        CHECK(interpreter.Eval(code.get()).ToInteger() == 1);
     }
 
     SECTION("Simple Cycle") {
@@ -48,7 +48,7 @@ TEST_CASE("Memory") {
     )", true);
 
         REQUIRE(code != nullptr);
-        auto arr = interpreter.Eval(code).ToObject();
+        auto arr = interpreter.Eval(code.get()).ToObject();
         REQUIRE(arr->Type() == ArrayType::Get());
         auto result = reinterpret_cast<ArrayObject*>(arr);
         REQUIRE(result->Count() == 2);

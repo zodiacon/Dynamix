@@ -86,6 +86,18 @@ ObjectPtr<ObjectType> Runtime::BuildEnum(EnumDeclaration const* decl) const {
 	return ObjectPtr<ObjectType>(type);
 }
 
+Runtime& Runtime::AddCode(std::unique_ptr<Statements> code) noexcept {
+	m_Code.push_back(move(code));
+	return *this;
+}
+
+Runtime& Runtime::AddCode(std::vector<std::unique_ptr<Statements>> code) noexcept {
+	auto count = m_Code.size();
+	m_Code.resize(count + code.size());
+	std::move(code.begin(), code.end(), m_Code.begin() + count);
+	return *this;
+}
+
 std::vector<ObjectType*> Runtime::GetTypes() {
 	return std::vector(m_Types.begin(), m_Types.end());
 }

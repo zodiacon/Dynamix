@@ -11,7 +11,7 @@ TEST_CASE("Interpreter evaluates literals and arithmetic expressions") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     SECTION("Integer literal") {
         auto stmts = parser.Parse("1;", true);
@@ -54,7 +54,7 @@ TEST_CASE("Interpreter evaluates variable declaration and assignment") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     SECTION("Variable declaration and use") {
         auto stmts = parser.Parse("var x = 10; x + 5;", true);
@@ -78,7 +78,7 @@ TEST_CASE("Interpreter evaluates a recursive function (factorial)") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     const char* code = R"(
         fn fact(n) {

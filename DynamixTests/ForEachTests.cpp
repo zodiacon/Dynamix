@@ -28,7 +28,7 @@ TEST_CASE("Interpreter executes foreach over array", "[foreach]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     // Sum all items in array using foreach
     const char* code = R"(
@@ -59,7 +59,7 @@ TEST_CASE("Interpreter throws on foreach with non-array", "[foreach]") {
     Tokenizer tokenizer;
     Parser parser(tokenizer);
     Runtime rt;
-    Interpreter interpreter(parser, rt);
+    Interpreter interpreter(rt);
 
     // Try to foreach over an integer (should throw)
     const char* code = R"(

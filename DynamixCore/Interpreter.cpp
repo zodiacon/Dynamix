@@ -13,7 +13,7 @@
 using namespace Dynamix;
 using namespace std;
 
-Interpreter::Interpreter(Parser& p, Runtime& rt) : m_Parser(p), m_Runtime(rt) {
+Interpreter::Interpreter(Runtime& rt) : m_Runtime(rt) {
 	m_Scopes.push(Scope(m_Runtime.GetGlobalScope()));    // global scope
 }
 
@@ -359,7 +359,7 @@ Value Interpreter::Invoke(AstNode const* node, std::vector<Value> const* args) {
 
 Value Interpreter::RunMain(int argc, const char* argv[], const char* envp[]) {
 	AstNode const* main = nullptr;
-	for (auto& node : m_Parser.Program()->All()) {
+	for (auto& node : m_Runtime.Code()) {
 		if (node->NodeType() == AstNodeType::FunctionDeclaration) {
 			auto decl = reinterpret_cast<FunctionDeclaration const*>(node.get());
 			if (decl->Name() == "Main") {
@@ -392,10 +392,6 @@ void Interpreter::PushScope() {
 void Interpreter::PopScope() {
 	m_Scopes.pop();
 	assert(!m_Scopes.empty());
-}
-
-AstNode const* Interpreter::Parse(std::string_view code, bool repl) const {
-	return m_Parser.Parse(code, repl);
 }
 
 Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
