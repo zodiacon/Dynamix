@@ -87,6 +87,7 @@ namespace Dynamix {
 
 		Runtime& AddCode(std::unique_ptr<Statements> code) noexcept;
 		Runtime& AddCode(std::vector<std::unique_ptr<Statements>> code) noexcept;
+		void ClearCode();
 
 		std::vector<std::unique_ptr<Statements>> const& Code() const noexcept {
 			return m_Code;

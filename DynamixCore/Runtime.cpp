@@ -116,6 +116,10 @@ Runtime* Runtime::Get() {
 	return s_Runtime;
 }
 
+void Runtime::ClearCode() {
+	m_Code.clear();
+}
+
 Runtime::Runtime() {
 	s_Runtime = this;
 	InitStdLibrary();

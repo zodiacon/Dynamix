@@ -1,10 +1,13 @@
 // Dynamix.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <Parser.h>
 #include <print>
+#include <string>
+#include <iostream>
+#include <cassert>
 #include <AstNode.h>
 #include <Interpreter.h>
+#include <Parser.h>
 
 using namespace Dynamix;
 using namespace std;
@@ -20,14 +23,44 @@ void ShowErrors(Parser const& p, bool repl = false) {
 	}
 }
 
+bool ParseMetaCommand(std::string const& text, Parser& p, Interpreter& intr) {
+	auto space = text.find_first_of(" \t\n");
+	assert(space != string::npos);
+
+	auto word = text.substr(0, space);
+	if (_stricmp(word.c_str(), "$load") == 0) {
+		auto node = p.ParseFile(text.substr(space + 1));
+		if (!node) {
+			ShowErrors(p);
+			return false;
+		}
+		intr.Eval(node.get());
+		intr.GetRuntime().AddCode(move(node));
+		return true;
+	}
+	if (_stricmp(word.c_str(), "$erase") == 0) {
+		intr.GetRuntime().ClearCode();
+		return true;
+	}
+	std::println("Unknown command");
+	return false;
+}
+
 int RunRepl(Parser& p, Interpreter& intr) {
-	char text[256]{};
+	std::string text;
 	vector<unique_ptr<Statements>> program;
 	for (;;) {
 		print(">> ");
-		gets_s(text);
-		if (_strcmpi(text, "$quit") == 0)
+		getline(cin, text);
+		if (text.empty())
+			continue;
+
+		if (_strcmpi(text.c_str(), "$quit") == 0)
 			break;
+		if (text[0] == '$') {
+			ParseMetaCommand(text, p, intr);
+			continue;
+		}
 
 		auto n = p.Parse(text, true);
 		if (n) {
@@ -105,11 +138,11 @@ int main(int argc, const char* argv[], const char* envp[]) {
 		return 0;
 
 	Value result;
-	rt.AddCode(move(program));
-
 	for (auto& code : program) {
 		result = intr.Eval(code.get());
 	}
+
+	rt.AddCode(move(program));
 
 	switch (cmd) {
 		case Command::Load:

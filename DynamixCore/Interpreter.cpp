@@ -176,6 +176,10 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			assert(node->NodeType() == AstNodeType::AnonymousFunction);
 			decl = static_cast<FunctionEssentials const*>(reinterpret_cast<AnonymousFunctionExpression const*>(node));
 		}
+		if (decl->Parameters().size() != expr->Arguments().size())
+			throw RuntimeError(RuntimeErrorType::WrongNumberArguments,
+				format("Wrong numnber of arguments. Expected: {}, Provided: {}", decl->Parameters().size(), expr->Arguments().size()), expr->Location());
+
 		for (size_t i = 0; i < expr->Arguments().size(); i++) {
 			Element v{ Eval(expr->Arguments()[i].get()) };
 			CurrentScope().AddElement(decl->Parameters()[i].Name, move(v));
