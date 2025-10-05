@@ -357,6 +357,13 @@ Value Value::FromToken(Token const& token) {
 	return Value();
 }
 
+#ifdef _WIN32
+Value Value::HResult(int hr) {
+	Value err(ValueType::Error);
+	err.m_StrLen = hr;
+	return hr;
+}
+#endif
 Value Value::Error(ValueErrorType type, const char* desc) {
 	Value err(ValueType::Error);
 	err.error = type;

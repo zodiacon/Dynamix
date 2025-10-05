@@ -25,6 +25,9 @@
     <Filter Include="Core">
       <UniqueIdentifier>{8cd473bb-1d66-4236-9975-5b6e88af8df2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="StdLib\Windows">
+      <UniqueIdentifier>{420c94fc-75e3-42be-acb1-7a8852783c56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmallString.h">
@@ -120,6 +123,9 @@
     <ClInclude Include="RuntimeType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="COMType.h">
+      <Filter>StdLib\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
@@ -199,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="RuntimeType.cpp">
       <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="COMType.cpp">
+      <Filter>StdLib\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -38,6 +38,10 @@ namespace Dynamix {
 		void AssignField(std::string const& name, Value value, TokenType assignType = TokenType::Assign);
 		Value GetField(std::string const& name) const;
 
+		virtual bool SkipCheckNames() const noexcept {
+			return false;
+		}
+
 		virtual bool HasValue(Int index) const noexcept {
 			return false;
 		}

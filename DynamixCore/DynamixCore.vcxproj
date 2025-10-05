@@ -137,6 +137,7 @@
     <ClInclude Include="ArrayType.h" />
     <ClInclude Include="AstNode.h" />
     <ClInclude Include="ComplexType.h" />
+    <ClInclude Include="COMType.h" />
     <ClInclude Include="ConsoleType.h" />
     <ClInclude Include="CoreInterfaces.h" />
     <ClInclude Include="EnumClassBitwise.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="ArrayType.cpp" />
     <ClCompile Include="AstNode.cpp" />
     <ClCompile Include="ComplexType.cpp" />
+    <ClCompile Include="COMType.cpp" />
     <ClCompile Include="ConsoleType.cpp" />
     <ClCompile Include="Enumerable.cpp" />
     <ClCompile Include="EnumType.cpp" />

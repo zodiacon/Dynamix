@@ -160,17 +160,19 @@ void Tokenizer::EatWhitespace() {
 
 Token Tokenizer::ParseIdentifier() {
 	std::string lexeme;
-	while (*m_Current && !isspace(*m_Current) && !ispunct(*m_Current)) {
+	char ch = *m_Current;
+	while (ch && !isspace(ch) && (ch == '_' || !ispunct(ch))) {
 		if (ProcessSingleLineComment())
 			break;
-		lexeme += *m_Current++;
+		lexeme += ch;
+		ch = *++m_Current;
 		m_Col++;
 	}
 	assert(!lexeme.empty());
 	auto type = TokenType::Identifier;
 	if (auto it = m_TokenTypes.find(lexeme); it != m_TokenTypes.end())
 		type = it->second;
-	return Token{ .Type = type, .Lexeme = AddLiteralString(std::move(lexeme)), .Location { m_Line, m_Col - (int)lexeme.length(), m_FileName } };
+	return Token{ .Type = type, .Lexeme = AddLiteralString(lexeme), .Location { m_Line, m_Col - (int)lexeme.length(), m_FileName } };
 }
 
 Token Tokenizer::ParseNumber() {

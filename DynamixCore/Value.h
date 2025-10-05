@@ -60,6 +60,7 @@ namespace Dynamix {
 		AstNode const* Node{ nullptr };
 		NativeFunction Native{ nullptr };
 		MethodInfo const* Method{ nullptr };
+		std::string Name;
 	};
 
 	class Value final {
@@ -84,6 +85,9 @@ namespace Dynamix {
 
 		static Value FromToken(Token const& token);
 		static Value Error(ValueErrorType type = ValueErrorType::Unspecfied, const char* desc = nullptr);
+#ifdef _WIN32
+		static Value HResult(int hr);
+#endif
 
 		~Value() noexcept;
 

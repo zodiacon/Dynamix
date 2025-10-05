@@ -12,6 +12,7 @@
 #include "ComplexType.h"
 #include "ConsoleType.h"
 #include "RuntimeType.h"
+#include "COMType.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -154,8 +155,8 @@ Runtime::Runtime() {
 
 void Runtime::InitStdLibrary() {
 
-#define ADD_TYPE(name) RegisterType(name##Type::Get());// m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(name##Type::Get()), ElementFlags::Class })
-#define ADD_TYPE2(name, typeName) RegisterType(typeName::Get()); // m_GlobalScope.AddElement(#name, Element{ static_cast<RuntimeObject*>(typeName::Get()), ElementFlags::Class })
+#define ADD_TYPE(name) RegisterType(name##Type::Get());
+#define ADD_TYPE2(name, typeName) RegisterType(typeName::Get());
 
 	ADD_TYPE(Range);
 	ADD_TYPE2(String, StringTypeA);
@@ -165,5 +166,6 @@ void Runtime::InitStdLibrary() {
 	ADD_TYPE(Complex);
 	ADD_TYPE(Console);
 	ADD_TYPE(Runtime);
+	ADD_TYPE(COM)
 }
 

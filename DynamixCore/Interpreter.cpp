@@ -2,6 +2,11 @@
 #include <format>
 #include <algorithm>
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif
+
 #include "Interpreter.h"
 #include "AstNode.h"
 #include "Parser.h"
@@ -15,6 +20,10 @@ using namespace std;
 
 Interpreter::Interpreter(Runtime& rt) : m_Runtime(rt) {
 	m_Scopes.push(Scope(m_Runtime.GetGlobalScope()));    // global scope
+
+#ifdef _WIN32
+	::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+#endif
 }
 
 Value Interpreter::Eval(AstNode const* root) {
@@ -141,8 +150,10 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 		node = callable->Node;
 		bool isType = instance ? instance->IsObjectType() : false;
 
-		if (callable->Method) {
+		if (callable->Method || !callable->Name.empty()) {
+			auto& name = callable->Name.empty() ? callable->Method->Name() : callable->Name;
 			Scoper scoper(this);
+			auto isStatic = callable->Method && callable->Method->IsStatic();
 			vector<Value> args;
 			//if (!callable->Method->IsStatic())
 			//	args.push_back(instance);
@@ -151,7 +162,7 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			if (!isType)
 				instance->Type()->AddTypesToScope(CurrentScope());
 			try {
-				return instance->Invoke(*this, callable->Method->Name(), args, callable->Method->IsStatic() ? InvokeFlags::Static : InvokeFlags::Instance);
+				return instance->Invoke(*this, name, args, isStatic ? InvokeFlags::Static : InvokeFlags::Instance);
 			}
 			catch (ReturnStatementException const& ret) {
 				return ret.ReturnValue;
@@ -402,6 +413,12 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	auto value = Eval(expr->Left());
 	FieldInfo const* field;
 	auto obj = value.ToObject();
+	if (obj->SkipCheckNames()) {
+		auto c = new Callable;
+		c->Instance = obj;
+		c->Name = expr->Member();
+		return c;
+	}
 	ObjectType* type = nullptr;
 	bool isStatic = expr->Operator() == TokenType::DoubleColon;
 	type = obj->Type();
