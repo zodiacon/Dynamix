@@ -60,6 +60,8 @@ namespace Dynamix {
 		virtual int Release() const noexcept;
 
 		virtual Value Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags = InvokeFlags::Method);
+		virtual Value InvokeOperator(Interpreter& intr, TokenType op, Value const& rhs) const;
+		virtual Value InvokeOperator(Interpreter& intr, TokenType op) const;
 		virtual Value InvokeIndexer(Value const& index);
 		virtual void AssignIndexer(Value const& index, Value const& value, TokenType assign);
 

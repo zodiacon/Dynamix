@@ -1,5 +1,6 @@
 #include "ComplexType.h"
 #include "TypeHelper.h"
+#include "Runtime.h"
 
 using namespace Dynamix;
 
@@ -25,4 +26,37 @@ ComplexType::ComplexType() : StaticObjectType("Complex") {
 		METHOD(Length, 0, return inst->Length();),
 		METHOD(LengthSquared, 0, return inst->LengthSquared();),
 		END_METHODS()
+}
+
+Value ComplexObject::InvokeOperator(Interpreter& intr, TokenType op, Value const& rhs) const {
+	switch (rhs.Type()) {
+		case ValueType::Integer:
+		case ValueType::Real:
+			return new ComplexObject(m_Num + std::complex(rhs.ToReal()));
+
+		case ValueType::Object:
+			break;
+
+		default:
+			return RuntimeObject::InvokeOperator(intr, op, rhs);
+	}
+
+	auto obj = rhs.ToObject();
+	if (obj->Type() == ComplexType::Get()) {
+		auto other = reinterpret_cast<ComplexObject*>(obj);
+		switch (op) {
+			case TokenType::Plus: return new ComplexObject(m_Num + other->m_Num);
+			case TokenType::Minus: return new ComplexObject(m_Num - other->m_Num);
+			case TokenType::Mul: return new ComplexObject(m_Num * other->m_Num);
+			case TokenType::Div:
+				if(other->IsZero())
+					throw RuntimeError(RuntimeErrorType::DivisionByZero, "Cannot divide by zero");
+				return new ComplexObject(m_Num / other->m_Num);
+		}
+	}
+	return RuntimeObject::InvokeOperator(intr, op, rhs);
+}
+
+std::string ComplexObject::ToString() const {
+	return std::format("({},{}*i)", Real(), Image());
 }

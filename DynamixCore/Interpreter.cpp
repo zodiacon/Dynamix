@@ -69,6 +69,9 @@ Value Interpreter::VisitBinary(BinaryExpression const* expr) {
 			break;
 	}
 
+	if (left.IsObject())
+		return left.AsObject()->InvokeOperator(*this, expr->Operator(), Eval(expr->Right()));
+
 	return left.BinaryOperator(expr->Operator(), Eval(expr->Right()));
 }
 

@@ -36,6 +36,16 @@ Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vec
 	return (flags & InvokeFlags::Static) == InvokeFlags::Static ? m_Type->Invoke(intr, name, args, flags) : m_Type->Invoke(intr, this, name, args, flags);
 }
 
+Value RuntimeObject::InvokeOperator(Interpreter& intr, TokenType op, Value const& rhs) const {
+	throw RuntimeError(RuntimeErrorType::OperatorNotImplemented,
+		format("Operator {} not implemented on type '{}'", Token::TypeToString(op), Type()->Name()));
+}
+
+Value Dynamix::RuntimeObject::InvokeOperator(Interpreter& intr, TokenType op) const {
+	throw RuntimeError(RuntimeErrorType::OperatorNotImplemented,
+		format("Operator {} not implemented on type '{}'", Token::TypeToString(op), Type()->Name()));
+}
+
 Value RuntimeObject::InvokeIndexer(Value const& index) {
 	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, format("Indexer not supported on {}", Type()->Name()));
 }
