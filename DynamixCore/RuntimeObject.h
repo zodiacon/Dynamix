@@ -35,8 +35,9 @@ namespace Dynamix {
 		virtual bool IsObjectType() const noexcept {
 			return false;
 		}
-		void AssignField(std::string const& name, Value value, TokenType assignType = TokenType::Assign);
-		Value GetField(std::string const& name) const;
+		virtual void AssignField(std::string const& name, Value value, TokenType assignType = TokenType::Assign);
+		virtual Value GetFieldValue(std::string const& name) const;
+		virtual bool HasField(std::string const& name) const noexcept;
 
 		virtual bool SkipCheckNames() const noexcept {
 			return false;

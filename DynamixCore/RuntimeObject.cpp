@@ -28,8 +28,19 @@ void RuntimeObject::AssignField(std::string const& name, Value value, TokenType 
 	m_FieldValues[name] = m_FieldValues[name].Assign(std::move(value), assignType);
 }
 
-Value RuntimeObject::GetField(std::string const& name) const {
-	return m_FieldValues.at(name);
+bool RuntimeObject::HasField(std::string const& name) const noexcept {
+	return Type()->GetField(name) != nullptr;
+}
+
+
+Value RuntimeObject::GetFieldValue(std::string const& name) const {
+	if (auto it = m_FieldValues.find(name); it != m_FieldValues.end())
+		return it->second;
+
+	if (Type()->GetField(name))
+		return Value();
+
+	throw RuntimeError(RuntimeErrorType::UnknownMember, std::format("Member '{}' not found on type '{}", name, Type()->Name()));
 }
 
 Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags) {

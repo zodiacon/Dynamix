@@ -417,6 +417,12 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	FieldInfo const* field;
 	auto obj = value.ToObject();
 	if (obj->SkipCheckNames()) {
+		if (obj->HasField(expr->Member())) {
+			// field, get its value and we're done
+			auto value = obj->GetFieldValue(expr->Member());
+			if (!value.IsError())
+				return value;
+		}
 		auto c = new Callable;
 		c->Instance = obj;
 		c->Name = expr->Member();
@@ -443,7 +449,7 @@ Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 		{
 			field = reinterpret_cast<FieldInfo const*>(member);
 			check(obj, field, expr);
-			return obj ? obj->GetField(field->Name()) : type->GetStaticField(field->Name());
+			return obj ? obj->GetFieldValue(field->Name()) : type->GetStaticField(field->Name());
 		}
 		case MemberType::Method:
 		{

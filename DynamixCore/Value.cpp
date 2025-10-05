@@ -81,8 +81,9 @@ Value Value::UnaryOperator(TokenType op) const {
 		case TokenType::Minus: return Negate();
 		case TokenType::Not: return !ToBoolean();
 		case TokenType::TypeOf:
-			assert(IsObject());
-			return oValue->Type();
+			if(IsObject())
+				return oValue->Type();
+			return GetObjectType();
 	}
 	throw RuntimeError(RuntimeErrorType::UnknownOperator, std::format("Unsupported operator {}", Token::TypeToString(op)));
 }
@@ -361,7 +362,7 @@ Value Value::FromToken(Token const& token) {
 Value Value::HResult(int hr) {
 	Value err(ValueType::Error);
 	err.m_StrLen = hr;
-	return hr;
+	return err;
 }
 #endif
 Value Value::Error(ValueErrorType type, const char* desc) {

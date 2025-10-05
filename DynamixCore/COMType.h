@@ -27,18 +27,24 @@ namespace Dynamix {
 		}
 
 		Value Invoke(Interpreter& intr, std::string const& name, std::vector<Value>& args, InvokeFlags flags) override;
+		void AssignField(std::string const& name, Value value, TokenType assignType) override;
+
+		Value GetFieldValue(std::string const& name) const override;
+		bool HasField(std::string const& name) const noexcept override;
 
 		IDispatch* GetDispatch() const {
 			return m_Dispatch.p;
 		}
 
 	private:
+		HRESULT GetDispId(std::string const& name, DISPID* id) const;
+
 		struct CaseInsensitiveMatch {
 			bool operator()(std::string const& s1, std::string const& s2) const noexcept {
 				return _stricmp(s1.c_str(), s2.c_str()) < 0;
 			}
 		};
-		CComPtr<IDispatch> m_Dispatch;
-		std::map<std::string, DISPID, CaseInsensitiveMatch> m_DispIds;
+		mutable CComPtr<IDispatch> m_Dispatch;
+		mutable std::map<std::string, DISPID, CaseInsensitiveMatch> m_DispIds;
 	};
 }
