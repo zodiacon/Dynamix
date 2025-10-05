@@ -21,13 +21,16 @@ Value COMType::Create(Value const& cls) {
 	else {
 		hr = ::CLSIDFromProgID(wstr.c_str(), &clsid);
 	}
-	if (FAILED(hr))
-		return Value::HResult(hr);
 	CComPtr<IDispatch> disp;
-	hr = disp.CoCreateInstance(clsid);
+	if (FAILED(hr))
+		hr = ::CoGetObject(wstr.c_str(), nullptr, __uuidof(IDispatch), reinterpret_cast<void**>(&disp));
 	if (FAILED(hr))
 		return Value::HResult(hr);
-
+	if (!disp) {
+		hr = disp.CoCreateInstance(clsid);
+		if (FAILED(hr))
+			return Value::HResult(hr);
+	}
 	auto obj = new COMObject(disp);
 	return static_cast<RuntimeObject*>(obj);
 }

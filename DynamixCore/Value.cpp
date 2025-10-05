@@ -466,7 +466,7 @@ Value Value::Not() const {
 }
 
 Value Value::BitwiseNot() const {
-	if (m_Type == ValueType::Integer)
+	if (IsInteger())
 		return ~iValue;
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot bitwise not '{}'", ToString()));
 }

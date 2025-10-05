@@ -43,7 +43,7 @@
 			return new SliceObject(this, start, length < 0 ? Length() - start : length);	\
 		}	\
 		Type* Clone() const { return new StringObject##Suffix(m_String); }	\
-		void* QueryService(ServiceId id) override {	\
+		void* QueryService(ServiceId id) noexcept override {	\
 			switch (id) {	\
 				case ServiceId::Enumerable: return static_cast<IEnumerable*>(this);	\
 				case ServiceId::Clonable: return static_cast<IClonable*>(this);	\

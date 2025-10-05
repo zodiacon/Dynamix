@@ -71,8 +71,8 @@ namespace Dynamix {
 		constexpr Value(Real d) noexcept : dValue(d), m_Type(ValueType::Real) {}
 		constexpr Value(Bool b) noexcept : bValue(b), m_Type(ValueType::Boolean) {}
 		constexpr Value(ValueType t) noexcept : m_Type(t) {}
-		constexpr Value(AstNode const* node) : nValue(node), m_Type(ValueType::AstNode) {}
-		constexpr Value(NativeFunction f) : fValue(f), m_Type(ValueType::NativeFunction) {}
+		constexpr Value(AstNode const* node) noexcept : nValue(node), m_Type(ValueType::AstNode) {}
+		constexpr Value(NativeFunction f) noexcept : fValue(f), m_Type(ValueType::NativeFunction) {}
 
 		Value(const char* s) noexcept;
 		Value(RuntimeObject* o) noexcept;
@@ -137,8 +137,13 @@ namespace Dynamix {
 		}
 
 		Int AsInteger() const noexcept {
-			assert(m_Type == ValueType::Integer);
+			assert(IsInteger());
 			return iValue;
+		}
+
+		Real AsReal() const noexcept {
+			assert(IsReal());
+			return dValue;
 		}
 
 		Int ToInteger() const;

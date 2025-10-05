@@ -21,6 +21,7 @@ namespace Dynamix {
 	class ArrayObject : public RuntimeObject, public Enumerable, public IClonable, public ISliceable {
 	public:
 		ArrayObject(std::vector<Value> init);
+
 		std::vector<Value>& Items() noexcept {
 			return m_Items;
 		}
@@ -29,7 +30,7 @@ namespace Dynamix {
 		RuntimeObject* Clone() const override;
 		SliceObject* Slice(Int start, Int count) override;
 
-		void* QueryService(ServiceId id) override;
+		void* QueryService(ServiceId id) noexcept override;
 
 		Int Count() const {
 			return Int(m_Items.size());
@@ -48,7 +49,7 @@ namespace Dynamix {
 		void Resize(Int newsize) {
 			m_Items.resize(newsize);
 		}
-		Bool IsEmpty() const {
+		Bool IsEmpty() const noexcept {
 			return Bool(m_Items.empty());
 		}
 		Int Append(Value list);
@@ -58,7 +59,7 @@ namespace Dynamix {
 		Value InvokeIndexer(Value const& index) override;
 		void AssignIndexer(Value const& index, Value const& value, TokenType assign) override;
 
-		void Reverse();
+		void Reverse() noexcept;
 		void ForEach(AstNode const* code);
 
 	protected:

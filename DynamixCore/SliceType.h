@@ -23,7 +23,7 @@ namespace Dynamix {
 		std::unique_ptr<IEnumerator> GetEnumerator() const override;
 		RuntimeObject* Clone() const override;
 
-		void* QueryService(ServiceId id) override;
+		void* QueryService(ServiceId id) noexcept override;
 
 		std::string ToString() const override;
 

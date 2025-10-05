@@ -33,7 +33,7 @@ void ArrayObject::AssignIndexer(Value const& index, Value const& value, TokenTyp
 	m_Items[i].Assign(value, assign);
 }
 
-void ArrayObject::Reverse() {
+void ArrayObject::Reverse() noexcept {
 	std::reverse(m_Items.begin(), m_Items.end());
 }
 
@@ -52,7 +52,7 @@ ArrayType::ArrayType() : StaticObjectType("Array") {
 		METHOD(Count, 0, return inst->Count();),
 		METHOD(IsEmpty, 0, return inst->IsEmpty();),
 		METHOD(Clear, 0, inst->Clear();	return inst;),
-		METHOD(Clone, 0, return GetInstance<ArrayObject>(args[0])->Clone();),
+		METHOD(Clone, 0, return inst->Clone();),
 		METHOD(Reverse, 0, inst->Reverse();	return inst;),
 		METHOD(Add, 1, inst->Add(args[1]); return inst;),
 		METHOD(Append, 1, inst->Append(args[1]); return inst;),
@@ -75,7 +75,7 @@ RuntimeObject* ArrayObject::Clone() const {
 	return new ArrayObject(m_Items);
 }
 
-void* ArrayObject::QueryService(ServiceId id) {
+void* ArrayObject::QueryService(ServiceId id) noexcept {
 	switch (id) {
 		case ServiceId::Enumerable: return static_cast<IEnumerable*>(this);
 		case ServiceId::Clonable: return static_cast<IClonable*>(this);

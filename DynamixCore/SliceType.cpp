@@ -26,7 +26,7 @@ RuntimeObject* SliceObject::Clone() const {
 	return new SliceObject(m_Target, Start(), Size());
 }
 
-void* SliceObject::QueryService(ServiceId id) {
+void* SliceObject::QueryService(ServiceId id) noexcept {
 	switch (id) {
 		case ServiceId::Enumerable: return static_cast<IEnumerable*>(this);
 		case ServiceId::Clonable: return static_cast<IClonable*>(this);

@@ -22,7 +22,7 @@ namespace Dynamix {
 	};
 
 	struct IServices {
-		virtual void* QueryService(ServiceId id) {
+		virtual void* QueryService(ServiceId id) noexcept {
 			return nullptr;
 		}
 	};

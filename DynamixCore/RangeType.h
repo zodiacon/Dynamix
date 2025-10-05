@@ -20,7 +20,7 @@ namespace Dynamix {
 	public:
 		RangeObject(Int start, Int end);
 
-		void* QueryService(ServiceId id) override;
+		void* QueryService(ServiceId id) noexcept override;
 
 		std::unique_ptr<IEnumerator> GetEnumerator() const override;
 

@@ -56,7 +56,7 @@ Value RangeObject::Enumerator::GetNextValue() {
 	return Value(m_Current++);
 }
 
-void* RangeObject::QueryService(ServiceId id) {
+void* RangeObject::QueryService(ServiceId id) noexcept {
 	switch (id) {
 		case ServiceId::Enumerable: return static_cast<IEnumerable*>(this);
 		case ServiceId::Clonable: return static_cast<IClonable*>(this);
