@@ -26,6 +26,10 @@ namespace Dynamix {
 			return m_Items;
 		}
 
+		std::vector<Value> const& Items() const noexcept {
+			return m_Items;
+		}
+
 		std::unique_ptr<IEnumerator> GetEnumerator() const override;
 		RuntimeObject* Clone() const override;
 		SliceObject* Slice(Int start, Int count) override;

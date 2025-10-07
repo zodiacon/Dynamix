@@ -7,8 +7,8 @@ namespace Dynamix {
 	public:
 		static EnumType* Get();
 
-		static Value ToString(ObjectType* type, Int value);
-		static Value Parse(ObjectType* type, Value name);
+		static Value ToString(ObjectType const* type, Int value);
+		static Value Parse(ObjectType const* type, Value name);
 
 	protected:
 		EnumType();

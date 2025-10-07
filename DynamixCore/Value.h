@@ -52,15 +52,15 @@ namespace Dynamix {
 
 	class Value;
 	struct MethodInfo;
+	enum class SymbolFlags : uint16_t;
 
 	using NativeFunction = Value(*)(Interpreter&, std::vector<Value>&);
 
 	struct Callable {
-		ObjectPtr<RuntimeObject> Instance;
-		AstNode const* Node{ nullptr };
-		NativeFunction Native{ nullptr };
-		MethodInfo const* Method{ nullptr };
+		ObjectPtr<const RuntimeObject> Instance;
 		std::string Name;
+		NativeFunction Native{ nullptr };
+		SymbolFlags Flags;
 	};
 
 	class Value final {
@@ -75,7 +75,7 @@ namespace Dynamix {
 		constexpr Value(NativeFunction f) noexcept : fValue(f), m_Type(ValueType::NativeFunction) {}
 
 		Value(const char* s) noexcept;
-		Value(RuntimeObject* o) noexcept;
+		Value(RuntimeObject const* o) noexcept;
 		Value(Callable* c) noexcept;
 
 		Value(Value const& other) noexcept;
@@ -149,8 +149,8 @@ namespace Dynamix {
 		Int ToInteger() const;
 		Bool ToBoolean() const;
 		Real ToReal() const;
-		RuntimeObject* ToObject() const;
-		ObjectType* ToTypeObject() const;
+		RuntimeObject const* ToObject() const;
+		ObjectType const* ToTypeObject() const;
 
 		AstNode const* AsAstNode() const noexcept {
 			assert(IsAstNode());
@@ -159,7 +159,7 @@ namespace Dynamix {
 
 		RuntimeObject* AsObject() noexcept {
 			assert(IsObject());
-			return oValue;
+			return const_cast<RuntimeObject*>(oValue);
 		}
 
 		RuntimeObject const* AsObject() const noexcept {
@@ -216,7 +216,7 @@ namespace Dynamix {
 			Int iValue;
 			Real dValue;
 			Bool bValue;
-			RuntimeObject* oValue;
+			RuntimeObject const* oValue;
 			AstNode const* nValue;
 			NativeStruct* sValue;
 			Callable* cValue;

@@ -26,7 +26,7 @@ Value ObjectType::Invoke(Interpreter& intr, RuntimeObject* instance, std::string
 
 	Scoper scope(&intr);
 	if ((method->Flags & SymbolFlags::Native) == SymbolFlags::Native) {
-		if (instance && !instance->IsObjectType()) {
+		if (instance) {
 			args.insert(args.begin(), instance);
 		}
 		return (*method->Code.Native)(intr, args);

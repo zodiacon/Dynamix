@@ -39,16 +39,16 @@ Real Value::ToReal() const {
 	throw RuntimeError(RuntimeErrorType::CannotConvertToReal, std::format("Cannot convert {} to Real", ToString()));
 }
 
-RuntimeObject* Value::ToObject() const {
-	if (m_Type != ValueType::Object)
+RuntimeObject const* Value::ToObject() const {
+	if (!IsObject())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Object expected");
 	return oValue;
 }
 
-ObjectType* Value::ToTypeObject() const {
+ObjectType const* Value::ToTypeObject() const {
 	if (m_Type != ValueType::Object || !oValue->IsObjectType())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Type Object expected");
-	return reinterpret_cast<ObjectType*>(oValue);
+	return reinterpret_cast<ObjectType const*>(oValue);
 }
 
 Value Value::BinaryOperator(TokenType op, Value const& rhs) const {
@@ -81,9 +81,7 @@ Value Value::UnaryOperator(TokenType op) const {
 		case TokenType::Minus: return Negate();
 		case TokenType::Not: return !ToBoolean();
 		case TokenType::TypeOf:
-			if(IsObject())
-				return oValue->Type();
-			return GetObjectType();
+			return static_cast<RuntimeObject const*>(GetObjectType());
 	}
 	throw RuntimeError(RuntimeErrorType::UnknownOperator, std::format("Unsupported operator {}", Token::TypeToString(op)));
 }
@@ -106,7 +104,7 @@ Value& Value::Assign(Value const& right, TokenType assign) {
 Value& Value::AssignArrayIndex(Value const& index, Value const& right, TokenType assign) {
 	switch (m_Type) {
 	case ValueType::Object:
-		oValue->AssignIndexer(index, right, assign);
+		const_cast<RuntimeObject*>(oValue)->AssignIndexer(index, right, assign);
 		break;
 
 	case ValueType::String:
@@ -247,7 +245,7 @@ Value Value::InvokeIndexer(Value const& index) const {
 		}
 
 		case ValueType::Object:
-			return oValue->InvokeIndexer(index);
+			return const_cast<RuntimeObject*>(oValue)->InvokeIndexer(index);
 	}
 	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, std::format("Indexer not supported on type {}", GetObjectType()->Name()));
 }
@@ -274,7 +272,7 @@ void Value::Free() noexcept {
 	m_Type = ValueType::Null;
 }
 
-Value::Value(RuntimeObject* o) noexcept : oValue(o), m_Type(ValueType::Object) {
+Value::Value(RuntimeObject const* o) noexcept : oValue(o), m_Type(ValueType::Object) {
 	o->AddRef();
 }
 

@@ -14,7 +14,7 @@ EnumType::EnumType() : StaticObjectType("Enum") {
 		END_METHODS()
 }
 
-Value EnumType::ToString(ObjectType* type, Int value) {
+Value EnumType::ToString(ObjectType const* type, Int value) {
 	auto etype = reinterpret_cast<CustomEnumType const*>(type);
 	return etype->ToString(value);
 }

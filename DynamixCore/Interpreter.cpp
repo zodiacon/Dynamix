@@ -122,69 +122,48 @@ Value Interpreter::VisitAssign(AssignExpression const* expr) {
 
 Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 	auto f = Eval(expr->Callable());
+
+	std::vector<Value> args;
+	args.reserve(expr->Arguments().size() + 1);
+	for (auto& arg : expr->Arguments()) {
+		args.emplace_back(Eval(arg.get()));
+	}
+
 	if (f.IsNativeFunction()) {
-		std::vector<Value> args;
-		args.reserve(expr->Arguments().size() + 1);
-		for (auto& arg : expr->Arguments()) {
-			args.emplace_back(Eval(arg.get()));
-		}
 		return (*f.AsNativeCode())(*this, args);
 	}
-	if (f.IsString()) {
+	AstNode const* node = nullptr;
+	if (f.IsAstNode()) {
+		node = f.AsAstNode();
+	}
+	else if (f.IsCallable()) {
+		auto c = f.AsCallable();
+		auto isStatic = (c->Flags & SymbolFlags::Static) == SymbolFlags::Static;
+		try {
+			return const_cast<RuntimeObject*>(c->Instance.Get())->Invoke(*this, c->Name, args, isStatic ? InvokeFlags::Static : InvokeFlags::Instance);
+		}
+		catch (ReturnStatementException const& ret) {
+			return ret.ReturnValue;
+		}
+		catch (BreakoutStatementException const&) {
+			return Value();
+		}
+	}
+	else if (f.IsString()) {
 		auto e = CurrentScope().FindElement(f.ToString(), (int8_t)expr->Arguments().size());
 		if (e)
 			f = e->VarValue;
 		else
 			throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Cannot find method '{}' with {} arguments", f.ToString(), expr->Arguments().size()));
+		if (f.IsAstNode())
+			node = f.AsAstNode();
 	}
-	AstNode const* node = nullptr;
-	RuntimeObject* instance = nullptr;
-	Callable* callable = nullptr;
-
-	assert(!f.IsNull());
-
-	if (f.IsAstNode())
-		node = f.AsAstNode();
-	else if (f.IsCallable()) {
-		callable = f.AsCallable();
-		instance = callable->Instance;
-		assert(instance);
-		auto native = callable->Native;
-		node = callable->Node;
-		bool isType = instance ? instance->IsObjectType() : false;
-
-		if (callable->Method || !callable->Name.empty()) {
-			auto& name = callable->Name.empty() ? callable->Method->Name() : callable->Name;
-			Scoper scoper(this);
-			auto isStatic = callable->Method && callable->Method->IsStatic();
-			vector<Value> args;
-			//if (!callable->Method->IsStatic())
-			//	args.push_back(instance);
-			for (auto& arg : expr->Arguments())
-				args.push_back(Eval(arg.get()));
-			if (!isType)
-				instance->Type()->AddTypesToScope(CurrentScope());
-			try {
-				return instance->Invoke(*this, name, args, isStatic ? InvokeFlags::Static : InvokeFlags::Instance);
-			}
-			catch (ReturnStatementException const& ret) {
-				return ret.ReturnValue;
-			}
-			catch (BreakoutStatementException const&) {
-				return Value();
-			}
-		}
-	}
-	else
-		throw RuntimeError(RuntimeErrorType::NonCallable, "Cannot be invoked", expr->Location());
-
-	if (node) {
-		Expression const* body;
+	if(node) {
 		Scoper scoper(this);
-		FunctionEssentials const* decl = nullptr;
+		auto node = f.AsAstNode();
+		FunctionEssentials const* decl;
 		if (node->NodeType() == AstNodeType::FunctionDeclaration) {
 			decl = static_cast<FunctionEssentials const*>(reinterpret_cast<FunctionDeclaration const*>(node));
-			assert(!instance);
 		}
 		else {
 			assert(node->NodeType() == AstNodeType::AnonymousFunction);
@@ -198,15 +177,14 @@ Value Interpreter::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
 			Element v{ Eval(expr->Arguments()[i].get()) };
 			CurrentScope().AddElement(decl->Parameters()[i].Name, move(v));
 		}
-		body = decl->Body();
-
 		try {
-			return Eval(body);
+			return Eval(decl->Body());
 		}
 		catch (ReturnStatementException const& ret) {
 			return ret.ReturnValue;
 		}
 		catch (BreakoutStatementException const&) {
+			return Value();
 		}
 	}
 	return Value();
@@ -414,54 +392,20 @@ void Interpreter::PopScope() {
 
 Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	auto value = Eval(expr->Left());
-	FieldInfo const* field;
+	auto type = value.GetObjectType();
+	if (type == nullptr)
+		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member '{}'", expr->Member()), expr->Location());
+
 	auto obj = value.ToObject();
-	if (obj->SkipCheckNames()) {
-		if (obj->HasField(expr->Member())) {
-			// field, get its value and we're done
-			auto value = obj->GetFieldValue(expr->Member());
-			if (!value.IsError())
-				return value;
-		}
-		auto c = new Callable;
-		c->Instance = obj;
-		c->Name = expr->Member();
-		return c;
-	}
-	ObjectType* type = nullptr;
+	if (type->HasField(expr->Member()))
+		return obj->GetFieldValue(expr->Member());
+
+	auto c = new Callable;
+	c->Instance = obj;
+	c->Name = expr->Member();
 	bool isStatic = expr->Operator() == TokenType::DoubleColon;
-	type = obj->Type();
-	auto member = type->GetMember(expr->Member());
-	if (!member)
-		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member '{}' of type '{}'", expr->Member(), type->Name()), expr->Location());
-
-	auto check = [&](auto obj, auto member, auto expr) {
-		if (!isStatic && member->IsStatic())
-			throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access static method '{}' via instance",
-				member->Name()), expr->Location());
-		else if (isStatic && !member->IsStatic())
-			throw RuntimeError(RuntimeErrorType::InvalidMemberAccess, format("Cannot access instance method '{}' via class",
-				member->Name()), expr->Location());
-		};
-
-	switch (member->Type()) {
-		case MemberType::Field:
-		{
-			field = reinterpret_cast<FieldInfo const*>(member);
-			check(obj, field, expr);
-			return obj ? obj->GetFieldValue(field->Name()) : type->GetStaticField(field->Name());
-		}
-		case MemberType::Method:
-		{
-			auto method = reinterpret_cast<MethodInfo const*>(member);
-			check(obj, method, expr);
-			auto c = new Callable;
-			c->Instance = isStatic ? type : obj;
-			c->Method = method;
-			return c;
-		}
-	}
-	throw RuntimeError(RuntimeErrorType::Unexpected, "Unexpected token", expr->Location());
+	c->Flags = isStatic ? SymbolFlags::Static : SymbolFlags::None;
+	return c;
 }
 
 Value Interpreter::VisitAccessArray(AccessArrayExpression const* expr) {

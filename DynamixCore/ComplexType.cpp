@@ -43,7 +43,7 @@ Value ComplexObject::InvokeOperator(Interpreter& intr, TokenType op, Value const
 
 	auto obj = rhs.ToObject();
 	if (obj->Type() == ComplexType::Get()) {
-		auto other = reinterpret_cast<ComplexObject*>(obj);
+		auto other = reinterpret_cast<ComplexObject const*>(obj);
 		switch (op) {
 			case TokenType::Plus: return new ComplexObject(m_Num + other->m_Num);
 			case TokenType::Minus: return new ComplexObject(m_Num - other->m_Num);

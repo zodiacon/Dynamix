@@ -31,6 +31,7 @@ namespace Dynamix {
 		Public = 0x40,
 		Private = 0x80,
 		ReadOnly = 0x100,
+		Instance = 0x200,
 	};
 
 	class Interpreter;

@@ -52,7 +52,7 @@ Element* Scope::FindElementWithUse(std::string const& name) {
 	for (auto& use : m_Uses) {
 		auto cls = FindElement(use.Name);
 		if (cls) {
-			auto type = reinterpret_cast<ObjectType*>(cls->VarValue.ToObject());
+			auto type = reinterpret_cast<ObjectType const*>(cls->VarValue.ToObject());
 			if (type->GetMember(name))
 				return cls;
 		}

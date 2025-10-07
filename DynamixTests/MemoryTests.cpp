@@ -50,7 +50,7 @@ TEST_CASE("Memory") {
         REQUIRE(code != nullptr);
         auto arr = interpreter.Eval(code.get()).ToObject();
         REQUIRE(arr->Type() == ArrayType::Get());
-        auto result = reinterpret_cast<ArrayObject*>(arr);
+        auto result = reinterpret_cast<ArrayObject const*>(arr);
         REQUIRE(result->Count() == 2);
         CHECK(result->Items()[0].ToInteger() == 1);
         CHECK(result->Items()[1].ToInteger() == 1);

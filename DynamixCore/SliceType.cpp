@@ -11,7 +11,7 @@ SliceType* SliceType::Get() {
 
 SliceObject* SliceType::CreateSlice(RuntimeObject* target, Value const& range) const {
 	assert(range.AsObject()->Type() == RangeType::Get());
-	auto r = reinterpret_cast<RangeObject*>(range.ToObject());
+	auto r = reinterpret_cast<RangeObject const*>(range.ToObject());
 	return new SliceObject(target, r->Start(), r->End() < 0 ? -1 : r->End() - r->Start());
 }
 
