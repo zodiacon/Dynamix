@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="SFTypes.cpp" />
     <ClCompile Include="WindowType.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +150,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SFTypes.h" />
     <ClInclude Include="WindowType.h" />
   </ItemGroup>
   <ItemGroup>

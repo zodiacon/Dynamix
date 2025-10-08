@@ -30,6 +30,8 @@ namespace Dynamix {
 	} }
 
 #define METHOD(name, arity, body)	METHOD_EX(name, arity, SymbolFlags::Native, body)
+#define METHOD_DEFAULT(name, arity) METHOD_EX(name, arity, SymbolFlags::Native, return inst->name(args);)
+#define METHOD_DEFAULT0(name) METHOD_EX(name, 0, SymbolFlags::Native, return inst->name();)
 #define METHOD_STATIC(name, arity, body)	METHOD_EX(name, arity, (SymbolFlags::Native | SymbolFlags::Static), body)
 #define CTOR(arity) { "new", arity, SymbolFlags::Native | SymbolFlags::Ctor }
 #define ENUMERABLE_METHODS	\

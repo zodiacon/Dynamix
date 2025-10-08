@@ -158,7 +158,7 @@
     <ClInclude Include="SliceType.h" />
     <ClInclude Include="SmallString.h" />
     <ClInclude Include="StringType.h" />
-    <ClInclude Include="StructObjectBase.h" />
+    <ClInclude Include="StructObject.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Tokenizer.h" />
@@ -189,6 +189,8 @@
     <ClCompile Include="SliceType.cpp" />
     <ClCompile Include="SmallString.cpp" />
     <ClCompile Include="StringType.cpp" />
+    <ClCompile Include="StructObject.cpp" />
+    <ClCompile Include="StructObjectBase.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="Tokenizer.cpp" />

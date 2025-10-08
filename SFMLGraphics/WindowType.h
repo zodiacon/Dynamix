@@ -36,6 +36,7 @@ public:
 	WindowObject(int width, int height, const char* title, WindowCreateStyle flags);
 
 	Dynamix::Value Title() const;
+	Dynamix::Value Size() const;
 
 	sf::RenderWindow& Window() {
 		return m_Window;

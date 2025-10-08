@@ -117,7 +117,7 @@
     <ClInclude Include="ComplexType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
-    <ClInclude Include="StructObjectBase.h">
+    <ClInclude Include="StructObject.h">
       <Filter>StdLib</Filter>
     </ClInclude>
     <ClInclude Include="RuntimeType.h">
@@ -208,6 +208,12 @@
     </ClCompile>
     <ClCompile Include="COMType.cpp">
       <Filter>StdLib\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="StructObjectBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StructObject.cpp">
+      <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

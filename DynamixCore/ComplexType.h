@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ObjectType.h"
-#include "StructObjectBase.h"
+#include "StructObject.h"
 #include <complex>
 
 namespace Dynamix {

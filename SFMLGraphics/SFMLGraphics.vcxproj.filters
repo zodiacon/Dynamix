@@ -21,14 +21,20 @@
     <ClCompile Include="WindowType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SFTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SFTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dynamix.Graphics.def">
+    <None Include="SFMLGraphics.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

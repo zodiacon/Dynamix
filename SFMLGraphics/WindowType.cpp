@@ -1,6 +1,8 @@
 #include "WindowType.h"
 #include <TypeHelper.h>
 #include <StringType.h>
+#include "StructObject.h"
+#include "SFTypes.h"
 
 using namespace Dynamix;
 
@@ -9,6 +11,7 @@ WindowType::WindowType() : StaticObjectType("Window") {
 		CTOR(3),
 		METHOD(Title, 0, return inst->Title();),
 		METHOD(Title, 1, inst->Window().setTitle(args[1].ToString()); return inst;),
+		METHOD_DEFAULT0(Size),
 		END_METHODS()
 }
 
@@ -37,4 +40,8 @@ Value WindowObject::Title() const {
 	title.resize(len);
 	::GetWindowTextA(hWnd, title.data(), len);
 	return new StringObjectA(std::move(title));
+}
+
+Value WindowObject::Size() const {
+	return new StructObjectT<sf::Vector2u>(SFTypes::Vector2uType::Get(), m_Window.getSize());
 }
