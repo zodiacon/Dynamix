@@ -1,12 +1,16 @@
 #pragma once
 
 #include <vector>
+#include <map>
+#include <cassert>
+
 #include "RuntimeObject.h"
 #include "ObjectType.h"
 
 namespace Dynamix {
 	struct StructField {
 		std::string Name;
+		ValueType Type;
 		uint16_t Size;
 		uint16_t Offset;
 	};
@@ -16,6 +20,8 @@ namespace Dynamix {
 		uint16_t TotalSize;
 	};
 
+	Value ValueFromField(void const* data, StructField const* field);
+
 	class StructType : public ObjectType {
 	public:
 		StructType(std::string name, StructDesc desc) noexcept;
@@ -24,8 +30,12 @@ namespace Dynamix {
 			return m_Desc;
 		}
 
+		bool HasField(std::string const& name) const noexcept;
+		StructField const* GetStructField(std::string const& name) const noexcept;
+
 	private:
 		StructDesc m_Desc;
+		std::map<std::string, int> m_FieldsMap;
 	};
 
 	class StructObject : public RuntimeObject {
@@ -57,6 +67,12 @@ namespace Dynamix {
 			return m_Size;
 		}
 
+		bool HasField(std::string const& name) const noexcept override {
+			return Type()->HasField(name);
+		}
+		//void AssignField(std::string const& name, Value value, TokenType assignType = TokenType::Assign) override;
+		//Value GetFieldValue(std::string const& name) const override;
+
 	private:
 		void* m_Data;
 		Int m_Size;
@@ -76,6 +92,15 @@ namespace Dynamix {
 		template<typename T>
 		T const& Object() const noexcept {
 			return m_Data;
+		}
+
+		bool HasField(std::string const& name) const noexcept override {
+			return Type()->HasField(name);
+		}
+		Value GetFieldValue(std::string const& name) const override {
+			auto field = reinterpret_cast<StructType const*>(Type())->GetStructField(name);
+			assert(field);
+			return ValueFromField(&m_Data, field);
 		}
 
 	private:

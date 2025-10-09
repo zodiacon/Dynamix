@@ -6,8 +6,8 @@ using namespace Dynamix;
 Vector2uType* Vector2uType::Get() {
     static StructDesc desc{
         std::vector<StructField> {
-        { "X", sizeof(float), 0 },
-        { "Y", sizeof(float), 4 },
+        { "X", ValueType::Real, sizeof(float), 0 },
+        { "Y", ValueType::Real, sizeof(float), 4 },
         },
     };
     static Vector2uType type("Vector2u", std::move(desc));

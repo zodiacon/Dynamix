@@ -25,6 +25,10 @@ namespace Dynamix {
 
 	class RuntimeObject : NoCopy, public IServices {
 	public:
+#ifdef _WIN32
+		void* operator new(size_t size);
+		void operator delete(void* p);
+#endif
 		explicit RuntimeObject(ObjectType* type);
 		RuntimeObject(RuntimeObject&& other) = default;
 		RuntimeObject& operator=(RuntimeObject&& other) = default;

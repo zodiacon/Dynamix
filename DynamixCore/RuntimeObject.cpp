@@ -6,6 +6,20 @@
 
 using namespace Dynamix;
 
+#ifdef _WIN32
+#include <Windows.h>
+
+static HANDLE s_hHeap = ::HeapCreate(HEAP_NO_SERIALIZE, 1 << 18, 0);
+void* RuntimeObject::operator new(size_t size) {
+	return ::HeapAlloc(s_hHeap, 0, size);
+}
+
+void RuntimeObject::operator delete(void* p) {
+	::HeapFree(s_hHeap, 0, p);
+}
+
+#endif
+
 RuntimeObject::RuntimeObject(ObjectType* type) : m_Type(type) {
 	if (type) {
 		type->ObjectCreated(this);
