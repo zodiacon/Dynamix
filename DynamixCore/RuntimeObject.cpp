@@ -71,11 +71,11 @@ Value Dynamix::RuntimeObject::InvokeOperator(Interpreter& intr, TokenType op) co
 		format("Operator {} not implemented on type '{}'", Token::TypeToString(op), Type()->Name()));
 }
 
-Value RuntimeObject::InvokeIndexer(Value const& index) {
+Value RuntimeObject::InvokeGetIndexer(Value const& index) {
 	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, format("Indexer not supported on {}", Type()->Name()));
 }
 
-void RuntimeObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
+void RuntimeObject::InvokeSetIndexer(Value const& index, Value const& value, TokenType assign) {
 	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, std::format("indexer not supported on type {}", Type()->Name()));
 }
 

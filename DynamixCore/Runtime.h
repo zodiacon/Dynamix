@@ -57,6 +57,12 @@ namespace Dynamix {
 	struct ContinueStatementException {
 	};
 
+	struct AssertFailedException {
+		AssertFailedException(Value value) : Failed(std::move(value)) {}
+
+		Value Failed;
+	};
+
 	struct RuntimeError {
 		RuntimeError(RuntimeErrorType type, std::string msg, CodeLocation location = CodeLocation());
 		RuntimeErrorType Type() const {

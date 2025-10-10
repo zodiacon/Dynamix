@@ -72,6 +72,9 @@ Value Value::BinaryOperator(TokenType op, Value const& rhs) const {
 		case TokenType::BitwiseAnd: return BitwiseAnd(rhs);
 		case TokenType::BitwiseOr: return BitwiseOr(rhs);
 		case TokenType::BitwiseXor: return BitwiseXor(rhs);
+
+		case TokenType::StreamLeft: return ShiftLeft(rhs);
+		case TokenType::StreamRight: return ShiftRight(rhs);
 	}
 	throw RuntimeError(RuntimeErrorType::UnknownOperator, std::format("Unsupported operator {}", Token::TypeToString(op)));
 }
@@ -104,7 +107,7 @@ Value& Value::Assign(Value const& right, TokenType assign) {
 Value& Value::AssignArrayIndex(Value const& index, Value const& right, TokenType assign) {
 	switch (m_Type) {
 	case ValueType::Object:
-		const_cast<RuntimeObject*>(oValue)->AssignIndexer(index, right, assign);
+		const_cast<RuntimeObject*>(oValue)->InvokeSetIndexer(index, right, assign);
 		break;
 
 	case ValueType::String:
@@ -234,6 +237,14 @@ Value Value::BitwiseXor(Value const& rhs) const {
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot bitwise XOR {} by {}", ToString(), rhs.ToString()));
 }
 
+Value Value::ShiftLeft(Value const& rhs) const {
+	return ToInteger() << rhs.ToInteger();
+}
+
+Value Value::ShiftRight(Value const& rhs) const {
+	return ToInteger() >> rhs.ToInteger();
+}
+
 Value Value::InvokeIndexer(Value const& index) const {
 	switch (m_Type) {
 		case ValueType::String:
@@ -245,7 +256,7 @@ Value Value::InvokeIndexer(Value const& index) const {
 		}
 
 		case ValueType::Object:
-			return const_cast<RuntimeObject*>(oValue)->InvokeIndexer(index);
+			return const_cast<RuntimeObject*>(oValue)->InvokeGetIndexer(index);
 	}
 	throw RuntimeError(RuntimeErrorType::IndexerNotSupported, std::format("Indexer not supported on type {}", GetObjectType()->Name()));
 }

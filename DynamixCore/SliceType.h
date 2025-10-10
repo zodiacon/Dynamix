@@ -37,8 +37,8 @@ namespace Dynamix {
 			return m_Target;
 		}
 
-		Value InvokeIndexer(Value const& index) override;
-		void AssignIndexer(Value const& index, Value const& value, TokenType assign) override;
+		Value InvokeGetIndexer(Value const& index) override;
+		void InvokeSetIndexer(Value const& index, Value const& value, TokenType assign) override;
 		Value GetByIndex(Int index) const;
 
 	private:

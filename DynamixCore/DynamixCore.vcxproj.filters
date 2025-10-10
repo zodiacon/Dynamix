@@ -126,6 +126,9 @@
     <ClInclude Include="COMType.h">
       <Filter>StdLib\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="DebugType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
@@ -213,6 +216,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StructObject.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugType.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>

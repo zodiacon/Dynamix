@@ -140,6 +140,7 @@
     <ClInclude Include="COMType.h" />
     <ClInclude Include="ConsoleType.h" />
     <ClInclude Include="CoreInterfaces.h" />
+    <ClInclude Include="DebugType.h" />
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="EnumType.h" />
     <ClInclude Include="Interpreter.h" />
@@ -173,6 +174,7 @@
     <ClCompile Include="ComplexType.cpp" />
     <ClCompile Include="COMType.cpp" />
     <ClCompile Include="ConsoleType.cpp" />
+    <ClCompile Include="DebugType.cpp" />
     <ClCompile Include="Enumerable.cpp" />
     <ClCompile Include="EnumType.cpp" />
     <ClCompile Include="Interpreter.cpp" />

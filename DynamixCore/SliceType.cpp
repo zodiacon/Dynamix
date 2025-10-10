@@ -48,24 +48,24 @@ std::string SliceObject::ToString() const {
 	for (Int i = 0; Size() < 0 ? true : (i < Size()); i++) {
 		if (!m_Target->HasValue(i + Start()))
 			break;
-		text += m_Target->InvokeIndexer(Value(i + Start())).ToString() + ", ";
+		text += m_Target->InvokeGetIndexer(Value(i + Start())).ToString() + ", ";
 	}
 	return text.substr(0, text.length() - 2) + " ]";
 }
 
-Value SliceObject::InvokeIndexer(Value const& index) {
+Value SliceObject::InvokeGetIndexer(Value const& index) {
 	if (index.ToInteger() < 0 || index.ToInteger() >= Size())
 		throw RuntimeError(RuntimeErrorType::IndexOutOfRange, std::format("Index {} out of range in slice", index.ToInteger()));
 
-	return m_Target->InvokeIndexer(Value(index.ToInteger() + Start()));
+	return m_Target->InvokeGetIndexer(Value(index.ToInteger() + Start()));
 }
 
-void SliceObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
-	m_Target->AssignIndexer(Value(index.ToInteger() + Start()), value, assign);
+void SliceObject::InvokeSetIndexer(Value const& index, Value const& value, TokenType assign) {
+	m_Target->InvokeSetIndexer(Value(index.ToInteger() + Start()), value, assign);
 }
 
 Value SliceObject::GetByIndex(Int index) const {
-	return m_Target->InvokeIndexer(Value(index + Start()));
+	return m_Target->InvokeGetIndexer(Value(index + Start()));
 }
 
 SliceObject::Enumerator::Enumerator(SliceObject const* slice) : m_Slice(slice), m_Current(0), m_End(slice->Size()) {

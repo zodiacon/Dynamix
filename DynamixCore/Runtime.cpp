@@ -13,6 +13,7 @@
 #include "ConsoleType.h"
 #include "RuntimeType.h"
 #include "COMType.h"
+#include "DebugType.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -167,5 +168,6 @@ void Runtime::InitStdLibrary() {
 	ADD_TYPE(Console);
 	ADD_TYPE(Runtime);
 	ADD_TYPE(COM)
+	ADD_TYPE(Debug)
 }
 

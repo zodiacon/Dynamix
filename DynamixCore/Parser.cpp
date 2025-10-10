@@ -103,6 +103,8 @@ bool Parser::Init() {
 		{ "^=", TokenType::Assign_Xor },
 		{ "..", TokenType::DotDot },
 		{ "..=", TokenType::DotDotInclusive },
+		{ ">>", TokenType::StreamRight },
+		{ "<<", TokenType::StreamLeft },
 		}))
 		return false;
 
@@ -141,6 +143,8 @@ bool Parser::Init() {
 	AddParslet(TokenType::GreaterThanOrEqual, make_unique<BinaryOperatorParslet>(90));
 	AddParslet(TokenType::OpenParen, make_unique<InvokeFunctionParslet>());
 	AddParslet(TokenType::If, make_unique<IfThenElseParslet>());
+	AddParslet(TokenType::StreamRight, make_unique<BinaryOperatorParslet>(410));
+	AddParslet(TokenType::StreamLeft, make_unique<BinaryOperatorParslet>(410));
 	AddParslet(TokenType::BitwiseAnd, make_unique<BinaryOperatorParslet>(400));
 	AddParslet(TokenType::BitwiseOr, make_unique<BinaryOperatorParslet>(390));
 	AddParslet(TokenType::BitwiseXor, make_unique<BinaryOperatorParslet>(390));

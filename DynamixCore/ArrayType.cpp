@@ -17,7 +17,7 @@ ArrayObject* ArrayType::CreateArray(std::vector<Value> args) {
 	return new ArrayObject(std::move(args));
 }
 
-Value ArrayObject::InvokeIndexer(Value const& index) {
+Value ArrayObject::InvokeGetIndexer(Value const& index) {
 	if (index.IsObject() && index.ToObject()->Type() == RangeType::Get()) {
 		// slicing
 		return SliceType::Get()->CreateSlice(this, index);
@@ -26,7 +26,7 @@ Value ArrayObject::InvokeIndexer(Value const& index) {
 	return m_Items[i];
 }
 
-void ArrayObject::AssignIndexer(Value const& index, Value const& value, TokenType assign) {
+void ArrayObject::InvokeSetIndexer(Value const& index, Value const& value, TokenType assign) {
 	if (!index.IsInteger())
 		throw RuntimeError(RuntimeErrorType::TypeMismatch, "Array index must be an integer");
 	auto i = ValidateIndex(index.ToInteger());

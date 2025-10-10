@@ -195,6 +195,8 @@ namespace Dynamix {
 		Value BitwiseAnd(Value const& rhs) const;
 		Value BitwiseOr(Value const& rhs) const;
 		Value BitwiseXor(Value const& rhs) const;
+		Value ShiftRight(Value const& rhs) const;
+		Value ShiftLeft(Value const& rhs) const;
 
 		Value Equal(Value const& rhs) const;
 		Value NotEqual(Value const& rhs) const;
