@@ -505,6 +505,21 @@ Value Interpreter::VisitRange(RangeExpression const* expr) {
 Value Interpreter::VisitMatch(MatchExpression const* expr) {
 	auto value = Eval(expr->ToMatch());
 
+	auto def = expr->HasDefault() ?	&expr->MatchCases().back() : nullptr;
+
+	for (auto& mc : expr->MatchCases()) {
+		if (def == &mc)
+			break;
+		for (auto& c : mc.Cases()) {
+			auto cs = Eval(c.get());
+			if (cs.Equal(value).ToBoolean()) {
+				return Eval(mc.Action());
+			}
+		}
+	}
+
+	if (def)
+		return Eval(def->Action());
 	return Value();
 }
 

@@ -447,6 +447,10 @@ Value ClassDeclaration::Accept(Visitor* visitor) const {
 	return visitor->VisitClassDeclaration(this);
 }
 
+void ClassDeclaration::AddInterface(std::string name) {
+	m_ImplInterfaces.push_back(move(name));
+}
+
 AssignArrayIndexExpression::AssignArrayIndexExpression(unique_ptr<Expression> arrayAccess, unique_ptr<Expression> rhs, TokenType assignType) noexcept 
 : m_ArrayAccess(move(arrayAccess)), m_Value(move(rhs)), m_AssignType(assignType) {
 }

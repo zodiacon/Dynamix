@@ -32,6 +32,7 @@ namespace Dynamix {
 		UnexpectedToken,
 		IllegalThis,
 		ModifierConflict,
+		WrongParameterCount,
 	};
 
 	struct ParseError {

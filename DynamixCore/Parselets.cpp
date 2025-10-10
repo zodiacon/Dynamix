@@ -251,6 +251,11 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 					auto expr = parser.ParseExpression();
 					if (!expr)
 						break;
+					if (expr->NodeType() == AstNodeType::AnonymousFunction && 
+						reinterpret_cast<AnonymousFunctionExpression const*>(expr.get())->Parameters().size() != 1) {
+						parser.AddError(ParseError(ParseErrorType::WrongParameterCount, expr->Location(), 
+							"Anonymous function in case must have one parameter"));
+					}
 					exprs.push_back(move(expr));
 					if (parser.Match(TokenType::Comma))
 						continue;
@@ -260,7 +265,7 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 				auto action = parser.ParseStatementsForMatch(true);
 				MatchCaseExpression mce(move(action));
 				mce.SetCases(move(exprs));
-				match->AddCase(move(mce));
+				match->AddMatchCase(move(mce));
 				break;
 			}
 
@@ -269,7 +274,8 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 				parser.Next();		// eat default
 				parser.Match(TokenType::Colon, true, true);
 				auto action = parser.ParseStatementsForMatch(true);
-				match->AddCase(MatchCaseExpression(move(action)));
+				match->AddMatchCase(MatchCaseExpression(move(action)));
+				match->SetHasDefault();
 				break;
 			}
 

@@ -130,6 +130,10 @@ namespace Dynamix {
 			return m_Action.get();
 		}
 
+		std::vector<std::unique_ptr<Expression>> const& Cases() const noexcept {
+			return m_Cases;
+		}
+
 	private:
 		std::unique_ptr<Statements> m_Action;
 		std::vector<std::unique_ptr<Expression>> m_Cases;
@@ -139,20 +143,28 @@ namespace Dynamix {
 	public:
 		explicit MatchExpression(std::unique_ptr<Expression> expr) noexcept : m_Expr(std::move(expr)) {}
 		Value Accept(Visitor* visitor) const override;
-		void AddCase(MatchCaseExpression expr) noexcept {
-			m_Cases.push_back(std::move(expr));
+		void AddMatchCase(MatchCaseExpression expr) {
+			m_MatchCases.push_back(std::move(expr));
 		}
 
-		std::vector<MatchCaseExpression> const& Cases() const noexcept {
-			return m_Cases;
+		std::vector<MatchCaseExpression> const& MatchCases() const noexcept {
+			return m_MatchCases;
 		}
 		Expression const* ToMatch() const noexcept {
 			return m_Expr.get();
 		}
+		void SetHasDefault() noexcept {
+			m_HasDefault = true;
+		}
+
+		bool HasDefault() const noexcept {
+			return m_HasDefault;
+		}
 
 	private:
 		std::unique_ptr<Expression> m_Expr;
-		std::vector<MatchCaseExpression> m_Cases;
+		std::vector<MatchCaseExpression> m_MatchCases;
+		bool m_HasDefault{ false };
 	};
 
 	class AccessArrayExpression : public Expression {
@@ -607,12 +619,17 @@ namespace Dynamix {
 		std::string const& BaseName() const noexcept {
 			return m_BaseName;
 		}
+		void AddInterface(std::string name);
+		std::vector<std::string> Interfaces() const noexcept {
+			return m_ImplInterfaces;
+		}
 
 	private:
 		std::string m_Name, m_BaseName;
 		std::vector<std::unique_ptr<FunctionDeclaration>> m_Methods;
 		std::vector<std::unique_ptr<Statement>> m_Fields;
 		std::vector<std::unique_ptr<ClassDeclaration>> m_Types;
+		std::vector<std::string> m_ImplInterfaces;
 		ClassDeclaration const* m_Parent;
 	};
 
