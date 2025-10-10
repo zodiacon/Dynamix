@@ -242,6 +242,9 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 	std::vector<MatchCaseExpression> cases;
 	auto match = make_unique<MatchExpression>(move(expr));
 	while (next.Type != TokenType::CloseBrace) {
+		if (match->HasDefault())
+			parser.AddError(ParseError(ParseErrorType::UnexpectedToken, next.Location, "If match default is specified, it must be last, and no more than one"));
+
 		switch (next.Type) {
 			case TokenType::Case:
 			{

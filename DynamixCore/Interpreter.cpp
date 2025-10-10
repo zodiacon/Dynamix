@@ -511,9 +511,20 @@ Value Interpreter::VisitMatch(MatchExpression const* expr) {
 		if (def == &mc)
 			break;
 		for (auto& c : mc.Cases()) {
-			auto cs = Eval(c.get());
-			if (cs.Equal(value).ToBoolean()) {
-				return Eval(mc.Action());
+			if (c->NodeType() == AstNodeType::AnonymousFunction) {
+				auto af = reinterpret_cast<AnonymousFunctionExpression const*>(c.get());
+				assert(af->Parameters().size() == 1);
+				Scoper scoper(this);
+				CurrentScope().AddElement(af->Parameters()[0].Name, Element{ value });
+				if (Eval(af->Body()).ToBoolean()) {
+					return Eval(mc.Action());
+				}
+			}
+			else {
+				auto cs = Eval(c.get());
+				if (cs.Equal(value).ToBoolean()) {
+					return Eval(mc.Action());
+				}
 			}
 		}
 	}

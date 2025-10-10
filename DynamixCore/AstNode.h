@@ -129,7 +129,6 @@ namespace Dynamix {
 		Statements const* Action() const noexcept {
 			return m_Action.get();
 		}
-
 		std::vector<std::unique_ptr<Expression>> const& Cases() const noexcept {
 			return m_Cases;
 		}
@@ -143,7 +142,7 @@ namespace Dynamix {
 	public:
 		explicit MatchExpression(std::unique_ptr<Expression> expr) noexcept : m_Expr(std::move(expr)) {}
 		Value Accept(Visitor* visitor) const override;
-		void AddMatchCase(MatchCaseExpression expr) {
+		void AddMatchCase(MatchCaseExpression expr) noexcept {
 			m_MatchCases.push_back(std::move(expr));
 		}
 
@@ -156,7 +155,6 @@ namespace Dynamix {
 		void SetHasDefault() noexcept {
 			m_HasDefault = true;
 		}
-
 		bool HasDefault() const noexcept {
 			return m_HasDefault;
 		}
@@ -317,19 +315,6 @@ namespace Dynamix {
 		std::unique_ptr<Expression> m_Value;
 		TokenType m_AssignType;
 	};
-
-	//class PostfixExpression : public Expression {
-	//public:
-	//	PostfixExpression(std::unique_ptr<Expression> expr, Token token);
-	//	Value Accept(Visitor* visitor) const override;
-
-	//	Token const& Operator() const noexcept;
-	//	Expression const* Argument() const noexcept;
-
-	//private:
-	//	std::unique_ptr<Expression> m_Expr;
-	//	Token m_Token;
-	//};
 
 	class BinaryExpression : public Expression {
 	public:
@@ -619,9 +604,10 @@ namespace Dynamix {
 		std::string const& BaseName() const noexcept {
 			return m_BaseName;
 		}
+
 		void AddInterface(std::string name);
-		std::vector<std::string> Interfaces() const noexcept {
-			return m_ImplInterfaces;
+		std::vector<std::string> const& Interfaces() const noexcept {
+			return m_Interfaces;
 		}
 
 	private:
@@ -629,7 +615,7 @@ namespace Dynamix {
 		std::vector<std::unique_ptr<FunctionDeclaration>> m_Methods;
 		std::vector<std::unique_ptr<Statement>> m_Fields;
 		std::vector<std::unique_ptr<ClassDeclaration>> m_Types;
-		std::vector<std::string> m_ImplInterfaces;
+		std::vector<std::string> m_Interfaces;
 		ClassDeclaration const* m_Parent;
 	};
 

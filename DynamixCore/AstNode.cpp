@@ -448,7 +448,7 @@ Value ClassDeclaration::Accept(Visitor* visitor) const {
 }
 
 void ClassDeclaration::AddInterface(std::string name) {
-	m_ImplInterfaces.push_back(move(name));
+	m_Interfaces.push_back(move(name));
 }
 
 AssignArrayIndexExpression::AssignArrayIndexExpression(unique_ptr<Expression> arrayAccess, unique_ptr<Expression> rhs, TokenType assignType) noexcept 
