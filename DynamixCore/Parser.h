@@ -31,16 +31,6 @@ namespace Dynamix {
 		void AddError(ParseError err);
 		bool HasErrors() const;
 		std::span<const ParseError> Errors() const;
-		void PushScope(AstNode* node);
-		void PopScope();
-
-		CodeLocation Location() const noexcept;
-
-		bool AddSymbol(Symbol sym) noexcept;
-		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const noexcept;
-		std::vector<Symbol const*> GlobalSymbols() const noexcept;
-
-		int GetPrecedence() const;
 
 		std::unique_ptr<Expression> ParseExpression(int precedence = 0);
 		std::unique_ptr<Statement> ParseVarValStatement(bool constant, SymbolFlags extraFlags = SymbolFlags::None);
@@ -61,12 +51,23 @@ namespace Dynamix {
 
 		Token Next();
 		Token const& Peek() const;
-		bool SkipTo(TokenType type);
 		bool Match(TokenType type, bool consume = true, bool errorIfNotFound = false);
 		bool Match(std::string_view lexeme, bool consume = true, bool errorIfNotFound = false);
-		int AddConstSTring(std::string str);
+		bool SkipTo(TokenType type);
+
+		CodeLocation Location() const noexcept;
 
 	protected:
+		void PushScope(AstNode* node);
+		void PopScope();
+
+		bool AddSymbol(Symbol sym) noexcept;
+		Symbol const* FindSymbol(std::string const& name, bool localOnly = false) const noexcept;
+		std::vector<Symbol const*> GlobalSymbols() const noexcept;
+
+		int GetPrecedence() const;
+		int AddConstString(std::string str);
+
 		virtual bool Init();
 		virtual std::unique_ptr<Statements> DoParse();
 

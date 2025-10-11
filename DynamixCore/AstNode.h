@@ -14,22 +14,26 @@
 #include "ParseError.h"
 
 namespace Dynamix {
-	enum class AstNodeType {
+	enum class AstNodeType : uint16_t {
 		None = 0,
 
-		Expression = 0x200,
+		Expression = 0x100,
 		Literal,
 		IfThenElse,
 		Name,
 		InvokeFunction,
 		AnonymousFunction,
+		Binary,
+		Unary,
+		ArrayAccess,
+		GetMember,
+		Range,
+		Match,
 
-		Statement = 0x400,
+		Statement = 0x200,
 		Statements,
 		FunctionDeclaration,
 		VarValStatement,
-		ArrayAccess,
-		GetMember,
 		ClassDeclaration,
 		EnumDeclararion,
 		InterfaceDeclaration,
@@ -41,6 +45,13 @@ namespace Dynamix {
 		virtual std::string ToString() const {
 			return "";
 		}
+		bool IsStatement() const noexcept {
+			return (NodeType() & AstNodeType::Statement) == AstNodeType::Statement;
+		}
+		bool IsExpression() const noexcept {
+			return (NodeType() & AstNodeType::Expression) == AstNodeType::Expression;
+		}
+
 		void* operator new(size_t size);
 		void operator delete(void* p, size_t);
 
@@ -141,6 +152,10 @@ namespace Dynamix {
 	class MatchExpression : public Expression {
 	public:
 		explicit MatchExpression(std::unique_ptr<Expression> expr) noexcept : m_Expr(std::move(expr)) {}
+		AstNodeType NodeType() const noexcept override {
+			return AstNodeType::Match;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		void AddMatchCase(MatchCaseExpression expr) noexcept {
 			m_MatchCases.push_back(std::move(expr));
@@ -319,6 +334,9 @@ namespace Dynamix {
 	class BinaryExpression : public Expression {
 	public:
 		BinaryExpression(std::unique_ptr<Expression> left, TokenType op, std::unique_ptr<Expression> right);
+		AstNodeType NodeType() const noexcept override {
+			return AstNodeType::Binary;
+		}
 		Value Accept(Visitor* visitor) const override;
 
 		std::string ToString() const override;
@@ -350,6 +368,9 @@ namespace Dynamix {
 	class UnaryExpression : public Expression {
 	public:
 		UnaryExpression(TokenType op, std::unique_ptr<Expression> arg) noexcept;
+		AstNodeType NodeType() const noexcept override {
+			return AstNodeType::Unary;
+		}
 		Value Accept(Visitor* visitor) const override;
 		std::string ToString() const override;
 		TokenType Operator() const noexcept;
@@ -378,6 +399,9 @@ namespace Dynamix {
 	class RangeExpression : public Expression {
 	public:
 		RangeExpression(std::unique_ptr<Expression> start, std::unique_ptr<Expression> end, bool endInclusive = false) noexcept;
+		AstNodeType NodeType() const noexcept override {
+			return AstNodeType::Range;
+		}
 		Value Accept(Visitor* visitor) const override;
 		Expression const* Start() const noexcept {
 			return m_Start.get();

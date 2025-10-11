@@ -1,0 +1,39 @@
+// View.h : interface of the CView class
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "Interfaces.h"
+#include <AstNode.h>
+#include <FrameView.h>
+
+class CView : public CFrameView<CView, IMainFrame> {
+public:
+	CView(IMainFrame* frame, std::unique_ptr<Dynamix::Statements> ast);
+
+	DECLARE_WND_CLASS(NULL)
+
+	BOOL PreTranslateMessage(MSG* pMsg);
+
+	virtual void OnFinalMessage(HWND /*hWnd*/);
+
+	BEGIN_MSG_MAP(CView)
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		CHAIN_MSG_MAP(BaseFrame)
+	END_MSG_MAP()
+
+private:
+	void BuildTree();
+
+	// Handler prototypes (uncomment arguments if needed):
+	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	//	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
+
+	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+private:
+	CTreeViewCtrl m_Tree;
+	std::unique_ptr<Dynamix::Statements> m_Code;
+};

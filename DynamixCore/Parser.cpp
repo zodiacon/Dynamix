@@ -252,7 +252,7 @@ bool Parser::Match(string_view lexeme, bool consume, bool errorIfNotFound) {
 	return found;
 }
 
-int Parser::AddConstSTring(std::string str) {
+int Parser::AddConstString(std::string str) {
 	m_ConstStrings.push_back(move(str));
 	return static_cast<int>(m_ConstStrings.size());;
 }

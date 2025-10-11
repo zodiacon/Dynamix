@@ -80,6 +80,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -96,6 +97,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -110,6 +112,7 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -126,6 +129,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -140,6 +144,7 @@
     <ClInclude Include="COMType.h" />
     <ClInclude Include="ConsoleType.h" />
     <ClInclude Include="CoreInterfaces.h" />
+    <ClInclude Include="DebugHelper.h" />
     <ClInclude Include="DebugType.h" />
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="EnumType.h" />
@@ -174,6 +179,7 @@
     <ClCompile Include="ComplexType.cpp" />
     <ClCompile Include="COMType.cpp" />
     <ClCompile Include="ConsoleType.cpp" />
+    <ClCompile Include="DebugHelper.cpp" />
     <ClCompile Include="DebugType.cpp" />
     <ClCompile Include="Enumerable.cpp" />
     <ClCompile Include="EnumType.cpp" />

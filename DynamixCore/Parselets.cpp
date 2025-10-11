@@ -256,7 +256,7 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 						break;
 					if (expr->NodeType() == AstNodeType::AnonymousFunction && 
 						reinterpret_cast<AnonymousFunctionExpression const*>(expr.get())->Parameters().size() != 1) {
-						parser.AddError(ParseError(ParseErrorType::WrongParameterCount, expr->Location(), 
+						parser.AddError(ParseError(ParseErrorType::WrongParameterCount, parser.Peek().Location, 
 							"Anonymous function in case must have one parameter"));
 					}
 					exprs.push_back(move(expr));

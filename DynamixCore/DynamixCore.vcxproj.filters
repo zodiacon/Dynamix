@@ -28,6 +28,9 @@
     <Filter Include="StdLib\Windows">
       <UniqueIdentifier>{420c94fc-75e3-42be-acb1-7a8852783c56}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{e4d33457-0c38-434b-a09c-d1988d244296}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmallString.h">
@@ -129,6 +132,9 @@
     <ClInclude Include="DebugType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="DebugHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
@@ -220,6 +226,9 @@
     </ClCompile>
     <ClCompile Include="DebugType.cpp">
       <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugHelper.cpp">
+      <Filter>Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
