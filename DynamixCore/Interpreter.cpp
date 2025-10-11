@@ -446,7 +446,7 @@ Value Interpreter::VisitNewObjectExpression(NewObjectExpression const* expr) {
 	assert(v->VarValue.IsObject());
 	auto type = reinterpret_cast<ObjectType*>(v->VarValue.AsObject());
 	std::vector<Value> args;
-	for (auto& arg : expr->Args())
+	for (auto& arg : expr->Arguments())
 		args.push_back(Eval(arg.get()));
 	auto obj = type->CreateObject(*this, args);
 	assert(obj);

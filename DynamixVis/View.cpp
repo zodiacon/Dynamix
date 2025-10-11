@@ -9,7 +9,7 @@
 
 using namespace Dynamix;
 
-CView::CView(IMainFrame* frame, std::unique_ptr<Statements> code) : CFrameView(frame), m_Code(std::move(code)) {
+CView::CView(IMainFrame* frame) : CFrameView(frame), m_Parser(m_Tokenizer) {
 }
 
 BOOL CView::PreTranslateMessage(MSG* pMsg) {
@@ -17,15 +17,21 @@ BOOL CView::PreTranslateMessage(MSG* pMsg) {
 	return FALSE;
 }
 
+bool CView::Parse(PCWSTR file) {
+	m_Code = m_Parser.ParseFile((PCSTR)CStringA(file));
+	if(!m_Code)
+		return false;
+
+	return true;
+}
+
 void CView::OnFinalMessage(HWND /*hWnd*/) {
 	delete this;
 }
 
 void CView::BuildTree() {
-	auto hRoot = m_Tree.InsertItem(L"(Root)", TVI_ROOT, TVI_LAST);
-	TreeViewVisitor visitor(m_Tree);
-	visitor.Visit(m_Code.get(), hRoot);
-	m_Tree.Expand(hRoot, TVE_EXPAND);
+	TreeViewVisitor visitor(m_Tree, m_Tokenizer);
+	visitor.Visit(m_Code.get(), TVI_ROOT);
 }
 
 LRESULT CView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

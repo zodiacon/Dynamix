@@ -29,14 +29,27 @@ namespace Dynamix {
 		GetMember,
 		Range,
 		Match,
+		Assign,
+		AssignArrayIndex,
+		AssignField,
+		NewObject,
+		Array,
 
 		Statement = 0x200,
 		Statements,
+		Return,
+		While,
+		For,
+		ForEach,
+		Repeat,
+		BreakContinue,
 		FunctionDeclaration,
 		VarValStatement,
 		ClassDeclaration,
 		EnumDeclararion,
 		InterfaceDeclaration,
+		Use,
+		ExpressionStatement,
 	};
 
 	class AstNode {
@@ -56,9 +69,7 @@ namespace Dynamix {
 		void operator delete(void* p, size_t);
 
 		virtual Value Accept(Visitor* visitor) const = 0;
-		virtual AstNodeType NodeType() const noexcept {
-			return AstNodeType::None;
-		}
+		virtual AstNodeType NodeType() const noexcept = 0;
 
 		void SetLocation(CodeLocation loc) {
 			m_Location = std::move(loc);
@@ -97,9 +108,6 @@ namespace Dynamix {
 
 	class Expression : public AstNode {
 	public:
-		AstNodeType NodeType() const noexcept override {
-			return AstNodeType::Expression;
-		}
 	};
 
 	struct Parameter {
@@ -196,16 +204,16 @@ namespace Dynamix {
 
 	class Statement : public Expression {
 	public:
-		AstNodeType NodeType() const noexcept override {
-			return AstNodeType::Statement;
-		}
-
 	protected:
 		Statement() = default;
 	};
 
 	class ArrayExpression : public Expression {
 	public:
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::Array;
+		}
+
 		void Add(std::unique_ptr<Expression> expr);
 		Value Accept(Visitor* visitor) const override;
 
@@ -218,6 +226,10 @@ namespace Dynamix {
 	class ExpressionStatement final : public Statement {
 	public:
 		ExpressionStatement(std::unique_ptr<Expression> expr, bool semicolon);
+		AstNodeType NodeType() const noexcept {
+			return m_Expr->NodeType();
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		Expression const* Expr() const;
 		std::string ToString() const override;
@@ -283,6 +295,9 @@ namespace Dynamix {
 		Expression const* Value() const noexcept;
 		TokenType AssignType() const noexcept;
 		std::string ToString() const override;
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::Assign;
+		}
 
 	private:
 		std::string m_Lhs;
@@ -293,6 +308,10 @@ namespace Dynamix {
 	class AssignFieldExpression : public Expression {
 	public:
 		AssignFieldExpression(std::unique_ptr<Expression> lhs, std::unique_ptr<Expression> rhs, TokenType assignType) noexcept;
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::AssignField;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		TokenType AssignType() const noexcept {
 			return m_AssignType;
@@ -313,6 +332,10 @@ namespace Dynamix {
 	class AssignArrayIndexExpression : public Expression {
 	public:
 		AssignArrayIndexExpression(std::unique_ptr<Expression> arrayAccess, std::unique_ptr<Expression> rhs, TokenType assignType) noexcept;
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::AssignArrayIndex;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 
 		AccessArrayExpression const* ArrayAccess() const noexcept {
@@ -442,6 +465,10 @@ namespace Dynamix {
 	class UseStatement : public Statement {
 	public:
 		UseStatement(std::string name, UseType type) noexcept : m_Name(std::move(name)), m_Type(type) {}
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::Use;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 
 		std::string const& Name() const noexcept {
@@ -459,6 +486,10 @@ namespace Dynamix {
 	class ForEachStatement : public Statement {
 	public:
 		ForEachStatement(std::string name, std::unique_ptr<Expression> collection, std::unique_ptr<Statements> body) noexcept;
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::ForEach;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 
 		std::string const& Name() const noexcept {
@@ -482,6 +513,10 @@ namespace Dynamix {
 		ForStatement() = default;
 		ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, 
 			std::unique_ptr<Expression> incExpr, std::unique_ptr<Statements> body);
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::For;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		void SetBody(std::unique_ptr<Statements> body) noexcept {
 			m_Body = move(body);
@@ -674,14 +709,18 @@ namespace Dynamix {
 
 	class NewObjectExpression : public Expression {
 	public:
-		NewObjectExpression(std::string className, std::vector<std::unique_ptr<Expression>> args, std::vector<FieldInitializer> inits)
-			: m_ClassName(std::move(className)), m_Args(std::move(args)), m_FieldInit(move(inits)) {}
+		NewObjectExpression(std::string className, std::vector<std::unique_ptr<Expression>> args, std::vector<FieldInitializer> inits) noexcept
+			: m_ClassName(std::move(className)), m_Arguments(std::move(args)), m_FieldInit(move(inits)) {}
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::NewObject;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		std::string const& ClassName() const {
 			return m_ClassName;
 		}
-		std::vector<std::unique_ptr<Expression>> const& Args() const noexcept {
-			return m_Args;
+		std::vector<std::unique_ptr<Expression>> const& Arguments() const noexcept {
+			return m_Arguments;
 		}
 
 		void AddFieldInit(FieldInitializer init) noexcept {
@@ -693,7 +732,7 @@ namespace Dynamix {
 		}
 	private:
 		std::string m_ClassName;
-		std::vector<std::unique_ptr<Expression>> m_Args;
+		std::vector<std::unique_ptr<Expression>> m_Arguments;
 		std::vector<FieldInitializer> m_FieldInit;
 	};
 
@@ -702,6 +741,10 @@ namespace Dynamix {
 		explicit BreakOrContinueStatement(TokenType type);
 		Value Accept(Visitor* visitor) const override;
 		TokenType BreakType() const noexcept;
+		std::string ToString() const override;
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::BreakContinue;
+		}
 
 	private:
 		TokenType m_Type;
@@ -710,6 +753,10 @@ namespace Dynamix {
 	class WhileStatement : public Statement {
 	public:
 		WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statements> body);
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::While;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Condition() const noexcept;
@@ -723,6 +770,10 @@ namespace Dynamix {
 	class ReturnStatement : public Statement {
 	public:
 		explicit ReturnStatement(std::unique_ptr<Expression> expr = nullptr);
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::Return;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 		Expression const* ReturnValue() const noexcept;
 		std::string ToString() const override;
@@ -734,6 +785,10 @@ namespace Dynamix {
 	class RepeatStatement : public Statement {
 	public:
 		RepeatStatement(std::unique_ptr<Expression> times, std::unique_ptr<Statements> body);
+		AstNodeType NodeType() const noexcept {
+			return AstNodeType::Repeat;
+		}
+
 		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Times() const noexcept;

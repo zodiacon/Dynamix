@@ -117,7 +117,7 @@ Value& Value::AssignArrayIndex(Value const& index, Value const& right, TokenType
 	return *this;
 }
 
-std::string Value::ToString() const noexcept {
+std::string Value::ToString() const {
 	switch (m_Type) {
 		case ValueType::Null:
 			return "<empty>";
@@ -132,7 +132,7 @@ std::string Value::ToString() const noexcept {
 		case ValueType::Error:
 			return "<Error>";
 		case ValueType::String:
-			return strValue;
+			return std::string("\"") + strValue + "\"";
 	}
 	return "";
 }

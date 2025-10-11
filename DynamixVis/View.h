@@ -7,14 +7,17 @@
 #include "Interfaces.h"
 #include <AstNode.h>
 #include <FrameView.h>
+#include <Parser.h>
+#include <Tokenizer.h>
 
 class CView : public CFrameView<CView, IMainFrame> {
 public:
-	CView(IMainFrame* frame, std::unique_ptr<Dynamix::Statements> ast);
+	explicit CView(IMainFrame* frame);
 
 	DECLARE_WND_CLASS(NULL)
 
 	BOOL PreTranslateMessage(MSG* pMsg);
+	bool Parse(PCWSTR file);
 
 	virtual void OnFinalMessage(HWND /*hWnd*/);
 
@@ -36,4 +39,6 @@ private:
 private:
 	CTreeViewCtrl m_Tree;
 	std::unique_ptr<Dynamix::Statements> m_Code;
+	Dynamix::Tokenizer m_Tokenizer;
+	Dynamix::Parser m_Parser;
 };

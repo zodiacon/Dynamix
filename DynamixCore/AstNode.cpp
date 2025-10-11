@@ -303,6 +303,16 @@ std::string ReturnStatement::ToString() const {
 BreakOrContinueStatement::BreakOrContinueStatement(TokenType type) : m_Type(type) {
 }
 
+std::string BreakOrContinueStatement::ToString() const {
+	switch (BreakType()) {
+		case TokenType::Break: return "break";
+		case TokenType::Continue: return "continue";
+		case TokenType::BreakOut: return "breakout";
+	}
+	assert(false);
+	return "";
+}
+
 Value BreakOrContinueStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitBreakContinue(this);
 }

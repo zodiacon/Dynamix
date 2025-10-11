@@ -82,14 +82,12 @@ LRESULT CMainFrame::OnFileOpen(WORD, WORD, HWND, BOOL&) {
 	CSimpleFileDialog dlg(TRUE, L"dmx", nullptr, OFN_EXPLORER | OFN_ENABLESIZING | OFN_FILEMUSTEXIST, 
 		L"Dynamix Files (*.dmx)\0*.dmx\0All Files\0*.*\0", m_hWnd);
 	if (IDOK == dlg.DoModal()) {
-		Tokenizer t;
-		Parser parser(t);
-		auto ast = parser.ParseFile((PCSTR)CStringA(dlg.m_szFileName));
-		if (!ast) {
+		auto pView = new CView(this);
+		if (!pView->Parse(dlg.m_szFileName)) {
 			AtlMessageBox(m_hWnd, L"Error parsing file", IDR_MAINFRAME, MB_ICONERROR);
+			delete pView;
 			return 0;
 		}
-		auto pView = new CView(this, std::move(ast));
 		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
 		m_view.AddPage(pView->m_hWnd, dlg.m_szFileTitle);
 

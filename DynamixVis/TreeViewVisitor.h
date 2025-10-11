@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Visitor.h>
+#include <Tokenizer.h>
 
 namespace Dynamix {
 	class LiteralExpression;
@@ -37,7 +38,7 @@ namespace Dynamix {
 
 	class TreeViewVisitor : public Visitor {
 	public:
-		TreeViewVisitor(HWND hTreeView);
+		TreeViewVisitor(HWND hTreeView, Dynamix::Tokenizer& t);
 		void Visit(AstNode* node, HTREEITEM hRoot);
 
 	private:
@@ -72,6 +73,7 @@ namespace Dynamix {
 		Value VisitUse(UseStatement const* use) override;
 
 		CTreeViewCtrl m_Tree;
-		HTREEITEM m_hCurrent;
+		HTREEITEM m_hCurrent{};
+		Tokenizer& m_Tokenizer;
 	};
 }
