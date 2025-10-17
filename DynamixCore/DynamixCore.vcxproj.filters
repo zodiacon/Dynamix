@@ -135,6 +135,15 @@
     <ClInclude Include="DebugHelper.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="IntegerType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="RealType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="BooleanType.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
@@ -206,9 +215,6 @@
     <ClCompile Include="ConsoleType.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
-    <ClCompile Include="Enumerable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ComplexType.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
@@ -229,6 +235,18 @@
     </ClCompile>
     <ClCompile Include="DebugHelper.cpp">
       <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="IntegerType.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="Enumerable.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="RealType.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="BooleanType.cpp">
+      <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

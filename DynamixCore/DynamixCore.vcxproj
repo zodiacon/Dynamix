@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClInclude Include="ArrayType.h" />
     <ClInclude Include="AstNode.h" />
+    <ClInclude Include="BooleanType.h" />
     <ClInclude Include="ComplexType.h" />
     <ClInclude Include="COMType.h" />
     <ClInclude Include="ConsoleType.h" />
@@ -148,11 +149,13 @@
     <ClInclude Include="DebugType.h" />
     <ClInclude Include="EnumClassBitwise.h" />
     <ClInclude Include="EnumType.h" />
+    <ClInclude Include="IntegerType.h" />
     <ClInclude Include="Interpreter.h" />
     <ClInclude Include="MathType.h" />
     <ClInclude Include="NoCopyMove.h" />
     <ClInclude Include="ObjectPtr.h" />
     <ClInclude Include="RangeType.h" />
+    <ClInclude Include="RealType.h" />
     <ClInclude Include="Runtime.h" />
     <ClInclude Include="RuntimeObject.h" />
     <ClInclude Include="ObjectType.h" />
@@ -176,6 +179,7 @@
   <ItemGroup>
     <ClCompile Include="ArrayType.cpp" />
     <ClCompile Include="AstNode.cpp" />
+    <ClCompile Include="BooleanType.cpp" />
     <ClCompile Include="ComplexType.cpp" />
     <ClCompile Include="COMType.cpp" />
     <ClCompile Include="ConsoleType.cpp" />
@@ -183,9 +187,11 @@
     <ClCompile Include="DebugType.cpp" />
     <ClCompile Include="Enumerable.cpp" />
     <ClCompile Include="EnumType.cpp" />
+    <ClCompile Include="IntegerType.cpp" />
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="MathType.cpp" />
     <ClCompile Include="RangeType.cpp" />
+    <ClCompile Include="RealType.cpp" />
     <ClCompile Include="Runtime.cpp" />
     <ClCompile Include="RuntimeObject.cpp" />
     <ClCompile Include="ObjectType.cpp" />

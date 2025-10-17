@@ -62,11 +62,18 @@ Value RuntimeObject::Invoke(Interpreter& intr, std::string const& name, std::vec
 }
 
 Value RuntimeObject::InvokeOperator(Interpreter& intr, TokenType op, Value const& rhs) const {
+	if (rhs.IsObject()) {
+		switch (op) {
+			// compare addresses
+			case TokenType::Equal: return this == rhs.AsObject();
+			case TokenType::NotEqual: return this != rhs.AsObject();
+		}
+	}
 	throw RuntimeError(RuntimeErrorType::OperatorNotImplemented,
 		format("Operator {} not implemented on type '{}'", Token::TypeToString(op), Type()->Name()));
 }
 
-Value Dynamix::RuntimeObject::InvokeOperator(Interpreter& intr, TokenType op) const {
+Value RuntimeObject::InvokeOperator(Interpreter& intr, TokenType op) const {
 	throw RuntimeError(RuntimeErrorType::OperatorNotImplemented,
 		format("Operator {} not implemented on type '{}'", Token::TypeToString(op), Type()->Name()));
 }

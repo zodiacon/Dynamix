@@ -50,11 +50,16 @@ void RuntimeType::DumpStats(Interpreter& intr) {
 	}
 }
 
+Value RuntimeType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {
+	return Value();
+}
+
 RuntimeType::RuntimeType() : StaticObjectType("Runtime") {
 	BEGIN_METHODS(RuntimeType)
 		METHOD_STATIC(Sleep, 1, RuntimeType::Sleep(args[0].ToInteger()); return Value();),
 		METHOD_STATIC(Eval, 1, return RuntimeType::Eval(intr, args);),
 		METHOD_STATIC(Ticks, 0, return RuntimeType::Ticks();),
 		METHOD_STATIC(DumpStats, 0, RuntimeType::DumpStats(intr); return Value();),
+		METHOD_STATIC(CreateObject, -1, return RuntimeType::CreateObject(intr, args);),
 		END_METHODS()
 }

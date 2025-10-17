@@ -7,6 +7,9 @@
 #include "Runtime.h"
 #include "ObjectType.h"
 #include "StringType.h"
+#include "IntegerType.h"
+#include "RealType.h"
+#include "BooleanType.h"
 
 using namespace Dynamix;
 
@@ -399,9 +402,9 @@ ObjectType const* Value::GetObjectType() const {
 	switch (m_Type) {
 		case ValueType::Object: return oValue->Type();
 		case ValueType::String: return StringTypeA::Get();
-		//case ValueType::Integer: return &IntegerType::Get();
-		//case ValueType::Real: return &RealType::Get();
-		//case ValueType::Boolean: return &BooleanType::Get();
+		case ValueType::Integer: return IntegerType::Get();
+		case ValueType::Real: return RealType::Get();
+		case ValueType::Boolean: return BooleanType::Get();
 		//case ValueType::AstNode: return &FunctionType::Get();
 	}
 	return nullptr;

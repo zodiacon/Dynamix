@@ -72,7 +72,7 @@ Value const& LiteralExpression::Literal() const noexcept {
 	return m_Value;
 }
 
-NameExpression::NameExpression(string name, string ns) : m_Name(move(name)), m_NameSpace(move(ns)) {
+NameExpression::NameExpression(string name) : m_Name(move(name)) {
 }
 
 Value NameExpression::Accept(Visitor* visitor) const {

@@ -275,12 +275,20 @@ Value TreeViewVisitor::VisitAssignField(AssignFieldExpression const* expr) {
 }
 
 Value TreeViewVisitor::VisitForEach(ForEachStatement const* stmt) {
-    m_Tree.InsertItem(Helpers::AstNodeTypeToString(stmt->NodeType()), m_hCurrent, TVI_LAST);
+    auto h = m_hCurrent;
+    m_hCurrent = m_Tree.InsertItem(L"For Each " + CString(stmt->Name().c_str()), m_hCurrent, TVI_LAST);
+    stmt->Collection()->Accept(this);
+    stmt->Body()->Accept(this);
+    m_hCurrent = h;
     return Value();
 }
 
 Value TreeViewVisitor::VisitRange(RangeExpression const* expr) {
-    m_Tree.InsertItem(Helpers::AstNodeTypeToString(expr->NodeType()), m_hCurrent, TVI_LAST);
+    auto h = m_hCurrent;
+    m_hCurrent = m_Tree.InsertItem(CString(L"Range (start, end)") + (expr->EndInclusive() ? L"[End Inclusive]" : L""), m_hCurrent, TVI_LAST);
+    expr->Start()->Accept(this);
+    expr->End()->Accept(this);
+    m_hCurrent = h;
     return Value();
 }
 
@@ -290,6 +298,6 @@ Value TreeViewVisitor::VisitMatch(MatchExpression const* expr) {
 }
 
 Value TreeViewVisitor::VisitUse(UseStatement const* use) {
-    m_Tree.InsertItem(Helpers::AstNodeTypeToString(use->NodeType()), m_hCurrent, TVI_LAST);
+    m_Tree.InsertItem(L"Use " + CString(use->Name().c_str()), m_hCurrent, TVI_LAST);
     return Value();
 }

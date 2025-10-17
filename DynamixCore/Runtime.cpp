@@ -14,6 +14,9 @@
 #include "RuntimeType.h"
 #include "COMType.h"
 #include "DebugType.h"
+#include "IntegerType.h"
+#include "BooleanType.h"
+#include "RealType.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -167,7 +170,10 @@ void Runtime::InitStdLibrary() {
 	ADD_TYPE(Complex);
 	ADD_TYPE(Console);
 	ADD_TYPE(Runtime);
-	ADD_TYPE(COM)
-	ADD_TYPE(Debug)
+	ADD_TYPE(COM);
+	ADD_TYPE(Debug);
+	ADD_TYPE(Integer);
+	ADD_TYPE(Real);
+	ADD_TYPE(Boolean);
 }
 

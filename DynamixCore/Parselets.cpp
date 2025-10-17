@@ -33,17 +33,16 @@ int PostfixOperatorParslet::Precedence() const noexcept {
 }
 
 unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
-	string ns;
-	//while (parser.Peek().Type == TokenType::ScopeRes) {
-	//	ns += "::" + parser.Next().Lexeme;
+	string name = token.Lexeme;
+	//while (parser.Peek().Type == TokenType::DoubleColon) {
+	//	name += string("::") + parser.Next().Lexeme;
 	//	if (parser.Peek().Type != TokenType::Identifier) {
 	//		parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
 	//		break;
 	//	}
 	//}
-	//
-	string name = token.Lexeme;
-	return make_unique<NameExpression>(move(name), move(ns));
+	
+	return make_unique<NameExpression>(move(name));
 }
 
 unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {

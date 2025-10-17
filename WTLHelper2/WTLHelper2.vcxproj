@@ -151,6 +151,7 @@
     <ClInclude Include="ToolbarHelper.h" />
     <ClInclude Include="TreeListView.h" />
     <ClInclude Include="TreeViewHelper.h" />
+    <ClInclude Include="VirtualListView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClipboardHelper.cpp" />

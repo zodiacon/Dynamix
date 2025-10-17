@@ -92,7 +92,7 @@ Value Interpreter::VisitName(NameExpression const* expr) {
 	auto e = CurrentScope().FindElementWithUse(expr->Name());
 	if (e) {
 		assert(e->VarValue.IsObjectType());
-		GetMemberExpression gme(make_unique<NameExpression>(e->VarValue.AsObject()->Type()->Name(), ""), expr->Name(), TokenType::DoubleColon);
+		GetMemberExpression gme(make_unique<NameExpression>(e->VarValue.AsObject()->Type()->Name()), expr->Name(), TokenType::DoubleColon);
 		return VisitGetMember(&gme);
 	}
 	throw RuntimeError(RuntimeErrorType::UnknownIdentifier, format("Unknown identifier: '{}'", expr->Name()), expr->Location());

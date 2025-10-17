@@ -6,6 +6,7 @@
 #include "Interpreter.h"
 #include "Scope.h"
 #include "TypeHelper.h"
+#include "ArrayType.h"
 
 using namespace Dynamix;
 
@@ -153,12 +154,20 @@ ObjectType::ObjectType(std::string name, ObjectType* base)
 
 	BEGIN_METHODS(ObjectType)
 		METHOD(ObjectCount, 0, return Value((Int)inst->GetObjectCount());),
-	END_METHODS()
+		METHOD(Fields, 0, return inst->GetFields();),
+		END_METHODS()
 }
 
 ObjectType::~ObjectType() noexcept {
 	if(RefCount() == 0)
 		Runtime::Get()->RevokeType(this);
+}
+
+Value ObjectType::GetFields() const {
+	std::vector<Value> fields;
+	for (auto& [name, fi] : m_Fields) {
+	}
+	return Value();
 }
 
 RuntimeObject* ObjectType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {

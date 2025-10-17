@@ -375,7 +375,7 @@ namespace Dynamix {
 
 	class NameExpression : public Expression {
 	public:
-		NameExpression(std::string name, std::string ns);
+		explicit NameExpression(std::string name);
 		Value Accept(Visitor* visitor) const override;
 		std::string const& Name() const noexcept;
 		std::string const& NameSpace() const noexcept;
@@ -385,7 +385,7 @@ namespace Dynamix {
 		}
 
 	private:
-		std::string m_Name, m_NameSpace;
+		std::string m_Name;
 	};
 
 	class UnaryExpression : public Expression {

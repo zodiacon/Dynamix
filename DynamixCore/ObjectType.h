@@ -109,6 +109,8 @@ namespace Dynamix {
 		Value& GetStaticField(std::string const& name);
 		void SetStaticField(std::string const& name, Value value);
 
+		Value GetFields() const;
+
 		template<typename T>
 		static T* GetInstance(RuntimeObject* obj) {
 			return reinterpret_cast<T*>(obj);
@@ -129,7 +131,7 @@ namespace Dynamix {
 		void ObjectCreated(RuntimeObject* obj);
 		void ObjectDestroyed(RuntimeObject* obj);
 
-		mutable unsigned m_ObjectCount{ 0 };
+		mutable std::atomic<unsigned> m_ObjectCount{ 0 };
 		std::map<std::string, std::unique_ptr<FieldInfo>> m_Fields;
 		std::map<std::string, std::unique_ptr<MethodInfo>> m_Methods;
 		std::map<std::string, std::unique_ptr<MethodInfo>> m_Constructors;

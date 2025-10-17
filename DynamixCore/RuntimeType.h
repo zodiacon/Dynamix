@@ -14,6 +14,7 @@ namespace Dynamix {
 		static Value Eval(Interpreter& intr, std::vector<Value> const& args);
 		static Value Ticks();
 		static void DumpStats(Interpreter& intr);
+		static Value CreateObject(Interpreter& intr, std::vector<Value> const& args);
 
 	private:
 		RuntimeType();

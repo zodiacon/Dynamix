@@ -72,12 +72,12 @@ namespace Dynamix {
 
 	protected:
 		std::map<std::string, Value> m_FieldValues;
-		unsigned RefCount() const noexcept {
+		int RefCount() const noexcept {
 			return m_RefCount;
 		}
 
 	private:
-		mutable int m_RefCount{ 1 };
+		mutable std::atomic<int> m_RefCount{ 1 };
 		ObjectType* m_Type;
 	};
 
