@@ -83,12 +83,12 @@ LRESULT CMainFrame::OnFileOpen(WORD, WORD, HWND, BOOL&) {
 		L"Dynamix Files (*.dmx)\0*.dmx\0All Files\0*.*\0", m_hWnd);
 	if (IDOK == dlg.DoModal()) {
 		auto pView = new CView(this);
-		if (!pView->Parse(dlg.m_szFileName)) {
-			AtlMessageBox(m_hWnd, L"Error parsing file", IDR_MAINFRAME, MB_ICONERROR);
-			delete pView;
+		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
+		if(!pView->Parse(dlg.m_szFileName)) {
+			AtlMessageBox(m_hWnd, L"Error reading file", IDR_MAINFRAME, MB_ICONERROR);
+			pView->DestroyWindow();
 			return 0;
 		}
-		pView->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
 		m_view.AddPage(pView->m_hWnd, dlg.m_szFileTitle);
 
 	}
@@ -117,6 +117,10 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CAboutDlg dlg;
 	dlg.DoModal();
+	return 0;
+}
+
+LRESULT CMainFrame::OnParseText(WORD, WORD, HWND, BOOL&) {
 	return 0;
 }
 

@@ -19,8 +19,6 @@ public:
 	BOOL PreTranslateMessage(MSG* pMsg);
 	bool Parse(PCWSTR file);
 
-	virtual void OnFinalMessage(HWND /*hWnd*/);
-
 	BEGIN_MSG_MAP(CView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(BaseFrame)
@@ -28,6 +26,8 @@ public:
 
 private:
 	void BuildTree();
+	bool LoadFile();
+	void DisplayErrors();
 
 	// Handler prototypes (uncomment arguments if needed):
 	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -38,7 +38,10 @@ private:
 
 private:
 	CTreeViewCtrl m_Tree;
+	CSplitterWindow m_Splitter;
+	CEdit m_Edit;
 	std::unique_ptr<Dynamix::Statements> m_Code;
 	Dynamix::Tokenizer m_Tokenizer;
 	Dynamix::Parser m_Parser;
+	CString m_FileName;
 };
