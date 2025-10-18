@@ -33,24 +33,22 @@ int PostfixOperatorParslet::Precedence() const noexcept {
 }
 
 unique_ptr<Expression> NameParslet::Parse(Parser& parser, Token const& token) {
-	string name = token.Lexeme;
-	//while (parser.Peek().Type == TokenType::DoubleColon) {
-	//	name += string("::") + parser.Next().Lexeme;
-	//	if (parser.Peek().Type != TokenType::Identifier) {
-	//		parser.AddError(ParseError(ParseErrorType::IdentifierExpected, parser.Peek(), "Identifier expected after ::"));
-	//		break;
-	//	}
-	//}
-	
-	return make_unique<NameExpression>(move(name));
+	auto node = make_unique<NameExpression>(token.Lexeme);
+	node->SetLocation(token.Location);
+	return node;
 }
 
 unique_ptr<Expression> PrefixOperatorParslet::Parse(Parser& parser, Token const& token) {
-	return make_unique<UnaryExpression>(token.Type, parser.ParseExpression(m_Precedence));
+	auto loc = token.Location;
+	auto node = make_unique<UnaryExpression>(token.Type, parser.ParseExpression(m_Precedence));
+	node->SetLocation(move(loc));
+	return node;
 }
 
 unique_ptr<Expression> LiteralParslet::Parse(Parser& parser, Token const& token) {
-	return make_unique<LiteralExpression>(Value::FromToken(token));
+	auto node = make_unique<LiteralExpression>(Value::FromToken(token));
+	node->SetLocation(token.Location);
+	return node;
 }
 
 unique_ptr<Expression> BinaryOperatorParslet::Parse(Parser& parser, unique_ptr<Expression> left, Token const& token) {
@@ -215,13 +213,13 @@ unique_ptr<Expression> NewOperatorParslet::Parse(Parser& parser, Token const& to
 			parser.Match(TokenType::Assign, true, true);
 			auto init = parser.ParseExpression();
 			if (!init) {
-				parser.AddError(ParseError(ParseErrorType::MissingInitExpression, parser.Location(), "Missing init expression"));
+				parser.AddError(ParseError(ParseErrorType::MissingInitExpression, parser.Peek().Location, "Missing init expression"));
 				parser.SkipTo(TokenType::CloseBrace);
 				return nullptr;
 			}
 			inits.push_back(FieldInitializer{ move(field), move(init) });
 			if (!parser.Match(TokenType::Comma) && parser.Peek().Type != TokenType::CloseBrace) {
-				parser.AddError(ParseError(ParseErrorType::Expected, parser.Location(), "Expected: ',' or '}'"));
+				parser.AddError(ParseError(ParseErrorType::Expected, parser.Peek().Location, "Expected: ',' or '}'"));
 			}
 		}
 		parser.Next();

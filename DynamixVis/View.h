@@ -20,7 +20,10 @@ public:
 	bool Parse(PCWSTR file);
 
 	BEGIN_MSG_MAP(CView)
+		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		COMMAND_ID_HANDLER(ID_DYNAMIX_PARSE, OnParse)
+		COMMAND_ID_HANDLER(ID_DYNAMIX_SYNC, OnSync)
 		CHAIN_MSG_MAP(BaseFrame)
 	END_MSG_MAP()
 
@@ -35,6 +38,9 @@ private:
 	//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnParse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnSync(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	CTreeViewCtrl m_Tree;

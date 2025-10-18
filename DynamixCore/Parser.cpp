@@ -215,10 +215,6 @@ Token const& Parser::Peek() const {
 	return m_Tokenizer.Peek();
 }
 
-CodeLocation Parser::Location() const noexcept {
-	return CodeLocation{ m_Tokenizer.Line(), m_Tokenizer.Column(), m_Tokenizer.FileName() };
-}
-
 bool Parser::SkipTo(TokenType type) {
 	auto next = Next();
 	while (next.Type != type) {
@@ -263,6 +259,7 @@ unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 		return nullptr;
 
 	if (auto it = m_PrefixParslets.find(token.Type); it != m_PrefixParslets.end()) {
+		auto loc = Peek().Location;
 		auto left = it->second->Parse(*this, token);
 		while (precedence < GetPrecedence()) {
 			auto token = Next();
@@ -270,6 +267,7 @@ unique_ptr<Expression> Parser::ParseExpression(int precedence) {
 				break;
 			if (auto it = m_InfixParslets.find(token.Type); it != m_InfixParslets.end()) {
 				left = it->second->Parse(*this, move(left), token);
+				left->SetLocation(move(loc));
 			}
 		}
 		return left;
@@ -307,11 +305,14 @@ bool Parser::AddParslet(TokenType type, unique_ptr<PrefixParslet> parslet) {
 }
 
 unique_ptr<Statement> Parser::ParseVarValStatement(bool constant, SymbolFlags extraFlags) {
+	auto loc = Peek().Location;
 	auto next = Next();		// eat var/val
 
 	auto stmts = make_unique<Statements>();
+	stmts->SetLocation(loc);
 	do {
 		auto name = Next();		// variable name
+		loc = name.Location;
 		if (name.Type != TokenType::Identifier)
 			AddError(ParseError(ParseErrorType::IdentifierExpected, name, "Identifier expected"));
 
@@ -338,7 +339,9 @@ unique_ptr<Statement> Parser::ParseVarValStatement(bool constant, SymbolFlags ex
 			sym.Name = name.Lexeme;
 			sym.Type = SymbolType::Element;
 			sym.Flags = extraFlags | (constant ? SymbolFlags::Const : SymbolFlags::None);
-			stmts->Add(make_unique<VarValStatement>(name.Lexeme, sym.Flags, move(init)));
+			auto stmt = make_unique<VarValStatement>(name.Lexeme, sym.Flags, move(init));
+			stmt->SetLocation(move(loc));
+			stmts->Add(move(stmt));
 			AddSymbol(sym);
 		}
 		if (Match(TokenType::Semicolon))
@@ -509,6 +512,7 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool ne
 
 unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound) {
 	auto peek = Peek();
+	auto loc = peek.Location;
 	if (peek.Type == TokenType::Error) {
 		AddError(ParseError{ ParseErrorType::Syntax, peek });
 		return nullptr;
@@ -516,46 +520,67 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 	if (peek.Type == TokenType::End)
 		return nullptr;
 
+	std::unique_ptr<Statement> stmt;
 	switch (peek.Type) {
-		case TokenType::Use: return ParseUseStatement();
-		case TokenType::Var: return ParseVarValStatement(false);
-		case TokenType::Val: return ParseVarValStatement(true);
+		case TokenType::Use: 
+			stmt = ParseUseStatement();
+			break;
+
+		case TokenType::Var: 
+			stmt = ParseVarValStatement(false);
+			break;
+
+		case TokenType::Val: 
+			stmt = ParseVarValStatement(true);
+			break;
+
 		case TokenType::Repeat:
 			if (!topLevel)
-				return ParseRepeatStatement();
+				stmt = ParseRepeatStatement();
 			break;
 		case TokenType::ForEach:
 			if (!topLevel)
-				return ParseForEachStatement();
+				stmt = ParseForEachStatement();
 			break;
 
 		case TokenType::While:
 			if (!topLevel)
-				return ParseWhileStatement();
+				stmt = ParseWhileStatement();
 			break;
 
-		case TokenType::Fn: return ParseFunctionDeclaration();
+		case TokenType::Fn: 
+			stmt = ParseFunctionDeclaration();
+			break;
+
 		case TokenType::Return:
 			if (!topLevel)
-				return ParseReturnStatement();
+				stmt = ParseReturnStatement();
 			break;
 		case TokenType::Break:
 		case TokenType::Continue:
 		case TokenType::BreakOut:
 			if (!topLevel)
-				return ParseBreakContinueStatement();
+				stmt = ParseBreakContinueStatement();
 			break;
 
-		case TokenType::Class: return ParseClassDeclaration();
+		case TokenType::Class: 
+			stmt = ParseClassDeclaration();
+			break;
+
 		case TokenType::For:
 			if (!topLevel)
-				return ParseForStatement();
+				stmt = ParseForStatement();
 			break;
-		case TokenType::Enum: return ParseEnumDeclaration();
+
+		case TokenType::Enum: 
+			stmt = ParseEnumDeclaration();
+			break;
+
 		case TokenType::OpenBrace:
 			if (!topLevel)
-				return ParseBlock();
+				stmt = ParseBlock();
 			break;
+
 		case TokenType::Semicolon:
 			if (!topLevel) {
 				Next();		// eat semicolon empty statement
@@ -571,6 +596,10 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 				}
 			}
 			break;
+	}
+	if (stmt) {
+		stmt->SetLocation(std::move(loc));
+		return stmt;
 	}
 	if (errorIfNotFound)
 		AddError(ParseError(ParseErrorType::InvalidStatement, peek));
@@ -741,8 +770,10 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 			case TokenType::New:	// ctor
 			case TokenType::Fn:
 			{
+				auto loc = Peek().Location;
 				auto method = ParseFunctionDeclaration(true, extraFlags);
 				if (method) {
+					method->SetLocation(move(loc));
 					methods.push_back(move(method));
 				}
 				extraFlags = SymbolFlags::None;
@@ -754,22 +785,31 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 				[[fallthrough]];
 			case TokenType::Var:
 			{
+				auto loc = Peek().Location;
 				auto stmt = ParseVarValStatement(val, extraFlags);
-				fields.push_back(move(stmt));
+				if (stmt) {
+					stmt->SetLocation(move(loc));
+					fields.push_back(move(stmt));
+				}
 				extraFlags = SymbolFlags::None;
 				break;
 			}
 			case TokenType::Class:
+			{
+				auto loc = Peek().Location;
 				Next();		// eat class keyword
 				if (Peek().Type == TokenType::Identifier) {
 					auto nested = ParseClassDeclaration(decl.get());
-					if (nested)
+					if (nested) {
+						nested->SetLocation(move(loc));
 						types.push_back(move(nested));
+					}
 				}
 				else {
 					extraFlags = SymbolFlags::Static;
 				}
 				break;
+			}
 
 			default:
 				AddError(ParseError(ParseErrorType::UnexpectedToken, Peek().Location, format("Unexpected token: '{}'", Peek().Lexeme)));

@@ -16,13 +16,16 @@ void TreeViewVisitor::Visit(AstNode* node, HTREEITEM hRoot) {
 }
 
 Value TreeViewVisitor::VisitLiteral(LiteralExpression const* expr) {
-    m_Tree.InsertItem(L"Literal: " + CString(expr->Literal().ToString().c_str()), m_hCurrent, TVI_LAST);
+    auto h = m_Tree.InsertItem(LocationAsString(expr) + L"Literal: " + CString(expr->Literal().ToString().c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(h, reinterpret_cast<DWORD_PTR>(expr));
     return Value();
 }
 
 Value TreeViewVisitor::VisitBinary(BinaryExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(CString(std::format("Binary Operator: {}", m_Tokenizer.TokenTypeToString(expr->Operator())).c_str()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + CString(std::format("Binary Operator: {}", m_Tokenizer.TokenTypeToString(expr->Operator())).c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
+
     expr->Left()->Accept(this);
     expr->Right()->Accept(this);
     m_hCurrent = h;
@@ -32,20 +35,23 @@ Value TreeViewVisitor::VisitBinary(BinaryExpression const* expr) {
 
 Value TreeViewVisitor::VisitUnary(UnaryExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(CString(std::format("Unary Operator: {}", m_Tokenizer.TokenTypeToString(expr->Operator())).c_str()), m_hCurrent, TVI_LAST); 
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + CString(std::format("Unary Operator: {}", m_Tokenizer.TokenTypeToString(expr->Operator())).c_str()), m_hCurrent, TVI_LAST); 
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Arg()->Accept(this);
     m_hCurrent = h;
     return Value();
 }
 
 Value TreeViewVisitor::VisitName(NameExpression const* expr) {
-    m_Tree.InsertItem(CString(std::format("Name: {}", expr->Name()).c_str()) , m_hCurrent, TVI_LAST);
+    auto h = m_Tree.InsertItem(LocationAsString(expr) + CString(std::format("Name: {}", expr->Name()).c_str()) , m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(h, reinterpret_cast<DWORD_PTR>(expr));
     return Value();
 }
 
 Value TreeViewVisitor::VisitVar(VarValStatement const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem((expr->IsConst() ? L"val " : L"var ") + CString(expr->Name().c_str()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + (expr->IsConst() ? L"val " : L"var ") + CString(expr->Name().c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     if(expr->Init())
         expr->Init()->Accept(this);
     m_hCurrent = h;
@@ -54,7 +60,8 @@ Value TreeViewVisitor::VisitVar(VarValStatement const* expr) {
 
 Value TreeViewVisitor::VisitAssign(AssignExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"Assign: " + CString(expr->Lhs().c_str()) + L" " + CString(m_Tokenizer.TokenTypeToString(expr->AssignType()).data()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"Assign: " + CString(expr->Lhs().c_str()) + L" " + CString(m_Tokenizer.TokenTypeToString(expr->AssignType()).data()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Value()->Accept(this);
     m_hCurrent = h;
     return Value();
@@ -62,7 +69,8 @@ Value TreeViewVisitor::VisitAssign(AssignExpression const* expr) {
 
 Value TreeViewVisitor::VisitInvokeFunction(InvokeFunctionExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"Invoke Function (callable)", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"Invoke Function (callable)", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Callable()->Accept(this);
     if (!expr->Arguments().empty()) {
         m_hCurrent = m_Tree.InsertItem(L"Arguments", m_hCurrent, TVI_LAST);
@@ -75,7 +83,8 @@ Value TreeViewVisitor::VisitInvokeFunction(InvokeFunctionExpression const* expr)
 
 Value TreeViewVisitor::VisitRepeat(RepeatStatement const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"Repeat (times, body)", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"Repeat (times, body)", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Times()->Accept(this);
     expr->Body()->Accept(this);
     m_hCurrent = h;
@@ -84,7 +93,8 @@ Value TreeViewVisitor::VisitRepeat(RepeatStatement const* expr) {
 
 Value TreeViewVisitor::VisitWhile(WhileStatement const* stmt) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"While (expr, body)", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(stmt) + L"While (expr, body)", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(stmt));
     stmt->Condition()->Accept(this);
     stmt->Body()->Accept(this);
     m_hCurrent = h;
@@ -93,7 +103,9 @@ Value TreeViewVisitor::VisitWhile(WhileStatement const* stmt) {
 
 Value TreeViewVisitor::VisitIfThenElse(IfThenElseExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"If/Then/Else", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"If/Then/Else", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
+
     expr->Condition()->Accept(this);
     auto hRoot = m_hCurrent;
     m_hCurrent = m_Tree.InsertItem(L"Then", m_hCurrent, TVI_LAST);
@@ -108,7 +120,9 @@ Value TreeViewVisitor::VisitIfThenElse(IfThenElseExpression const* expr) {
 
 Value TreeViewVisitor::VisitFunctionDeclaration(FunctionDeclaration const* decl) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(CString(std::format("Function Declaration: {}", decl->Name()).c_str()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(decl) + CString(std::format("Function Declaration: {}", decl->Name()).c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(decl));
+
     decl->Body()->Accept(this);
     m_hCurrent = h;
     return Value();
@@ -116,20 +130,23 @@ Value TreeViewVisitor::VisitFunctionDeclaration(FunctionDeclaration const* decl)
 
 Value TreeViewVisitor::VisitReturn(ReturnStatement const* decl) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(Helpers::AstNodeTypeToString(decl->NodeType()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(decl) + L"Return", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(decl));
     decl->ReturnValue()->Accept(this);
     m_hCurrent = h;
     return Value();
 }
 
 Value TreeViewVisitor::VisitBreakContinue(BreakOrContinueStatement const* stmt) {
-    m_Tree.InsertItem(CString(stmt->ToString().c_str()), m_hCurrent, TVI_LAST);
+    auto h = m_Tree.InsertItem(LocationAsString(stmt) + CString(stmt->ToString().c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(h, reinterpret_cast<DWORD_PTR>(stmt));
     return Value();
 }
 
 Value TreeViewVisitor::VisitFor(ForStatement const* stmt) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(Helpers::AstNodeTypeToString(stmt->NodeType()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(stmt) + L"For", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(stmt));
     if (stmt->Init())
         stmt->Init()->Accept(this);
     else
@@ -156,13 +173,14 @@ Value TreeViewVisitor::VisitStatements(Statements const* stmts) {
 
 Value TreeViewVisitor::VisitAnonymousFunction(AnonymousFunctionExpression const* func) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(Helpers::AstNodeTypeToString(func->NodeType()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(func) + Helpers::AstNodeTypeToString(func->NodeType()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(func));
     if (!func->Parameters().empty()) {
         CString params;
         for (auto& param : func->Parameters()) {
             params += CString(param.Name.c_str()) + L", ";
         }
-        m_Tree.InsertItem(L"Parameters: " + params, m_hCurrent, TVI_LAST);
+        m_Tree.InsertItem(L"Parameters: " + params.Left(params.GetLength() - 2), m_hCurrent, TVI_LAST);
     }
     func->Body()->Accept(this);
     m_hCurrent = h;
@@ -171,7 +189,8 @@ Value TreeViewVisitor::VisitAnonymousFunction(AnonymousFunctionExpression const*
 
 Value TreeViewVisitor::VisitEnumDeclaration(EnumDeclaration const* decl) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(CString(("Enum " + decl->Name()).c_str()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(decl) + CString(("Enum " + decl->Name()).c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(decl));
     for (auto& [name, value] : decl->Values()) {
         m_Tree.InsertItem(CString(std::format("{} = {}", name, value).c_str()), m_hCurrent, TVI_LAST);
     }
@@ -185,7 +204,8 @@ Value TreeViewVisitor::VisitExpressionStatement(ExpressionStatement const* expr)
 
 Value TreeViewVisitor::VisitArrayExpression(ArrayExpression const* expr) {  
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"Array", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"Array", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     for (auto& item : expr->Items())
         item->Accept(this);
     m_hCurrent = h;
@@ -194,7 +214,8 @@ Value TreeViewVisitor::VisitArrayExpression(ArrayExpression const* expr) {
 
 Value TreeViewVisitor::VisitGetMember(GetMemberExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(CString(("Get Member: " + expr->Member()).c_str()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + CString(("Get Member: " + expr->Member()).c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Left()->Accept(this);
     m_hCurrent = h;
     return Value();
@@ -202,7 +223,8 @@ Value TreeViewVisitor::VisitGetMember(GetMemberExpression const* expr) {
 
 Value TreeViewVisitor::VisitAccessArray(AccessArrayExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"Access Array", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"Access Array", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Left()->Accept(this);
     expr->Index()->Accept(this);
     m_hCurrent = h;
@@ -211,7 +233,7 @@ Value TreeViewVisitor::VisitAccessArray(AccessArrayExpression const* expr) {
 
 Value TreeViewVisitor::VisitAssignArrayIndex(AssignArrayIndexExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"Assign Array Index: " + CString(m_Tokenizer.TokenTypeToString(expr->AssignType()).data()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"Assign Array Index: " + CString(m_Tokenizer.TokenTypeToString(expr->AssignType()).data()), m_hCurrent, TVI_LAST);
     expr->ArrayAccess()->Accept(this);
     expr->Value()->Accept(this);
     m_hCurrent = h;
@@ -223,7 +245,8 @@ Value TreeViewVisitor::VisitClassDeclaration(ClassDeclaration const* decl) {
     CString title = L"Class: " + CString(decl->Name().c_str());
     if (!decl->BaseName().empty())
         title += L" Base: " + CString(decl->BaseName().c_str());
-    m_hCurrent = m_Tree.InsertItem(title, m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(decl) + title, m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(decl));
     auto hRoot = m_hCurrent;
     if (!decl->Fields().empty()) {
         m_hCurrent = m_Tree.InsertItem(L"Fields", hRoot, TVI_LAST);
@@ -247,7 +270,8 @@ Value TreeViewVisitor::VisitClassDeclaration(ClassDeclaration const* decl) {
 
 Value TreeViewVisitor::VisitNewObjectExpression(NewObjectExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(CString(("New Object: " + expr->ClassName()).c_str()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + CString(("New Object: " + expr->ClassName()).c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     auto hRoot = m_hCurrent;
     if (!expr->Arguments().empty()) {
         m_hCurrent = m_Tree.InsertItem(L"Arguments", m_hCurrent, TVI_LAST);
@@ -267,7 +291,8 @@ Value TreeViewVisitor::VisitNewObjectExpression(NewObjectExpression const* expr)
 
 Value TreeViewVisitor::VisitAssignField(AssignFieldExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"Assign Field (field, value)", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + L"Assign Field (field, value)", m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Lhs()->Accept(this);
     expr->Value()->Accept(this);
     m_hCurrent = h;
@@ -276,7 +301,8 @@ Value TreeViewVisitor::VisitAssignField(AssignFieldExpression const* expr) {
 
 Value TreeViewVisitor::VisitForEach(ForEachStatement const* stmt) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(L"For Each " + CString(stmt->Name().c_str()), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(stmt) + L"For Each " + CString(stmt->Name().c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(stmt));
     stmt->Collection()->Accept(this);
     stmt->Body()->Accept(this);
     m_hCurrent = h;
@@ -285,7 +311,8 @@ Value TreeViewVisitor::VisitForEach(ForEachStatement const* stmt) {
 
 Value TreeViewVisitor::VisitRange(RangeExpression const* expr) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(CString(L"Range (start, end)") + (expr->EndInclusive() ? L"[End Inclusive]" : L""), m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(expr) + CString(L"Range (start, end)") + (expr->EndInclusive() ? L"[End Inclusive]" : L""), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(expr));
     expr->Start()->Accept(this);
     expr->End()->Accept(this);
     m_hCurrent = h;
@@ -293,11 +320,18 @@ Value TreeViewVisitor::VisitRange(RangeExpression const* expr) {
 }
 
 Value TreeViewVisitor::VisitMatch(MatchExpression const* expr) {
-    m_Tree.InsertItem(Helpers::AstNodeTypeToString(expr->NodeType()), m_hCurrent, TVI_LAST);
+    m_Tree.InsertItem(LocationAsString(expr) + Helpers::AstNodeTypeToString(expr->NodeType()), m_hCurrent, TVI_LAST);
     return Value();
 }
 
 Value TreeViewVisitor::VisitUse(UseStatement const* use) {
-    m_Tree.InsertItem(L"Use " + CString(use->Name().c_str()), m_hCurrent, TVI_LAST);
+    auto h = m_Tree.InsertItem(LocationAsString(use) + L"Use " + CString(use->Name().c_str()), m_hCurrent, TVI_LAST);
+    m_Tree.SetItemData(h, reinterpret_cast<DWORD_PTR>(use));
     return Value();
+}
+
+CString TreeViewVisitor::LocationAsString(AstNode const* node) const {
+    CString loc;
+    loc.Format(L"(%d,%d); ", node->Location().Line, node->Location().Col);
+    return loc;
 }

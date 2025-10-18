@@ -74,11 +74,50 @@ LRESULT CView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOO
 	font.CreatePointFont(110, L"Consolas");
 	m_Edit.SetFont(font.Detach());
 	m_Edit.SetTabStops(10);
-	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_LINESATROOT | 0*TVS_HASLINES);
+	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | TVS_SHOWSELALWAYS | TVS_HASBUTTONS | TVS_HASLINES | TVS_FULLROWSELECT);
 	m_Tree.SetExtendedStyle(TVS_EX_DOUBLEBUFFER | TVS_EX_RICHTOOLTIP, 0);
 
 	m_Splitter.SetSplitterPanes(m_Edit, m_Tree);
 	m_Splitter.SetSplitterPosPct(50);
+
+	return 0;
+}
+
+LRESULT CView::OnParse(WORD, WORD, HWND, BOOL&) {
+	CString text;
+	m_Edit.GetWindowText(text);
+	m_Parser.Clear();
+	m_Code = m_Parser.Parse((PCSTR)CStringA((PCWSTR)text), true);
+	if (m_Code)
+		BuildTree();
+	else
+		DisplayErrors();
+	return 0;
+}
+
+LRESULT CView::OnSync(WORD, WORD, HWND, BOOL&) {
+	auto h = ::GetFocus();
+	ATLASSERT(h == m_Edit || h == m_Tree);
+	auto sel = m_Tree.GetSelectedItem();
+	DWORD_PTR data = 0;
+	while (sel) {
+		data = m_Tree.GetItemData(sel);
+		if (data)
+			break;
+		sel = m_Tree.GetParentItem(sel);
+	}
+	if (data) {
+		auto node = reinterpret_cast<AstNode const*>(data);
+		auto index = m_Edit.LineIndex(node->Location().Line - 1);
+		auto indexNext = m_Edit.LineIndex(node->Location().Line);
+		m_Edit.SetSel(index, indexNext);
+		m_Edit.ScrollCaret();
+	}
+	return 0;
+}
+
+LRESULT CView::OnSetFocus(UINT, WPARAM, LPARAM, BOOL&) {
+	m_Edit.SetFocus();
 
 	return 0;
 }

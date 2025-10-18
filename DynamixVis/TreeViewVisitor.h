@@ -72,6 +72,8 @@ namespace Dynamix {
 		Value VisitMatch(MatchExpression const* expr) override;
 		Value VisitUse(UseStatement const* use) override;
 
+		CString LocationAsString(AstNode const* node) const;
+
 		CTreeViewCtrl m_Tree;
 		HTREEITEM m_hCurrent{};
 		Tokenizer& m_Tokenizer;

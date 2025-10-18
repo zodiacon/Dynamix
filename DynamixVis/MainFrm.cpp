@@ -12,6 +12,8 @@
 
 using namespace Dynamix;
 
+#define WINDOW_MENU_POSITION	4
+
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
 		return TRUE;
@@ -117,6 +119,14 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CAboutDlg dlg;
 	dlg.DoModal();
+	return 0;
+}
+
+LRESULT CMainFrame::OnFileNew(WORD, WORD, HWND, BOOL&) {
+	auto view = new CView(this);
+	view->Create(m_view, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
+	m_view.AddPage(view->m_hWnd, L"Untitled");
+
 	return 0;
 }
 

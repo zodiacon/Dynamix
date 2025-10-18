@@ -54,6 +54,8 @@ namespace Dynamix {
 
 	class AstNode {
 	public:
+		AstNode() = default;
+		AstNode(CodeLocation location) noexcept : m_Location(std::move(location)) {}
 		virtual ~AstNode() noexcept = default;
 		virtual std::string ToString() const {
 			return "";

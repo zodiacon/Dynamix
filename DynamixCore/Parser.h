@@ -55,8 +55,6 @@ namespace Dynamix {
 		bool Match(std::string_view lexeme, bool consume = true, bool errorIfNotFound = false);
 		bool SkipTo(TokenType type);
 
-		CodeLocation Location() const noexcept;
-
 	protected:
 		void PushScope(AstNode* node);
 		void PopScope();
