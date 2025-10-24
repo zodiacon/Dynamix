@@ -153,6 +153,7 @@
     <ClInclude Include="Interpreter.h" />
     <ClInclude Include="MathType.h" />
     <ClInclude Include="NoCopyMove.h" />
+    <ClInclude Include="ObjectInstance.h" />
     <ClInclude Include="ObjectPtr.h" />
     <ClInclude Include="RangeType.h" />
     <ClInclude Include="RealType.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="IntegerType.cpp" />
     <ClCompile Include="Interpreter.cpp" />
     <ClCompile Include="MathType.cpp" />
+    <ClCompile Include="ObjectInstance.cpp" />
     <ClCompile Include="RangeType.cpp" />
     <ClCompile Include="RealType.cpp" />
     <ClCompile Include="Runtime.cpp" />

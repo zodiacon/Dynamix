@@ -78,6 +78,7 @@ namespace Dynamix {
 		OpenBracket,
 		CloseBracket,
 		Dot,
+		QuestionDot,
 		DoubleColon,
 		Comma,
 		GoesTo,

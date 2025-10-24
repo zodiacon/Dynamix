@@ -351,6 +351,7 @@ Value Interpreter::Invoke(AstNode const* node, std::vector<Value> const* args) {
 	}
 	catch (BreakoutStatementException const&) {
 	}
+	return Value();
 }
 
 Value Interpreter::RunMain(int argc, const char* argv[], const char* envp[]) {
@@ -392,6 +393,9 @@ void Interpreter::PopScope() {
 
 Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	auto value = Eval(expr->Left());
+	if (expr->Operator() == TokenType::QuestionDot && value.IsNull())
+		return Value();
+
 	auto type = value.GetObjectType();
 	if (type == nullptr)
 		throw RuntimeError(RuntimeErrorType::UnknownMember, format("Unknown member '{}'", expr->Member()), expr->Location());

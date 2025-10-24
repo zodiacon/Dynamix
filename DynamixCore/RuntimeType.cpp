@@ -51,6 +51,7 @@ void RuntimeType::DumpStats(Interpreter& intr) {
 }
 
 Value RuntimeType::CreateObject(Interpreter& intr, std::vector<Value> const& args) {
+	// TODO
 	return Value();
 }
 

@@ -87,6 +87,7 @@ bool Parser::Init() {
 		{ "[", TokenType::OpenBracket },
 		{ "]", TokenType::CloseBracket },
 		{ ".", TokenType::Dot },
+		{ "?.", TokenType::QuestionDot },
 		{ "::", TokenType::DoubleColon },
 		{ "+", TokenType::Plus },
 		{ "-", TokenType::Minus },
@@ -152,6 +153,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::BitwiseNot, make_unique<PrefixOperatorParslet>(500));
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayExpressionParslet>());
 	AddParslet(TokenType::Dot, make_unique<GetMemberParslet>());
+	AddParslet(TokenType::QuestionDot, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::DoubleColon, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());

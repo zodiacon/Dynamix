@@ -156,6 +156,7 @@ ObjectType::ObjectType(std::string name, ObjectType* base)
 		METHOD(ObjectCount, 0, return Value((Int)inst->GetObjectCount());),
 		METHOD(Fields, 0, return inst->GetFields();),
 		END_METHODS()
+
 }
 
 ObjectType::~ObjectType() noexcept {

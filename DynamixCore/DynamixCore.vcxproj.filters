@@ -144,6 +144,9 @@
     <ClInclude Include="BooleanType.h">
       <Filter>StdLib</Filter>
     </ClInclude>
+    <ClInclude Include="ObjectInstance.h">
+      <Filter>StdLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SmallString.cpp">
@@ -246,6 +249,9 @@
       <Filter>StdLib</Filter>
     </ClCompile>
     <ClCompile Include="BooleanType.cpp">
+      <Filter>StdLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectInstance.cpp">
       <Filter>StdLib</Filter>
     </ClCompile>
   </ItemGroup>

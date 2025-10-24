@@ -48,6 +48,7 @@ namespace Dynamix {
 		UndefinedSymbol,
 		Parse,
 		CollectionEnd,
+		CustomObject = 255,
 	};
 
 	class Value;
@@ -83,8 +84,10 @@ namespace Dynamix {
 		Value(Value&& other) noexcept;
 		Value& operator=(Value&& other) noexcept;
 
-		static Value FromToken(Token const& token);
+		static Value FromToken(Token const& token) noexcept;
 		static Value Error(ValueErrorType type = ValueErrorType::Unspecfied, const char* desc = nullptr);
+		static Value Error(RuntimeObject const* obj) noexcept;
+
 #ifdef _WIN32
 		static Value HResult(int hr);
 #endif
@@ -228,7 +231,7 @@ namespace Dynamix {
 		union {
 			struct {
 				ValueType m_Type;
-				ValueErrorType error;
+				ValueErrorType m_Error;
 				uint32_t m_StrLen;
 			};
 		};

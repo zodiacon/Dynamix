@@ -17,6 +17,7 @@
 #include "IntegerType.h"
 #include "BooleanType.h"
 #include "RealType.h"
+#include "ObjectInstance.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -175,5 +176,6 @@ void Runtime::InitStdLibrary() {
 	ADD_TYPE(Integer);
 	ADD_TYPE(Real);
 	ADD_TYPE(Boolean);
+	ADD_TYPE2(Object, ObjectInstance);
 }
 

@@ -267,7 +267,9 @@ Value Value::InvokeIndexer(Value const& index) const {
 void Value::Free() noexcept {
 	switch (m_Type) {
 		case ValueType::Error:
-			if (strValue)
+			if(m_Error == ValueErrorType::CustomObject)
+				oValue->Release();
+			else if (strValue)
 				free(strValue);
 			break;
 
@@ -297,7 +299,7 @@ Value::Value(const char* s) noexcept : m_Type(ValueType::String) {
 	strValue = (char*)::malloc((m_StrLen = (unsigned)strlen(s)) + 1);
 	if (strValue == nullptr) {
 		m_Type = ValueType::Error;
-		error = ValueErrorType::OutOfMemory;
+		m_Error = ValueErrorType::OutOfMemory;
 	}
 	else {
 		memcpy(strValue, s, m_StrLen + 1);
@@ -357,7 +359,7 @@ Value& Value::operator=(Value&& other) noexcept {
 	return *this;
 }
 
-Value Value::FromToken(Token const& token) {
+Value Value::FromToken(Token const& token) noexcept {
 	switch (token.Type) {
 		case TokenType::Integer: return token.Integer;
 		case TokenType::Real: return token.Real;
@@ -379,11 +381,11 @@ Value Value::HResult(int hr) {
 #endif
 Value Value::Error(ValueErrorType type, const char* desc) {
 	Value err(ValueType::Error);
-	err.error = type;
+	err.m_Error = type;
 	if (desc) {
 		err.strValue = (char*)malloc((err.m_StrLen = (uint32_t)strlen(desc)) + 1);
 		if (!err.strValue)
-			err.error = ValueErrorType::OutOfMemory;
+			err.m_Error = ValueErrorType::OutOfMemory;
 		else
 			memcpy(err.strValue, desc, err.m_StrLen + 1);
 	}
@@ -391,6 +393,14 @@ Value Value::Error(ValueErrorType type, const char* desc) {
 		err.strValue = nullptr;
 		err.m_StrLen = 0;
 	}
+	return err;
+}
+
+Value Value::Error(RuntimeObject const* obj) noexcept {
+	Value err(ValueType::Error);
+	err.m_Error = ValueErrorType::CustomObject;
+	err.oValue = obj;
+	obj->AddRef();
 	return err;
 }
 
