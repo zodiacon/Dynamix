@@ -145,7 +145,7 @@ Value TreeViewVisitor::VisitBreakContinue(BreakOrContinueStatement const* stmt) 
 
 Value TreeViewVisitor::VisitFor(ForStatement const* stmt) {
     auto h = m_hCurrent;
-    m_hCurrent = m_Tree.InsertItem(LocationAsString(stmt) + L"For", m_hCurrent, TVI_LAST);
+    m_hCurrent = m_Tree.InsertItem(LocationAsString(stmt) + L"For (init, while, inc)", m_hCurrent, TVI_LAST);
     m_Tree.SetItemData(m_hCurrent, reinterpret_cast<DWORD_PTR>(stmt));
     if (stmt->Init())
         stmt->Init()->Accept(this);

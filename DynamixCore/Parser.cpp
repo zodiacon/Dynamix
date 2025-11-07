@@ -103,6 +103,7 @@ bool Parser::Init() {
 		{ "|=", TokenType::Assign_Or },
 		{ "^=", TokenType::Assign_Xor },
 		{ "..", TokenType::DotDot },
+		{ "...", TokenType::Ellipsis },
 		{ "..=", TokenType::DotDotInclusive },
 		{ ">>", TokenType::StreamRight },
 		{ "<<", TokenType::StreamLeft },
@@ -299,7 +300,9 @@ int Parser::GetPrecedence() const {
 }
 
 bool Parser::AddParslet(TokenType type, unique_ptr<InfixParslet> parslet) {
-	return m_InfixParslets.insert({ type, move(parslet) }).second;
+	auto inserted = m_InfixParslets.insert({ type, move(parslet) }).second;
+	assert(inserted);
+	return inserted;
 }
 
 bool Parser::AddParslet(TokenType type, unique_ptr<PrefixParslet> parslet) {
@@ -478,7 +481,12 @@ unique_ptr<Statement> Parser::ParseUseStatement() {
 	return nullptr;
 }
 
-unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
+unique_ptr<Statement> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
+	if (Match(TokenType::Do)) {
+		auto stmt = ParseStatement();
+		Match(TokenType::Semicolon, true, true);
+		return stmt;
+	}
 	Match(TokenType::OpenBrace, true, true);
 
 	auto block = make_unique<Statements>();
@@ -509,6 +517,8 @@ unique_ptr<Statements> Parser::ParseBlock(vector<Parameter> const& args, bool ne
 	Match(TokenType::CloseBrace, true, true);
 	if (newscope)
 		PopScope();
+	if (block->Count() == 1)
+		return move(block->Get()[0]);
 	return block;
 }
 
@@ -759,14 +769,14 @@ unique_ptr<ClassDeclaration> Parser::ParseClassDeclaration(ClassDeclaration cons
 				if ((extraFlags & SymbolFlags::Private) == SymbolFlags::Private)
 					AddError(ParseError(ParseErrorType::ModifierConflict, Peek().Location, "Member already marked 'private'"));
 				else
-					extraFlags = extraFlags | SymbolFlags::Public;
+					extraFlags |= SymbolFlags::Public;
 				break;
 
 			case TokenType::Private:
 				if ((extraFlags & SymbolFlags::Public) == SymbolFlags::Public)
 					AddError(ParseError(ParseErrorType::ModifierConflict, Peek().Location, "Member already marked 'public'"));
 				else
-					extraFlags = extraFlags | SymbolFlags::Private;
+					extraFlags |= SymbolFlags::Private;
 				break;
 
 			case TokenType::New:	// ctor

@@ -63,10 +63,6 @@ namespace Dynamix {
 			return static_cast<T*>(&m_Data);
 		}
 
-		Int Size() const noexcept {
-			return m_Size;
-		}
-
 		bool HasField(std::string const& name) const noexcept override {
 			return Type()->HasField(name);
 		}
@@ -75,7 +71,6 @@ namespace Dynamix {
 
 	private:
 		void* m_Data;
-		Int m_Size;
 	};
 
 	template<typename T>

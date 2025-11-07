@@ -251,6 +251,7 @@ namespace Dynamix {
 		void Add(std::unique_ptr<Statement> stmt);
 		Statement const* Append(std::unique_ptr<Statements> stmts);
 		std::vector<std::unique_ptr<Statement>> const& Get() const;
+		std::vector<std::unique_ptr<Statement>>& Get();
 		std::unique_ptr<Statement> RemoveAt(int index);
 		Statement const* GetAt(int i) const;
 		int Count() const noexcept {
@@ -487,7 +488,7 @@ namespace Dynamix {
 
 	class ForEachStatement : public Statement {
 	public:
-		ForEachStatement(std::string name, std::unique_ptr<Expression> collection, std::unique_ptr<Statements> body) noexcept;
+		ForEachStatement(std::string name, std::unique_ptr<Expression> collection, std::unique_ptr<Statement> body) noexcept;
 		AstNodeType NodeType() const noexcept {
 			return AstNodeType::ForEach;
 		}
@@ -497,7 +498,7 @@ namespace Dynamix {
 		std::string const& Name() const noexcept {
 			return m_Name;
 		}
-		Statements const* Body() const noexcept {
+		Statement const* Body() const noexcept {
 			return m_Body.get();
 		}
 		Expression const* Collection() const noexcept {
@@ -507,20 +508,20 @@ namespace Dynamix {
 	private:
 		std::string m_Name;
 		std::unique_ptr<Expression> m_Collection;
-		std::unique_ptr<Statements> m_Body;
+		std::unique_ptr<Statement> m_Body;
 	};
 
 	class ForStatement : public Statement {
 	public:
 		ForStatement() = default;
 		ForStatement(std::unique_ptr<Statement> init, std::unique_ptr<Expression> whileExpr, 
-			std::unique_ptr<Expression> incExpr, std::unique_ptr<Statements> body);
+			std::unique_ptr<Expression> incExpr, std::unique_ptr<Statement> body);
 		AstNodeType NodeType() const noexcept {
 			return AstNodeType::For;
 		}
 
 		Value Accept(Visitor* visitor) const override;
-		void SetBody(std::unique_ptr<Statements> body) noexcept {
+		void SetBody(std::unique_ptr<Statement> body) noexcept {
 			m_Body = move(body);
 			m_Body->SetParent(this);
 		}
@@ -542,12 +543,12 @@ namespace Dynamix {
 		Statement const* Init() const noexcept;
 		Expression const* While() const noexcept;
 		Expression const* Inc() const noexcept;
-		Statements const* Body() const noexcept;
+		Statement const* Body() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_While, m_Inc;
 		std::unique_ptr<Statement> m_Init;
-		std::unique_ptr<Statements> m_Body;
+		std::unique_ptr<Statement> m_Body;
 	};
 
 	class FunctionEssentials {
@@ -754,7 +755,7 @@ namespace Dynamix {
 
 	class WhileStatement : public Statement {
 	public:
-		WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statements> body);
+		WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body);
 		AstNodeType NodeType() const noexcept {
 			return AstNodeType::While;
 		}
@@ -762,11 +763,11 @@ namespace Dynamix {
 		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Condition() const noexcept;
-		Statements const* Body() const noexcept;
+		Statement const* Body() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Condition;
-		std::unique_ptr<Statements> m_Body;
+		std::unique_ptr<Statement> m_Body;
 	};
 
 	class ReturnStatement : public Statement {
@@ -786,7 +787,7 @@ namespace Dynamix {
 
 	class RepeatStatement : public Statement {
 	public:
-		RepeatStatement(std::unique_ptr<Expression> times, std::unique_ptr<Statements> body);
+		RepeatStatement(std::unique_ptr<Expression> times, std::unique_ptr<Statement> body);
 		AstNodeType NodeType() const noexcept {
 			return AstNodeType::Repeat;
 		}
@@ -794,11 +795,11 @@ namespace Dynamix {
 		Value Accept(Visitor* visitor) const override;
 
 		Expression const* Times() const noexcept;
-		Statements const* Body() const noexcept;
+		Statement const* Body() const noexcept;
 
 	private:
 		std::unique_ptr<Expression> m_Times;
-		std::unique_ptr<Statements> m_Body;
+		std::unique_ptr<Statement> m_Body;
 	};
 
 	class IfThenElseExpression : public Expression {

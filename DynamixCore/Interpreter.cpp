@@ -40,7 +40,6 @@ Value Interpreter::Eval(AstNode const* root) {
 }
 
 void Interpreter::RunConstructor(RuntimeObject* instance, MethodInfo const* ctor, std::vector<Value> const& args) {
-	assert(ctor->Code.Node->NodeType() == AstNodeType::Statements);
 	Scoper scoper(this);
 	Element pThis{ instance };
 	CurrentScope().AddElement("this", move(pThis));

@@ -37,7 +37,7 @@ namespace Dynamix {
 		std::unique_ptr<FunctionDeclaration> ParseFunctionDeclaration(bool method = false, SymbolFlags extraFlags = SymbolFlags::None);
 		std::unique_ptr<RepeatStatement> ParseRepeatStatement();
 		std::unique_ptr<WhileStatement> ParseWhileStatement();
-		std::unique_ptr<Statements> ParseBlock(std::vector<Parameter> const& args = {}, bool newscope = true);
+		std::unique_ptr<Statement> ParseBlock(std::vector<Parameter> const& args = {}, bool newscope = true);
 		std::unique_ptr<Statement> ParseStatement(bool topLevel = false, bool errorIfNotFound = true);
 		std::unique_ptr<ReturnStatement> ParseReturnStatement();
 		std::unique_ptr<BreakOrContinueStatement> ParseBreakContinueStatement();

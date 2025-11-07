@@ -111,8 +111,9 @@ unique_ptr<Expression> IfThenElseParslet::Parse(Parser& parser, Token const& tok
 	auto cond = parser.ParseExpression();
 	auto then = parser.ParseBlock();
 	unique_ptr<Statement> elseExpr;
-	if (parser.Match(TokenType::Else))
+	if (parser.Match(TokenType::Else)) {
 		elseExpr = parser.ParseBlock();
+	}
 	return make_unique<IfThenElseExpression>(move(cond), move(then), move(elseExpr));
 }
 

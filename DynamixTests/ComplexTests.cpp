@@ -56,10 +56,9 @@ TEST_CASE("Parser parses a recursive function and checks AST") {
         REQUIRE(right->Literal().ToInteger() == 0);
 
         // Then branch: return 1;
-        auto thenBlock = reinterpret_cast<const Statements*>(ifExpr->Then());
+        auto thenBlock = reinterpret_cast<const Statement*>(ifExpr->Then());
         REQUIRE(thenBlock != nullptr);
-        REQUIRE(thenBlock->Get().size() == 1);
-        auto thenReturn = reinterpret_cast<const ReturnStatement*>(thenBlock->Get()[0].get());
+        auto thenReturn = reinterpret_cast<const ReturnStatement*>(thenBlock);
         REQUIRE(thenReturn != nullptr);
         auto thenLiteral = reinterpret_cast<const LiteralExpression*>(thenReturn->ReturnValue());
         REQUIRE(thenLiteral != nullptr);

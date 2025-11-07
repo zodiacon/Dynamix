@@ -106,6 +106,7 @@ namespace Dynamix {
 		LessThanOrEqual,
 		DotDot,
 		DotDotInclusive,
+		Ellipsis,
 		StreamRight,
 		StreamLeft,
 

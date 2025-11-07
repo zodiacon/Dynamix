@@ -57,10 +57,9 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(fnDecl->Parameters()[1].Name == "b");
         auto* body = fnDecl->Body();
         REQUIRE(body != nullptr);
-        auto* bodyStmts = dynamic_cast<const Statements*>(body);
+        auto* bodyStmts = dynamic_cast<const Statement*>(body);
         REQUIRE(bodyStmts != nullptr);
-        REQUIRE(bodyStmts->Get().size() == 1);
-        auto* retStmt = dynamic_cast<const ReturnStatement*>(bodyStmts->Get()[0].get());
+        auto* retStmt = dynamic_cast<const ReturnStatement*>(bodyStmts);
         REQUIRE(retStmt != nullptr);
         auto* nameExpr = dynamic_cast<const NameExpression*>(retStmt->ReturnValue());
         REQUIRE(nameExpr != nullptr);
@@ -79,8 +78,7 @@ TEST_CASE("Parser and Tokenizer integration with AST validation") {
         REQUIRE(cond->Literal().ToBoolean() == true);
         auto* body = whileStmt->Body();
         REQUIRE(body != nullptr);
-        REQUIRE(body->Get().size() == 1);
-        auto* varStmt = dynamic_cast<VarValStatement*>(body->Get()[0].get());
+        auto* varStmt = dynamic_cast<VarValStatement const*>(body);
         REQUIRE(varStmt != nullptr);
         REQUIRE(varStmt->Name() == "z");
     }

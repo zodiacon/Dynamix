@@ -195,7 +195,7 @@ Value InvokeFunctionExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitInvokeFunction(this);
 }
 
-WhileStatement::WhileStatement(unique_ptr<Expression> condition, unique_ptr<Statements> body) :
+WhileStatement::WhileStatement(unique_ptr<Expression> condition, unique_ptr<Statement> body) :
 	m_Condition(move(condition)), m_Body(move(body)) {
 	m_Condition->SetParent(this);
 	m_Body->SetParent(this);
@@ -209,7 +209,7 @@ Expression const* WhileStatement::Condition() const noexcept {
 	return m_Condition.get();
 }
 
-RepeatStatement::RepeatStatement(unique_ptr<Expression> times, unique_ptr<Statements> body) : m_Times(move(times)), m_Body(move(body)) {
+RepeatStatement::RepeatStatement(unique_ptr<Expression> times, unique_ptr<Statement> body) : m_Times(move(times)), m_Body(move(body)) {
 }
 
 Value RepeatStatement::Accept(Visitor* visitor) const {
@@ -220,11 +220,11 @@ Expression const* RepeatStatement::Times() const noexcept {
 	return m_Times.get();
 }
 
-Statements const* RepeatStatement::Body() const noexcept {
+Statement const* RepeatStatement::Body() const noexcept {
 	return m_Body.get();
 }
 
-Statements const* WhileStatement::Body() const noexcept {
+Statement const* WhileStatement::Body() const noexcept {
 	return m_Body.get();
 }
 
@@ -321,7 +321,7 @@ TokenType BreakOrContinueStatement::BreakType() const noexcept {
 	return m_Type;
 }
 
-ForStatement::ForStatement(unique_ptr<Statement> init, unique_ptr<Expression> whileExpr, unique_ptr<Expression> incExpr, unique_ptr<Statements> body) :
+ForStatement::ForStatement(unique_ptr<Statement> init, unique_ptr<Expression> whileExpr, unique_ptr<Expression> incExpr, unique_ptr<Statement> body) :
 	m_Init(move(init)), m_While(move(whileExpr)), m_Inc(move(incExpr)), m_Body(move(body)) {
 }
 
@@ -341,7 +341,7 @@ Expression const* ForStatement::Inc() const noexcept {
 	return m_Inc.get();
 }
 
-Statements const* ForStatement::Body() const noexcept {
+Statement const* ForStatement::Body() const noexcept {
 	return m_Body.get();
 }
 
@@ -403,6 +403,10 @@ Statement const* Statements::GetAt(int i) const {
 }
 
 vector<unique_ptr<Statement>> const& Statements::Get() const {
+	return m_Stmts;
+}
+
+vector<unique_ptr<Statement>>& Statements::Get() {
 	return m_Stmts;
 }
 
@@ -481,7 +485,7 @@ Value AssignFieldExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitAssignField(this);
 }
 
-ForEachStatement::ForEachStatement(string name, unique_ptr<Expression> collection, unique_ptr<Statements> body) noexcept 
+ForEachStatement::ForEachStatement(string name, unique_ptr<Expression> collection, unique_ptr<Statement> body) noexcept 
 	: m_Name(move(name)), m_Collection(move(collection)), m_Body(move(body)) {
 	m_Body->SetParent(this);
 	m_Collection->SetParent(this);
