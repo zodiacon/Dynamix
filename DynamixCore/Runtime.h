@@ -42,6 +42,7 @@ namespace Dynamix {
 		NotCOMObject,
 		OperatorNotImplemented,
 		PropertyPut,
+		TooFewArguments,
 	};
 
 	struct ReturnStatementException {

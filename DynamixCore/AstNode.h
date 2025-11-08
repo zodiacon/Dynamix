@@ -62,7 +62,7 @@ namespace Dynamix {
 
 	struct Attribute {
 		std::string Name;
-		std::vector<AttributeValue> Parameters;
+		std::vector<AttributeValue> Properties;
 	};
 
 	class AstNode {

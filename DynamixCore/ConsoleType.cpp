@@ -1,9 +1,10 @@
-#include "ConsoleType.h"
-#include "TypeHelper.h"
 #include <print>
 #include <vector>
 #include <string>
 #include <iostream>
+#include "ConsoleType.h"
+#include "TypeHelper.h"
+#include "Runtime.h"
 
 using namespace Dynamix;
 
@@ -13,27 +14,29 @@ ConsoleType* ConsoleType::Get() {
 }
 
 std::string Format(std::vector<Value> const& args) {
-	std::string text;
+	std::string result;
 	if (!args.empty()) {
-		static std::string empty;
-		std::vector<std::string> values;
-		values.reserve(args.size());
-		for (auto& arg : args)
-			values.emplace_back(arg.ToString());
-		auto fmt = std::make_format_args(
-			args.size() > 1 ? values[1] : empty,
-			args.size() > 2 ? values[2] : empty,
-			args.size() > 3 ? values[3] : empty,
-			args.size() > 4 ? values[4] : empty,
-			args.size() > 5 ? values[5] : empty,
-			args.size() > 6 ? values[6] : empty,
-			args.size() > 7 ? values[6] : empty,
-			args.size() > 8 ? values[6] : empty,
-			args.size() > 9 ? values[6] : empty
-		);
-		text = std::vformat(args[0].ToString().c_str(), fmt);
+		auto fmt = args[0].ToString();
+		size_t start = 0;
+		int i = 1;
+		while (true) {
+			auto next = fmt.find('{', start);
+			if (next == std::string::npos)
+				break;
+
+			if(i == args.size())
+				throw RuntimeError(RuntimeErrorType::TooFewArguments, "Not enough format specifiers");
+
+			auto close = fmt.find('}', next + 1);
+			if (close == std::string::npos)
+				break;
+
+			auto str = args[i++].ToString(fmt.substr(next, close - next + 1).c_str());
+			result += fmt.substr(start, next - start) + str;
+			start = close + 1;
+		}
 	}
-	return text;
+	return result;
 }
 
 Value ConsoleType::Write(std::vector<Value> const& args) {

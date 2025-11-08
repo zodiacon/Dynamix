@@ -501,6 +501,35 @@ vector<Parameter> Parser::ParseParameters() {
 	return parameters;
 }
 
+vector<Attribute> Parser::ParseAttributes() {
+	std::vector<Attribute> attributes;
+	while (Match(TokenType::OpenBracket)) {
+		if (Match(TokenType::Identifier, false, true)) {
+			SkipTo(TokenType::CloseBracket);
+			return {};
+		}
+		auto name = Next();
+		Attribute attribute{ name.Lexeme };
+		if (Match(TokenType::OpenParen)) {
+			if (Match(TokenType::Identifier, false, true)) {
+			}
+
+			//	if (Peek().Type == TokenType::Assign) {
+			//		auto expr = ParseExpression();
+			//		if (expr->NodeType() != AstNodeType::Literal)
+			//			AddError(ParseError(ParseErrorType::Expected, expr->Location(), "Literal expression expected"));
+			//		value = reinterpret_cast<LiteralExpression const*>(expr.get())->Literal();
+			//	}
+			//	Match(TokenType::CloseParen, true, true);
+			//}
+			//attributes.push_back(move(attribute));
+			//Match(TokenType::Comma);
+		}
+	}
+	Match(TokenType::CloseBracket, true, true);
+	return attributes;
+}
+
 unique_ptr<Statement> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
 	if (Match(TokenType::Do)) {
 		return ParseStatement();
@@ -552,15 +581,15 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 
 	std::unique_ptr<Statement> stmt;
 	switch (peek.Type) {
-		case TokenType::Use: 
+		case TokenType::Use:
 			stmt = ParseUseStatement();
 			break;
 
-		case TokenType::Var: 
+		case TokenType::Var:
 			stmt = ParseVarValStatement(false);
 			break;
 
-		case TokenType::Val: 
+		case TokenType::Val:
 			stmt = ParseVarValStatement(true);
 			break;
 
@@ -578,7 +607,7 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 				stmt = ParseWhileStatement();
 			break;
 
-		case TokenType::Fn: 
+		case TokenType::Fn:
 			stmt = ParseFunctionDeclaration();
 			break;
 
@@ -593,7 +622,7 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 				stmt = ParseBreakContinueStatement();
 			break;
 
-		case TokenType::Class: 
+		case TokenType::Class:
 			stmt = ParseClassDeclaration();
 			break;
 
@@ -602,7 +631,7 @@ unique_ptr<Statement> Parser::ParseStatement(bool topLevel, bool errorIfNotFound
 				stmt = ParseForStatement();
 			break;
 
-		case TokenType::Enum: 
+		case TokenType::Enum:
 			stmt = ParseEnumDeclaration();
 			break;
 

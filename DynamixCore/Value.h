@@ -187,7 +187,7 @@ namespace Dynamix {
 		Value& Assign(Value const& right, TokenType assign);
 		Value& AssignArrayIndex(Value const& index, Value const& right, TokenType assign);
 
-		std::string ToString() const;
+		std::string ToString(const char* fmt = "{}") const;
 
 		Value Add(Value const& rhs) const;
 		Value Sub(Value const& rhs) const;

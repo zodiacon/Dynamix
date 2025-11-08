@@ -49,6 +49,7 @@ namespace Dynamix {
 		std::unique_ptr<Statements> ParseStatementsForMatch(bool newScope = false);
 		std::unique_ptr<Statement> ParseUseStatement();
 		std::vector<Parameter> ParseParameters();
+		std::vector<Attribute> ParseAttributes();
 
 		Token Next();
 		Token const& Peek() const;

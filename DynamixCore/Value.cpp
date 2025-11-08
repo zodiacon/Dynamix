@@ -120,14 +120,14 @@ Value& Value::AssignArrayIndex(Value const& index, Value const& right, TokenType
 	return *this;
 }
 
-std::string Value::ToString() const {
+std::string Value::ToString(const char* fmt) const {
 	switch (m_Type) {
 		case ValueType::Null:
 			return "<empty>";
 		case ValueType::Integer:
-			return std::format("{}", iValue);
+			return std::vformat(fmt, std::make_format_args(iValue));
 		case ValueType::Real:
-			return std::format("{}", dValue);
+			return std::vformat(fmt, std::make_format_args(dValue));
 		case ValueType::Boolean:
 			return bValue ? "true" : "false";
 		case ValueType::Object:
@@ -135,7 +135,7 @@ std::string Value::ToString() const {
 		case ValueType::Error:
 			return "<Error>";
 		case ValueType::String:
-			return std::string("\"") + strValue + "\"";
+			return strValue;
 	}
 	return "";
 }
