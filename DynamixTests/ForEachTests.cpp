@@ -33,8 +33,8 @@ TEST_CASE("Interpreter executes foreach over array", "[foreach]") {
     // Sum all items in array using foreach
     const char* code = R"(
         var sum = 0;
-        foreach (item in [1, 2, 3, 4]) {
-            sum = sum + item;
+        foreach item in [1, 2, 3, 4] {
+            sum += item;
         }
         sum;
     )";

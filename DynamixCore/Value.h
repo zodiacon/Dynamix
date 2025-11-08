@@ -34,6 +34,7 @@ namespace Dynamix {
 		String = 0x80,
 		NativeFunction = 0x100,
 		Callable = 0x200,
+		Pointer = 0x400,
 	};
 
 	enum class ValueErrorType : uint8_t {
@@ -74,6 +75,7 @@ namespace Dynamix {
 		constexpr Value(ValueType t) noexcept : m_Type(t) {}
 		constexpr Value(AstNode const* node) noexcept : nValue(node), m_Type(ValueType::AstNode) {}
 		constexpr Value(NativeFunction f) noexcept : fValue(f), m_Type(ValueType::NativeFunction) {}
+		constexpr Value(Value* p) noexcept : pValue(p), m_Type(ValueType::Pointer) {}
 
 		Value(const char* s) noexcept;
 		Value(RuntimeObject const* o) noexcept;
@@ -227,6 +229,7 @@ namespace Dynamix {
 			Callable* cValue;
 			char* strValue;
 			NativeFunction fValue;
+			Value* pValue;
 		};
 		union {
 			struct {
@@ -238,7 +241,6 @@ namespace Dynamix {
 	};
 
 	static_assert(sizeof(Value) == 16);
-
 }
 
 std::ostream& operator<<(std::ostream& os, const Dynamix::Value& v);

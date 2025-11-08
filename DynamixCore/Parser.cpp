@@ -38,6 +38,7 @@ bool Parser::Init() {
 		{ "return", TokenType::Return },
 		{ "do", TokenType::Do },
 		{ "foreach", TokenType::ForEach },
+		{ "each", TokenType::Each },
 		{ "new", TokenType::New },
 		{ "in", TokenType::In },
 		{ "interface", TokenType::Interface },
@@ -103,6 +104,7 @@ bool Parser::Init() {
 		{ "|=", TokenType::Assign_Or },
 		{ "^=", TokenType::Assign_Xor },
 		{ "..", TokenType::DotDot },
+		{ "..<", TokenType::DotDotExclusive },
 		{ "...", TokenType::Ellipsis },
 		{ "..=", TokenType::DotDotInclusive },
 		{ ">>", TokenType::StreamRight },
@@ -158,6 +160,7 @@ bool Parser::Init() {
 	AddParslet(TokenType::DoubleColon, make_unique<GetMemberParslet>());
 	AddParslet(TokenType::OpenBracket, make_unique<ArrayAccessParslet>());
 	AddParslet(TokenType::New, make_unique<NewOperatorParslet>());
+	AddParslet(TokenType::DotDotExclusive, make_unique<RangeParslet>());
 	AddParslet(TokenType::DotDot, make_unique<RangeParslet>());
 	AddParslet(TokenType::DotDotInclusive, make_unique<RangeParslet>());
 	AddParslet(TokenType::Match, make_unique<MatchParslet>());
@@ -371,17 +374,9 @@ unique_ptr<FunctionDeclaration> Parser::ParseFunctionDeclaration(bool method, Sy
 	bool staticCtor = ctor && ((extraFlags & SymbolFlags::Static) == SymbolFlags::Static);
 	int isInst = method && (extraFlags & SymbolFlags::Static) == SymbolFlags::None ? 1 : 0;
 
-	// get list of arguments
-	vector<Parameter> parameters;
-	while (Peek().Type != TokenType::CloseParen) {
-		auto param = Next();
-		if (param.Type != TokenType::Identifier)
-			AddError(ParseError{ ParseErrorType::IdentifierExpected, param });
-		parameters.push_back(Parameter{ param.Lexeme });
-		Match(TokenType::Comma);
-	}
+	// get list of parameters
+	auto parameters = ParseParameters();
 
-	Next();		// eat close paren
 	if (staticCtor && !parameters.empty())
 		AddError(ParseError(ParseErrorType::TooManyFunctionArgs, Peek(), "Class constructor cannot have any parameters"));
 	if (parameters.size() > 63)
@@ -481,11 +476,34 @@ unique_ptr<Statement> Parser::ParseUseStatement() {
 	return nullptr;
 }
 
+vector<Parameter> Parser::ParseParameters() {
+	vector<Parameter> parameters;
+	while (Peek().Type != TokenType::CloseParen) {
+		auto param = Next();
+		Parameter parameter;
+		if (param.Type == TokenType::BitwiseAnd) {
+			parameter.Flags = ParameterFlags::Ref;
+			param = Next();
+		}
+		if (param.Type != TokenType::Identifier)
+			AddError(ParseError{ ParseErrorType::IdentifierExpected, param });
+		parameter.Name = param.Lexeme;
+		if (Peek().Type == TokenType::Assign) {
+			// default param value
+			Next();
+			parameter.DefaultValue = ParseExpression();
+		}
+		parameters.push_back(move(parameter));
+		Match(TokenType::Comma);
+	}
+
+	Next();		// eat close paren
+	return parameters;
+}
+
 unique_ptr<Statement> Parser::ParseBlock(vector<Parameter> const& args, bool newscope) {
 	if (Match(TokenType::Do)) {
-		auto stmt = ParseStatement();
-		Match(TokenType::Semicolon, true, true);
-		return stmt;
+		return ParseStatement();
 	}
 	Match(TokenType::OpenBrace, true, true);
 
@@ -704,8 +722,11 @@ unique_ptr<EnumDeclaration> Parser::ParseEnumDeclaration() {
 	return decl;
 }
 
-unique_ptr<ForStatement> Parser::ParseForStatement() {
+unique_ptr<Statement> Parser::ParseForStatement() {
 	Next();		// eat for
+	if (Peek().Type == TokenType::Each)
+		return ParseForEachStatement();
+
 	bool open = Match(TokenType::OpenParen);
 
 	auto stmt = make_unique<ForStatement>();
@@ -864,7 +885,7 @@ unique_ptr<InterfaceDeclaration> Parser::ParseInterfaceDeclaration() {
 	return decl;
 }
 
-unique_ptr<ForEachStatement> Parser::ParseForEachStatement() {
+unique_ptr<Statement> Parser::ParseForEachStatement() {
 	Next();		// eat foreach
 	bool openParen = Match(TokenType::OpenParen);	// optional
 	auto ident = Next();

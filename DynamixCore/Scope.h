@@ -1,6 +1,5 @@
 #pragma once
 
-#include <unordered_map>
 #include "Value.h"
 #include "NoCopyMove.h"
 
@@ -40,7 +39,7 @@ namespace Dynamix {
 		Scope Clone() const;
 
 	private:
-		std::unordered_map<std::string, std::vector<Element>> m_Elements;
+		std::vector<std::pair<std::string, std::vector<Element>>> m_Elements;
 		std::vector<UseElement> m_Uses;
 		Scope* m_Parent;
 	};

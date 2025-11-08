@@ -32,6 +32,7 @@ std::string_view Dynamix::Token::TypeToString() const {
 		case TokenType::LessThan: return "<";
 		case TokenType::GreaterThanOrEqual: return ">=";
 		case TokenType::LessThanOrEqual: return "<=";
+		case TokenType::DotDotExclusive: return "..<";
 		case TokenType::DotDot: return "..";
 		case TokenType::Ellipsis: return "...";
 		case TokenType::DotDotInclusive: return "..=";

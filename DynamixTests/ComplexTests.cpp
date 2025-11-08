@@ -2,8 +2,6 @@
 #include <Parser.h>
 #include <Tokenizer.h>
 #include <AstNode.h>
-#include <ParseError.h>
-#include <SymbolTable.h>
 
 using namespace Dynamix;
 

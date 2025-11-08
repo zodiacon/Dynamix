@@ -1,19 +1,20 @@
 #include "pch.h"
 #include "ThemeHelper.h"
-
+#include "DarkModeSubclass.h"
 HHOOK g_hHook;
 
 void HandleCreateWindow(CWPRETSTRUCT* cs) {
+	auto hWnd = cs->hwnd;
 	CString name;
-	CWindow win(cs->hwnd);
 	auto lpcs = (LPCREATESTRUCT)cs->lParam;
-	if (!::GetClassName(cs->hwnd, name.GetBufferSetLength(32), 32))
+	if (!::GetClassName(hWnd, name.GetBufferSetLength(32), 32))
 		return;
 
-	if (name.CompareNoCase(WC_COMBOBOX) != 0) {
-		if ((lpcs->style & (WS_THICKFRAME | WS_CAPTION | WS_POPUP | WS_DLGFRAME)) == 0)
-			::SetWindowTheme(cs->hwnd, L" ", L"");
-	}
+	DarkMode::setColorizeTitleBarConfig(true);
+	DarkMode::setDarkWndNotifySafe(hWnd);
+	DarkMode::setWindowEraseBgSubclass(hWnd);
+	DarkMode::setWindowMenuBarSubclass(hWnd);
+	DarkMode::setWindowExStyle(hWnd, true, WS_EX_COMPOSITED);
 }
 
 LRESULT CALLBACK CallWndProc(int action, WPARAM wp, LPARAM lp) {
@@ -32,10 +33,10 @@ LRESULT CALLBACK CallWndProc(int action, WPARAM wp, LPARAM lp) {
 }
 
 bool ThemeHelper::Init() noexcept {
-	if (auto hook = ::SetWindowsHookEx(WH_CALLWNDPROCRET, CallWndProc, nullptr, ::GetCurrentThreadId()); !hook)
-		return false;
-	else
-		g_hHook = hook;
+	//if (auto hook = ::SetWindowsHookEx(WH_CALLWNDPROCRET, CallWndProc, nullptr, ::GetCurrentThreadId()); !hook)
+	//	return false;
+	//else
+	//	g_hHook = hook;
 
 	return true;
 }

@@ -157,6 +157,15 @@
     <ClCompile Include="ClipboardHelper.cpp" />
     <ClCompile Include="ColorHelper.cpp" />
     <ClCompile Include="ColumnManager.cpp" />
+    <ClCompile Include="DarkModeSubclass.cpp" />
+    <ClCompile Include="DmlibColor.cpp" />
+    <ClCompile Include="DmlibDpi.cpp" />
+    <ClCompile Include="DmlibHook.cpp" />
+    <ClCompile Include="DmlibIni.cpp" />
+    <ClCompile Include="DmlibPaintHelper.cpp" />
+    <ClCompile Include="DmlibSubclass.cpp" />
+    <ClCompile Include="DmlibSubclassControl.cpp" />
+    <ClCompile Include="DmlibWinApi.cpp" />
     <ClCompile Include="IconHelper.cpp" />
     <ClCompile Include="IListView.cpp" />
     <ClCompile Include="IniFile.cpp" />

@@ -1,22 +1,29 @@
 #include "Scope.h"
 #include "ObjectType.h"
+#include <ranges>
 
 using namespace Dynamix;
+using namespace std::ranges;
 
 Scope::Scope(Scope* parent) : m_Parent(parent) {
 }
 
 bool Scope::AddElement(std::string name, Element var) {
-	if (auto it = m_Elements.find(name); it != m_Elements.end())
-		it->second.push_back(std::move(var));
+	if (auto it = find_if(m_Elements, [&](auto& e) { return e.first == name; }); it != m_Elements.end())
+		it->second.emplace_back(std::move(var));
 	else
-		return m_Elements.insert({ std::move(name), std::vector { std::move(var)} }).second;
+		m_Elements.push_back({ std::move(name), std::vector { std::move(var) } });
+
+	//if (auto it = m_Elements.find(name); it != m_Elements.end())
+	//	it->second.emplace_back(std::move(var));
+	//else
+	//	return m_Elements.insert({ std::move(name), std::vector { std::move(var)} }).second;
 	return true;
 }
 
 Element* Scope::FindElement(std::string const& name, int arity, bool localOnly) {
-	Element* e = nullptr;
-	if (auto it = m_Elements.find(name); it != m_Elements.end()) {
+	if (auto it = find_if(m_Elements, [&](auto& e) { return e.first == name; }); it != m_Elements.end()) {
+		//if (auto it = m_Elements.find(name); it != m_Elements.end()) {
 		if (it->second.empty())
 			return nullptr;
 		if (arity < 0 || it->second[0].Arity < 0)
@@ -31,7 +38,8 @@ Element* Scope::FindElement(std::string const& name, int arity, bool localOnly) 
 }
 
 std::vector<Element*> Scope::FindElements(std::string const& name, bool localOnly, bool withUse) {
-	if (auto it = m_Elements.find(name); it != m_Elements.end()) {
+	if (auto it = find_if(m_Elements, [&](auto& e) { return e.first == name; }); it != m_Elements.end()) {
+//	if (auto it = m_Elements.find(name); it != m_Elements.end()) {
 		std::vector<Element*> v;
 		v.reserve(it->second.size());
 		for (auto& e : it->second)
@@ -49,7 +57,7 @@ std::vector<Element*> Scope::FindElements(std::string const& name, bool localOnl
 }
 
 Element* Scope::FindElementWithUse(std::string const& name) {
-	for (auto& use : m_Uses) {
+	for (auto const& use : m_Uses) {
 		auto cls = FindElement(use.Name);
 		if (cls) {
 			auto type = reinterpret_cast<ObjectType const*>(cls->VarValue.ToObject());

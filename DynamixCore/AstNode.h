@@ -4,14 +4,11 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include <functional>
 
 #include "Value.h"
 #include "Visitor.h"
 #include "Token.h"
 #include "SymbolTable.h"
-#include "ObjectType.h"
-#include "ParseError.h"
 
 namespace Dynamix {
 	enum class AstNodeType : uint16_t {
@@ -50,6 +47,22 @@ namespace Dynamix {
 		InterfaceDeclaration,
 		Use,
 		ExpressionStatement,
+	};
+
+	enum class AttributeFlags : uint8_t {
+		None = 0,
+		Mandatory = 1,
+	};
+
+	struct AttributeValue {
+		std::string Name;
+		Value Value;
+		AttributeFlags Flags;
+	};
+
+	struct Attribute {
+		std::string Name;
+		std::vector<AttributeValue> Parameters;
 	};
 
 	class AstNode {
@@ -97,15 +110,21 @@ namespace Dynamix {
 			m_Symbols.SetParent(symbols);
 		}
 
+		std::vector<Attribute>& Attributes() noexcept {
+			return m_Attributes;
+		}
+
 	private:
 		SymbolTable m_Symbols;
 		CodeLocation m_Location;
+		std::vector<Attribute> m_Attributes;
 	};
 
-	enum class ParameterFlags {
+	enum class ParameterFlags : uint8_t {
 		In = 0,
 		Ref = 1,
 		Out = 3,
+		Mandatory = 4,
 	};
 
 	class Expression : public AstNode {
@@ -114,8 +133,8 @@ namespace Dynamix {
 
 	struct Parameter {
 		std::string Name;
-		ParameterFlags Flags{ ParameterFlags::In };
 		std::unique_ptr<Expression> DefaultValue;
+		ParameterFlags Flags{ ParameterFlags::In };
 	};
 
 	class GetMemberExpression : public Expression {
@@ -821,5 +840,3 @@ namespace Dynamix {
 	};
 
 }
-
-

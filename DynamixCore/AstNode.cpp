@@ -7,16 +7,30 @@ using namespace std;
 static size_t g_AstNodeCount;
 static size_t g_TotalMemory;
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+static const HANDLE s_hHeap = ::HeapCreate(HEAP_NO_SERIALIZE, 2 << 20, 0);
+#endif
+
 void* AstNode::operator new(size_t size) {
 	++g_AstNodeCount;
 	g_TotalMemory += size;
+#ifdef _WIN32
+	return ::HeapAlloc(s_hHeap, 0, size);
+#else
 	return ::operator new(size);
+#endif
 }
 
 void AstNode::operator delete(void* p, size_t size) {
 	--g_AstNodeCount;
 	g_TotalMemory -= size;
+#ifdef _WIN32
+	::HeapFree(s_hHeap, 0, p);
+#else
 	return ::operator delete(p);
+#endif
 }
 
 BinaryExpression::BinaryExpression(unique_ptr<Expression> left, TokenType op, unique_ptr<Expression> right)
@@ -79,7 +93,7 @@ Value NameExpression::Accept(Visitor* visitor) const {
 	return visitor->VisitName(this);
 }
 
-TokenType BinaryExpression::Operator() const noexcept {
+Dynamix::TokenType BinaryExpression::Operator() const noexcept {
 	return m_Operator;
 }
 
@@ -103,7 +117,7 @@ string UnaryExpression::ToString() const {
 	return format("({}{})", Token::TypeToString(m_Operator), m_Arg->ToString());
 }
 
-TokenType UnaryExpression::Operator() const noexcept {
+Dynamix::TokenType UnaryExpression::Operator() const noexcept {
 	return m_Operator;
 }
 
@@ -173,7 +187,7 @@ Expression const* AssignExpression::Value() const noexcept {
 	return m_Value.get();
 }
 
-TokenType AssignExpression::AssignType() const noexcept {
+Dynamix::TokenType AssignExpression::AssignType() const noexcept {
 	return m_AssignType;
 }
 
@@ -278,7 +292,7 @@ void FunctionDeclaration::SetBody(std::unique_ptr<Expression> body) noexcept {
 std::string FunctionDeclaration::ToString() const {
 	std::string params;
 	for (auto& param : Parameters())
-		params += format("{}, ", param.Name);
+		(params += param.Name) += ", ";
 	auto decl = format("fn {} ({})\n ", Name(), params.substr(0, params.length() - 2));
 	return decl + Body()->ToString();
 }
@@ -317,7 +331,7 @@ Value BreakOrContinueStatement::Accept(Visitor* visitor) const {
 	return visitor->VisitBreakContinue(this);
 }
 
-TokenType BreakOrContinueStatement::BreakType() const noexcept {
+Dynamix::TokenType BreakOrContinueStatement::BreakType() const noexcept {
 	return m_Type;
 }
 

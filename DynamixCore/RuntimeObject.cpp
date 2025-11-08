@@ -7,9 +7,11 @@
 using namespace Dynamix;
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 static HANDLE s_hHeap = ::HeapCreate(HEAP_NO_SERIALIZE, 1 << 18, 0);
+
 void* RuntimeObject::operator new(size_t size) {
 	return ::HeapAlloc(s_hHeap, 0, size);
 }
