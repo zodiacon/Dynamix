@@ -24,7 +24,7 @@ namespace Dynamix {
 
 	enum class ValueType : uint16_t {
 		Error = 0,
-		Null = 1,
+		Empty = 1,
 		Integer = 2,
 		Real = 4,
 		Boolean = 8,
@@ -67,7 +67,7 @@ namespace Dynamix {
 
 	class Value final {
 	public:
-		constexpr Value() noexcept : m_Type(ValueType::Null) {}
+		constexpr Value() noexcept : m_Type(ValueType::Empty) {}
 		constexpr Value(Int v) noexcept : iValue(v), m_Type(ValueType::Integer) {}
 		constexpr Value(int v) noexcept : iValue(v), m_Type(ValueType::Integer) {}
 		constexpr Value(Real d) noexcept : dValue(d), m_Type(ValueType::Real) {}
@@ -102,8 +102,8 @@ namespace Dynamix {
 			return m_Type;
 		}
 
-		bool IsNull() const noexcept {
-			return m_Type == ValueType::Null;
+		bool IsEmpty() const noexcept {
+			return m_Type == ValueType::Empty;
 		}
 
 		bool IsInteger() const noexcept {
@@ -243,5 +243,4 @@ namespace Dynamix {
 	static_assert(sizeof(Value) == 16);
 }
 
-std::ostream& operator<<(std::ostream& os, const Dynamix::Value& v);
 

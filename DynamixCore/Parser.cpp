@@ -1,9 +1,6 @@
 #include "Parser.h"
 #include "AstNode.h"
 #include <format>
-#include <fstream>
-#include <filesystem>
-#include <algorithm>
 
 using namespace std;
 using namespace Dynamix;
@@ -64,6 +61,7 @@ bool Parser::Init() {
 		{ "unuse", TokenType::Unuse },
 		{ "empty", TokenType::Empty },
 		{ "readonly", TokenType::ReadOnly },
+		{ "alias", TokenType::Alias },
 
 		{ "$include", TokenType::MetaInclude },
 		{ "$default", TokenType::MetaDefault },

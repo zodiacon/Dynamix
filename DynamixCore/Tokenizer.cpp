@@ -47,7 +47,7 @@ bool Tokenizer::AddTokens(initializer_list<pair<string_view, TokenType>> tokens)
 	return count == tokens.size();
 }
 
-Token Tokenizer::Next() {
+Token Tokenizer::Next() noexcept {
 	while (m_MultiLineCommentNesting > 0) {
 		if (IsNextChars(m_MultiLineCommentEnd))
 			--m_MultiLineCommentNesting;
@@ -93,7 +93,7 @@ Token Tokenizer::Next() {
 	return ParseOperator();
 }
 
-Token const& Tokenizer::Peek() {
+Token const& Tokenizer::Peek() noexcept {
 	if (m_Next)
 		return m_Next;
 
@@ -105,7 +105,7 @@ std::string_view Tokenizer::TokenTypeToString(TokenType type) const {
 	return m_TokenTypesRev.find(type)->second;
 }
 
-bool Tokenizer::IsNextChars(string_view chars) {
+bool Tokenizer::IsNextChars(string_view chars) noexcept {
 	auto current = m_Current;
 	int i = 0;
 	while (*current && *current == chars[i]) {
@@ -118,7 +118,7 @@ bool Tokenizer::IsNextChars(string_view chars) {
 	return false;
 }
 
-bool Tokenizer::ProcessSingleLineComment() {
+bool Tokenizer::ProcessSingleLineComment() noexcept {
 	auto current = m_Current;
 	int i = 0;
 	while (*current && *current++ == m_CommentToEndOfLine[i]) {
@@ -140,7 +140,7 @@ bool Tokenizer::ProcessSingleLineComment() {
 	return false;
 }
 
-void Tokenizer::EatWhitespace() {
+void Tokenizer::EatWhitespace() noexcept {
 	while (*m_Current && isspace(*m_Current)) {
 		m_Col++;
 		if (*m_Current == '\n') {
@@ -175,7 +175,7 @@ Token Tokenizer::ParseIdentifier() {
 	return Token{ .Type = type, .Lexeme = AddLiteralString(lexeme), .Location { m_Line, m_Col - (int)lexeme.length(), m_FileName } };
 }
 
-Token Tokenizer::ParseNumber() {
+Token Tokenizer::ParseNumber() noexcept {
 	char* pd, * pi;
 	auto dvalue = strtod(m_Current, &pd);
 	bool integer = false;
@@ -214,7 +214,7 @@ Token Tokenizer::ParseNumber() {
 	return token;
 }
 
-Token Tokenizer::ParseOperator() {
+Token Tokenizer::ParseOperator() noexcept {
 	string lexeme;
 	while (*m_Current && ispunct(*m_Current)) {
 		//
@@ -232,8 +232,7 @@ Token Tokenizer::ParseOperator() {
 
 	auto type = TokenType::Invalid;
 	do {
-		auto it = m_TokenTypes.find(lexeme);
-		if (it != m_TokenTypes.end()) {
+		if (auto it = m_TokenTypes.find(lexeme); it != m_TokenTypes.end()) {
 			type = it->second;
 			break;
 		}

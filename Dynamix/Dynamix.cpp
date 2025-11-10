@@ -73,12 +73,11 @@ int RunRepl(Parser& p, Interpreter& intr) {
 		auto n = p.Parse(text, true);
 		if (n) {
 			try {
-				auto result = intr.Eval(n.get());
-				if (!result.IsNull())
+				if (auto result = intr.Eval(n.get()); !result.IsEmpty())
 					println("{}", result.ToString());
 				program.push_back(move(n));
 			}
-			catch (RuntimeError err) {
+			catch (RuntimeError const& err) {
 				println("Runtime error: {}", err.Message());
 			}
 		}
@@ -91,8 +90,8 @@ int RunRepl(Parser& p, Interpreter& intr) {
 
 void Usage() {
 	println("Dynamix v0.1");
-	println("Usage: dynamix run <file> [file]...[-- params] (parse files and run Main function)");
-	println("       dynamix load [file]...					(parse files and run REPL)");
+	println("Usage:\tdynamix run <file> [file]...[-- params] (parse files and run Main function)");
+	println("\tdynamix load [file]...                  (parse files and run REPL)");
 }
 
 int main(int argc, const char* argv[], const char* envp[]) {
@@ -155,7 +154,7 @@ int main(int argc, const char* argv[], const char* envp[]) {
 	switch (cmd) {
 		case Command::Load:
 		{
-			if (!result.IsNull())
+			if (!result.IsEmpty())
 				println("{}", result.ToString());
 			return RunRepl(p, intr);
 		}
@@ -163,7 +162,7 @@ int main(int argc, const char* argv[], const char* envp[]) {
 		case Command::Run:
 		{
 			result = intr.RunMain(params > 0 ? argc - params : 0, params > 0 ? argv + params : nullptr, envp);
-			if (!result.IsNull())
+			if (!result.IsEmpty())
 				println("{}", result.ToString());
 			break;
 		}

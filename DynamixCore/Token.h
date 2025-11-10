@@ -16,8 +16,8 @@ namespace Dynamix {
 		Comment,
 
 		Keyword		= 0x0100,
-		Operator	= 0x1000,
-		Meta		= 0x1200,
+		Operator	= 0x0300,
+		Meta		= 0x0500,
 
 		If = Keyword,
 		Else,
@@ -63,6 +63,7 @@ namespace Dynamix {
 		Unuse,
 		Empty,
 		ReadOnly,
+		Alias,
 
 		Plus = Operator,
 		Minus,
@@ -131,16 +132,16 @@ namespace Dynamix {
 		};
 		CodeLocation Location;
 
-		std::string_view TypeToString() const;
+		std::string_view TypeToString() const noexcept;
 		static std::string_view TypeToString(TokenType type);
 
-		bool IsValid() const {
+		bool IsValid() const noexcept {
 			return Type != TokenType::Invalid;
 		}
-		operator bool() const {
+		operator bool() const noexcept {
 			return IsValid();
 		}
-		void Clear() {
+		void Clear() noexcept {
 			Type = TokenType::Invalid;
 		}
 	};

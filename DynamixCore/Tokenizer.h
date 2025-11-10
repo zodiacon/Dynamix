@@ -18,8 +18,8 @@ namespace Dynamix {
 		bool AddToken(std::string_view lexeme, TokenType type);
 		bool AddTokens(std::initializer_list<std::pair<std::string_view, TokenType>> tokens);
 
-		Token Next();
-		Token const& Peek();
+		Token Next() noexcept;
+		Token const& Peek() noexcept;
 
 		int Line() const noexcept {
 			return m_Line;
@@ -35,10 +35,6 @@ namespace Dynamix {
 
 		std::string_view TokenTypeToString(TokenType type) const;
 
-		operator bool() {
-			return *m_Current != 0;
-		}
-
 		const char* AddLiteralString(std::string str) {
 			if (auto it = m_LiteralStrings.find(str); it != m_LiteralStrings.end())
 				return it->c_str();
@@ -46,23 +42,25 @@ namespace Dynamix {
 		}
 
 	private:
-		bool IsNextChars(std::string_view chars);
-		bool ProcessSingleLineComment();
-		void EatWhitespace();
+		bool IsNextChars(std::string_view chars) noexcept;
+		bool ProcessSingleLineComment() noexcept;
+		void EatWhitespace() noexcept;
 		Token ParseIdentifier();
-		Token ParseNumber();
-		Token ParseOperator();
+		Token ParseNumber() noexcept;
+		Token ParseOperator() noexcept;
 		Token ParseString(bool raw);
 
 		std::unique_ptr<char[]> m_Text;
 		Token m_Next;
-		int m_Col{ 1 }, m_Line{ 1 };
+		int m_Col{ 1 };
+		int m_Line{ 1 };
 		std::string m_FileName;
 		std::unordered_map<std::string_view, TokenType> m_TokenTypes;
 		std::unordered_map<TokenType, std::string_view> m_TokenTypesRev;
 		const char* m_Current{ nullptr };
 		std::string m_CommentToEndOfLine{ "//" };
-		std::string m_MultiLineCommentStart{ "/*" }, m_MultiLineCommentEnd{ "*/" };
+		std::string m_MultiLineCommentStart{ "/*" };
+		std::string m_MultiLineCommentEnd{ "*/" };
 		int m_MultiLineCommentNesting;
 		std::set<std::string> m_LiteralStrings;
 	};

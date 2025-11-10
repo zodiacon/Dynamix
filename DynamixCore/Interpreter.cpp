@@ -392,7 +392,7 @@ void Interpreter::PopScope() {
 
 Value Interpreter::VisitGetMember(GetMemberExpression const* expr) {
 	auto value = Eval(expr->Left());
-	if (expr->Operator() == TokenType::QuestionDot && value.IsNull())
+	if (expr->Operator() == TokenType::QuestionDot && value.IsEmpty())
 		return Value();
 
 	auto type = value.GetObjectType();

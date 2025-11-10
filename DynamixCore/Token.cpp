@@ -1,6 +1,7 @@
 #include "Token.h"
+#include "EnumClassBitwise.h"
 
-std::string_view Dynamix::Token::TypeToString() const {
+std::string_view Dynamix::Token::TypeToString() const noexcept {
 	switch (Type) {
 		case TokenType::Invalid: return "Invalid";
 		case TokenType::Error: return "Error";
@@ -39,9 +40,9 @@ std::string_view Dynamix::Token::TypeToString() const {
 		case TokenType::StreamRight: return ">>";
 		case TokenType::StreamLeft: return "<<";
 	}
-	if ((int)Type & (int)TokenType::Keyword)
+	if ((Type & TokenType::Keyword) == TokenType::Keyword)
 		return "Keyword";
-	if ((int)Type & (int)TokenType::Operator)
+	if ((Type & TokenType::Operator) == TokenType::Operator)
 		return "Operator";
 	return "(Unknown)";
 }

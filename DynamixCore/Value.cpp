@@ -27,7 +27,7 @@ Bool Value::ToBoolean() const {
 		case ValueType::Integer: return iValue ? true : false;
 		case ValueType::Real: return dValue ? true : false;
 		case ValueType::Boolean: return bValue;
-		case ValueType::Null: return false;
+		case ValueType::Empty: return false;
 		case ValueType::String: return m_StrLen > 0;
 	}
 	throw RuntimeError(RuntimeErrorType::CannotConvertToBoolean, std::format("Cannot convert {} to Boolean", ToString()));
@@ -109,22 +109,23 @@ Value& Value::Assign(Value const& right, TokenType assign) {
 
 Value& Value::AssignArrayIndex(Value const& index, Value const& right, TokenType assign) {
 	switch (m_Type) {
-	case ValueType::Object:
-		const_cast<RuntimeObject*>(oValue)->InvokeSetIndexer(index, right, assign);
-		break;
+		case ValueType::Object:
+			const_cast<RuntimeObject*>(oValue)->InvokeSetIndexer(index, right, assign);
+			break;
 
-	case ValueType::String:
-		assert(false);
-		break;
+		case ValueType::String:
+			assert(false);
+			break;
 	}
 	return *this;
 }
 
 std::string Value::ToString(const char* fmt) const {
 	switch (m_Type) {
-		case ValueType::Null:
+		case ValueType::Empty:
 			return "<empty>";
 		case ValueType::Integer:
+		case ValueType::Pointer:
 			return std::vformat(fmt, std::make_format_args(iValue));
 		case ValueType::Real:
 			return std::vformat(fmt, std::make_format_args(dValue));
@@ -205,7 +206,7 @@ Value Value::Div(Value const& rhs) const {
 
 Value Value::Mod(Value const& rhs) const {
 	switch (Type() | rhs.Type()) {
-		case ValueType::Integer: 
+		case ValueType::Integer:
 			return rhs.iValue == 0 ? Value::Error(ValueErrorType::DivideByZero) : iValue % rhs.iValue;
 	}
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot modulo {} by {}", ToString(), rhs.ToString()));
@@ -267,7 +268,7 @@ Value Value::InvokeIndexer(Value const& index) const {
 void Value::Free() noexcept {
 	switch (m_Type) {
 		case ValueType::Error:
-			if(m_Error == ValueErrorType::CustomObject)
+			if (m_Error == ValueErrorType::CustomObject)
 				oValue->Release();
 			else if (strValue)
 				free(strValue);
@@ -285,7 +286,7 @@ void Value::Free() noexcept {
 			delete cValue;
 			break;
 	}
-	m_Type = ValueType::Null;
+	m_Type = ValueType::Empty;
 }
 
 Value::Value(RuntimeObject const* o) noexcept : oValue(o), m_Type(ValueType::Object) {
@@ -307,19 +308,22 @@ Value::Value(const char* s) noexcept : m_Type(ValueType::String) {
 }
 
 Value::Value(Value const& other) noexcept : oValue(other.oValue), m_Type(other.m_Type) {
-	if (m_Type == ValueType::Object)
-		oValue->AddRef();
-	else if (m_Type == ValueType::String) {
-		m_StrLen = other.m_StrLen;
-		strValue = (char*)malloc(m_StrLen + 1);
-		if (strValue == nullptr) {
-			*this = Value::Error(ValueErrorType::OutOfMemory);
-			return;
-		}
-		memcpy(strValue, other.strValue, m_StrLen + 1);
-	}
-	else if (m_Type == ValueType::Callable) {
-		cValue = new Callable(*other.cValue);
+	switch (m_Type) {
+		case ValueType::Object:
+			oValue->AddRef();
+			break;
+		case ValueType::String:
+			m_StrLen = other.m_StrLen;
+			strValue = (char*)malloc(m_StrLen + 1);
+			if (strValue == nullptr) {
+				*this = Value::Error(ValueErrorType::OutOfMemory);
+				return;
+			}
+			memcpy(strValue, other.strValue, m_StrLen + 1);
+			break;
+		case ValueType::Callable:
+			cValue = new Callable(*other.cValue);
+			break;
 	}
 }
 
@@ -329,22 +333,24 @@ Value& Value::operator=(Value const& other) noexcept {
 		m_Type = other.m_Type;
 		m_StrLen = other.m_StrLen;
 		oValue = other.oValue;
-		if (m_Type == ValueType::String) {
-			strValue = (char*)malloc(m_StrLen + 1);
-			memcpy(strValue, other.strValue, m_StrLen + 1);
-		}
-		else if (m_Type == ValueType::Object) {
-			oValue->AddRef();
-		}
-		else if (m_Type == ValueType::Callable) {
-			cValue = new Callable(*other.cValue);
+		switch (m_Type) {
+			case ValueType::String:
+				strValue = (char*)malloc(m_StrLen + 1);
+				memcpy(strValue, other.strValue, m_StrLen + 1);
+				break;
+			case ValueType::Object:
+				oValue->AddRef();
+				break;
+			case ValueType::Callable:
+				cValue = new Callable(*other.cValue);
+				break;
 		}
 	}
 	return *this;
 }
 
 Value::Value(Value&& other) noexcept : m_Type(other.m_Type), oValue(other.oValue), m_StrLen(other.m_StrLen) {
-	other.m_Type = ValueType::Null;
+	other.m_Type = ValueType::Empty;
 
 }
 
@@ -354,7 +360,7 @@ Value& Value::operator=(Value&& other) noexcept {
 		m_Type = other.m_Type;
 		oValue = other.oValue;
 		m_StrLen = other.m_StrLen;
-		other.m_Type = ValueType::Null;
+		other.m_Type = ValueType::Empty;
 	}
 	return *this;
 }
@@ -415,7 +421,6 @@ ObjectType const* Value::GetObjectType() const {
 		case ValueType::Integer: return IntegerType::Get();
 		case ValueType::Real: return RealType::Get();
 		case ValueType::Boolean: return BooleanType::Get();
-		//case ValueType::AstNode: return &FunctionType::Get();
 	}
 	return nullptr;
 }
@@ -429,25 +434,18 @@ Value Value::Equal(Value const& rhs) const {
 		case ValueType::Integer: return iValue == rhs.iValue;
 		case ValueType::Real: return dValue == rhs.dValue;
 		case ValueType::Boolean: return bValue == rhs.bValue;
-		case ValueType::Null: return true;
+		case ValueType::Empty: return true;
 		case ValueType::Integer | ValueType::Real: return ToReal() == rhs.ToReal();
 		case ValueType::Integer | ValueType::Boolean: return ToBoolean() == rhs.ToBoolean();
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) == 0;
+		case ValueType::Empty | ValueType::Pointer: return false;
+		case ValueType::Pointer: return pValue == rhs.pValue;
 	}
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
 
 Value Value::NotEqual(Value const& rhs) const {
-	switch (Type() | rhs.Type()) {
-		case ValueType::Integer: return iValue != rhs.iValue;
-		case ValueType::Real: return dValue != rhs.dValue;
-		case ValueType::Boolean: return bValue != rhs.bValue;
-		case ValueType::Null: return false;
-		case ValueType::Integer | ValueType::Real: return ToReal() != rhs.ToReal();
-		case ValueType::Integer | ValueType::Boolean: return ToBoolean() != rhs.ToBoolean();
-		case ValueType::String: return ::strcmp(strValue, rhs.strValue) != 0;
-	}
-	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
+	return !Equal(rhs).ToBoolean();
 }
 
 Value Value::LessThan(Value const& rhs) const {
@@ -470,7 +468,7 @@ Value Value::LessThanOrEqual(Value const& rhs) const {
 		case ValueType::Integer | ValueType::Real: return ToReal() <= rhs.ToReal();
 		case ValueType::Integer | ValueType::Boolean: return ToBoolean() <= rhs.ToBoolean();
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) <= 0;
-		case ValueType::Null: return true;
+		case ValueType::Empty: return true;
 	}
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare '{}' and '{}'", ToString(), rhs.ToString()));
 }
@@ -513,12 +511,7 @@ Value Value::GreaterThanOrEqual(Value const& rhs) const {
 		case ValueType::Integer | ValueType::Real: return ToReal() >= rhs.ToReal();
 		case ValueType::Integer | ValueType::Boolean: return ToBoolean() >= rhs.ToBoolean();
 		case ValueType::String: return ::strcmp(strValue, rhs.strValue) >= 0;
-		case ValueType::Null: return true;
+		case ValueType::Empty: return true;
 	}
 	throw RuntimeError(RuntimeErrorType::TypeMismatch, std::format("Cannot compare {} and {}", ToString(), rhs.ToString()));
 }
-
-//std::ostream& operator<<(std::ostream& os, Value const& v) {
-//	os << v.ToString();
-//	return os;
-//}

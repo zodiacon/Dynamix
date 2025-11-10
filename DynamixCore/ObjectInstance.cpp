@@ -13,7 +13,7 @@ Value ObjectInstance::IsObject(Value const& value) noexcept {
 }
 
 Value ObjectInstance::IsEmpty(Value const& value) noexcept {
-	return value.IsNull();
+	return value.IsEmpty();
 }
 
 ObjectInstance::ObjectInstance() : StaticObjectType("Object") {

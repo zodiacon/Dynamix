@@ -293,10 +293,15 @@ unique_ptr<Expression> MatchParslet::Parse(Parser& parser, Token const& token) {
 unique_ptr<Expression> RangeParslet::Parse(Parser& parser, std::unique_ptr<Expression> left, Token const& token) {
 	assert(token.Type == TokenType::DotDotExclusive || token.Type == TokenType::DotDotInclusive || token.Type == TokenType::DotDot);
 	std::unique_ptr<Expression> end;
-	if (parser.Peek().Type == TokenType::CloseBracket)
-		end = make_unique<LiteralExpression>(-1);
-	else
+	if (parser.Peek().Type == TokenType::CloseBracket) {
+		if (token.Type == TokenType::DotDot)
+			end = make_unique<LiteralExpression>(-1);
+		else
+			parser.AddError(ParseError(ParseErrorType::UnexpectedToken, parser.Peek(), "Open range must use the .. operator"));
+	}
+	else {
 		end = parser.ParseExpression();
+	}
 	if (!end)
 		return nullptr;
 
